@@ -6,7 +6,7 @@
 /*   By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/08 11:01:52 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/11 15:27:33 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/04/12 11:48:10 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,7 +92,10 @@ void	HttpRequest::parseRequestLine(std::string line) {
 		return ;
 	}
 	this->setMethod(split[0]);
-	this->_uri = decodeUri(split[1]);
+	this->getUriAndEnv(split[1]);
+	mapStrStr temp = this->_client->getEnv();
+	for (mapStrStrIt it = temp.begin(); it != temp.end(); it++)
+		std::cout << it->first << " - " << it->second << std::endl;
 	split = split_trim(split[2], "/");
 	if (split.size() != 2) {
 		this->_goodRequest = false;	
@@ -102,6 +105,26 @@ void	HttpRequest::parseRequestLine(std::string line) {
 		this->_goodRequest = false;	
 		return ;
 	}
+}
+
+void	HttpRequest::getUriAndEnv(std::string str) {
+	std::vector<std::string>	split;
+	std::vector<std::string>	vars;
+	std::vector<std::string>	tempEnv;
+
+	split = split_trim(str, "?");
+	if (split.size() == 2) {
+		vars = split_trim(split[1], "&");
+		for (strVecIt it = vars.begin(); it != vars.end(); it++) {
+			tempEnv = split_trim(*it, "=");
+			if (tempEnv.size() != 2) {
+				this->_goodRequest = false;
+				return ;
+			}
+			this->_client->addEnv(decodeUri(tempEnv[0]), decodeUri(tempEnv[1]));
+		}
+	}
+	this->_uri = decodeUri(split[0]);
 }
 
 Client	*HttpRequest::getClient() const {

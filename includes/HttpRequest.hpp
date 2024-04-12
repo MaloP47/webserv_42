@@ -6,7 +6,7 @@
 /*   By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/08 10:57:23 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/11 14:22:22 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/04/12 11:14:13 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,7 @@ class HttpRequest {
 		void	setMethod(std::string str);
 		void	parseAcceptedMimes(std::string line);
 		void	parseConnection(std::string line);
+		void	getUriAndEnv(std::string str);
 
 	public:
 		HttpRequest();

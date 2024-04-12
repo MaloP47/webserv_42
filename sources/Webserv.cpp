@@ -6,7 +6,7 @@
 /*   By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/05 15:49:31 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/11 14:34:03 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/04/12 11:52:19 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -204,6 +204,7 @@ void	Webserv::processRequest(int fd) {
 		if (client.getRequest()->keepAlive()) {
 			client.deleteRequest();
 			client.deleteResponse();
+			client.deleteEnv();
 		}
 		else
 			this->deleteClient(fd);
