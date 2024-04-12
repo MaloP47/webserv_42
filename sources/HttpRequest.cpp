@@ -121,7 +121,7 @@ void	HttpRequest::getUriAndEnv(std::string str) {
 				this->_goodRequest = false;
 				return ;
 			}
-			this->_client->addEnv(decodeUri(tempEnv[0]), decodeUri(tempEnv[1]));
+			this->_client->addEnv(decodeEnv(tempEnv[0]), decodeEnv(tempEnv[1]));
 		}
 	}
 	this->_uri = decodeUri(split[0]);
