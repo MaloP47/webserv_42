@@ -6,7 +6,7 @@
 /*   By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/05 15:15:28 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/11 15:21:50 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/04/12 14:20:18 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,6 +76,7 @@ typedef struct s_env {
 std::vector<std::string>	split_trim(std::string str, std::string needle);
 
 std::string					decodeUri(const std::string uri);
+std::string					decodeEnv(const std::string uri);
 
 t_env						*env();
 

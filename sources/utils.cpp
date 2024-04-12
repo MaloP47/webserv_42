@@ -6,7 +6,7 @@
 /*   By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/08 15:13:19 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/12 11:49:12 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/04/12 14:19:52 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,13 +70,24 @@ std::string	decodeUri(const std::string uri) {
 			int hex = std::strtol(uri.substr(i + 1, 2).c_str(), NULL, 16);
 			decoded += static_cast<char>(hex);
 			i += 2;
-		} else if (uri[i] == '+'){
-			decoded += ' ';
 		} else {
 			decoded += uri[i];
 		}
 	}
 	return (decoded);
+}
+
+std::string	decodeEnv(const std::string uri) {
+	std::string	decoded;
+
+	for (std::size_t i = 0; i < uri.length(); i++) {
+		if (uri[i] == '+'){
+			decoded += ' ';
+		} else {
+			decoded += uri[i];
+		}
+	}
+	return (decodeUri(decoded));
 }
 
 t_env *env() {

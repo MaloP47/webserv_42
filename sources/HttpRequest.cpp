@@ -6,7 +6,7 @@
 /*   By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/08 11:01:52 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/12 11:48:10 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/04/12 14:18:45 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -121,7 +121,7 @@ void	HttpRequest::getUriAndEnv(std::string str) {
 				this->_goodRequest = false;
 				return ;
 			}
-			this->_client->addEnv(decodeUri(tempEnv[0]), decodeUri(tempEnv[1]));
+			this->_client->addEnv(decodeEnv(tempEnv[0]), decodeEnv(tempEnv[1]));
 		}
 	}
 	this->_uri = decodeUri(split[0]);
