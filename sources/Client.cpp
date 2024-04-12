@@ -6,7 +6,7 @@
 /*   By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/08 09:04:04 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/11 14:35:18 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/04/12 11:51:53 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,6 +78,10 @@ void	Client::deleteRequest() {
 	this->_request = NULL;
 }
 
+void	Client::deleteEnv() {
+	this->_env.clear();
+}
+
 void	Client::deleteResponse() {
 	if (this->_response)
 		delete this->_response;
@@ -100,6 +104,14 @@ void	Client::setError() {
 
 bool	Client::error() const {
 	return (this->_error);
+}
+
+void	Client::addEnv(std::string name, std::string value) {
+	this->_env.insert(std::pair<std::string, std::string>(name, value));
+}
+
+mapStrStr	Client::getEnv() const {
+	return (this->_env);
 }
 
 std::ostream	&operator<<(std::ostream &o, const Client &client) {

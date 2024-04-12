@@ -6,7 +6,7 @@
 /*   By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/08 08:50:25 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/11 14:34:57 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/04/12 11:51:01 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,11 +21,16 @@ class Server;
 class HttpRequest;
 class HttpResponse;
 
+typedef std::vector<std::string>::iterator	strVecIt;
+typedef std::map<std::string, std::string>	mapStrStr;
+typedef mapStrStr::iterator					mapStrStrIt;
+
 class Client {
 	private:
 		Server			*_server;
 		HttpRequest		*_request;
 		HttpResponse	*_response;
+		mapStrStr		_env;
 		int				_fd;
 		std::time_t		_creationDate;
 		bool			_error;
@@ -45,11 +50,14 @@ class Client {
 		bool			appendRequest(const std::string str);
 		void			sendResponse();
 		void			deleteRequest();
+		void			deleteEnv();
 		void			deleteResponse();
 		int				getFd() const;
 		bool			olderThan(int sec) const;
 		void			setError();
 		bool			error() const;
+		void			addEnv(std::string name, std::string value);
+		mapStrStr		getEnv() const;
 };
 
 std::ostream &operator<<(std::ostream &o, const Client &client);
