@@ -6,7 +6,7 @@
 #    By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/02/14 14:06:15 by gbrunet           #+#    #+#              #
-#    Updated: 2024/04/11 15:23:21 by gbrunet          ###   ########.fr        #
+#    Updated: 2024/04/12 14:49:26 by gbrunet          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -36,7 +36,8 @@ SRC_DIR = sources/
 
 OBJ_DIR = objects/
 
-SRC = main Webserv Client Server HttpRequest HttpResponse Mime StatusCode utils
+SRC = main Webserv Client Server HttpRequest HttpResponse Mime StatusCode \
+	  DirectoryListing utils
 
 SRC_FILES = $(addprefix $(SRC_DIR), $(addsuffix .cpp, $(SRC)))
 

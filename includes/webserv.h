@@ -6,7 +6,7 @@
 /*   By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/05 15:15:28 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/12 14:20:18 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/04/12 14:52:15 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,8 +34,10 @@
 # include <ctime>
 # include <cstdlib>
 # include <csignal>
+# include <dirent.h>
 # include "Mime.hpp"
 # include "StatusCode.hpp"
+# include "DirectoryListing.hpp"
 
 enum HttpMethod {
 	GET,
