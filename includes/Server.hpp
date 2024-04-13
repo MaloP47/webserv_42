@@ -6,7 +6,7 @@
 /*   By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/05 14:13:35 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/10 09:13:32 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/04/13 09:41:10 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,7 @@ class Server {
 		std::string 		_name;
 		int					_fd;
 		struct sockaddr_in	_addr;
+		bool				_directoryListing;
 
 		int		init();
 		void	setAddr();
@@ -43,6 +44,7 @@ class Server {
 		int			getPort() const;
 		int			getFd() const;
 		int			getLogLevel() const;
+		bool		getDirectoryListing() const;
 };
 
 std::ostream &operator<<(std::ostream &o, const Server &server);

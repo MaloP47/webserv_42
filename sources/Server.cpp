@@ -6,7 +6,7 @@
 /*   By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/05 14:39:36 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/10 09:18:26 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/04/13 09:41:16 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,8 @@ Server::Server():
 
 Server::Server(Webserv *webserv, int port, std::string host, std::string name):
 	_webserv(webserv), _port(port), _host(host), _name(name), _fd(-1) {
+	// TEMP : i'm setting DirectoryListing manually for testing purpose
+	this->_directoryListing = true;
 	this->init();
 }
 
@@ -34,6 +36,7 @@ Server &Server::operator=(const Server &rhs) {
 	this->_name = rhs._name;
 	this->_fd = rhs._fd;
 	this->_addr = rhs._addr;
+	this->_directoryListing = rhs._directoryListing;
 	return (*this);
 }
 
@@ -102,6 +105,10 @@ int	Server::getFd() const {
 
 int	Server::getLogLevel() const {
 	return (this->_webserv->getLogLevel());
+}
+
+bool Server::getDirectoryListing() const {
+	return (this->_directoryListing);
 }
 
 std::ostream	&operator<<(std::ostream &o, const Server &server) {

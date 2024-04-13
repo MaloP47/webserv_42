@@ -6,7 +6,7 @@
 /*   By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 15:20:01 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/12 14:57:16 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/04/13 09:53:56 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,6 @@ void	handler(int signum) {
 }
 
 int	main(void) {
-	DirectoryListing::html(".");
 	std::signal(SIGINT, handler);
 	env()->ctrl_c = false;
 	env()->return_val = 0;

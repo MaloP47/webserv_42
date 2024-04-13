@@ -6,7 +6,7 @@
 /*   By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/08 17:27:41 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/11 15:39:17 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/04/13 09:51:06 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,6 +56,8 @@ class HttpResponse {
 		int			getStatusCode() const;
 		std::string	getMime() const;
 		std::string	getHeader() const;
+		void		sendDirectoryPage(std::string path);
+		void		directoryListing(std::string path);
 };
 
 std::ostream &operator<<(std::ostream &o, const HttpResponse &response);
