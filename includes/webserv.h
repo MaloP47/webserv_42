@@ -6,12 +6,14 @@
 /*   By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/05 15:15:28 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/13 10:12:34 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/04/14 17:55:05 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef WEBSERV_H
 # define WEBSERV_H
+
+using namespace std;
 
 # include "style.h"
 # include <iostream>
@@ -75,19 +77,16 @@ typedef struct s_env {
 # define ERR_EPOLL_CTL 102
 # define ERR_EPOLL_WAIT 103
 # define ERR_SEND 104
+# define ERR_READ 105
 
-std::vector<std::string>	split_trim(std::string str, std::string needle);
 
-std::string					decodeUri(const std::string uri);
-std::string					decodeEnv(const std::string uri);
-
-t_env						*env();
-
-bool						findLower(std::string str, std::string needle);
-
-void						ltrim(std::string &str);
-void						rtrim(std::string &str);
-
-int							ret(int return_val);
+int				ret(int return_val);
+bool			findLower(string str, string needle);
+void			ltrim(string &str);
+void			rtrim(string &str);
+t_env			*env();
+string			decodeUri(const string uri);
+string			decodeEnv(const string uri);
+vector<string>	split_trim(string str, string needle);
 
 #endif

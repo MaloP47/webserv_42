@@ -6,7 +6,7 @@
 /*   By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/08 17:27:41 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/13 09:51:06 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/04/14 17:46:41 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,20 +23,39 @@ class HttpRequest;
 
 class HttpResponse {
 	private:
-		Client		*_client;
-		std::string	_statusLine;
-		int			_statusCode;
-		std::size_t	_contentLength;
-		std::string	_mime;
-		std::string	_header;
+		Client	*_client;
+		string	_statusLine;
+		int		_statusCode;
+		size_t	_contentLength;
+		string	_mime;
+		string	_header;
 
-		int		sendData(const void *data, int len);
-		void	setStatusLine();
-		void	setServerHeader();
-		void	setDateHeader();
-		void	setContentTypeHeader();
-		void	setKeepAliveConnectionHeader();
-		void	setContentLengthHeader();
+		int				getClientFd() const;
+		int				sendData(const void *data, int len);
+		bool			keepAlive() const;
+		bool			getClientError() const;
+		bool			expandUri(string &uri, bool &isDir);
+		void			sendHeader();
+		void			sendChunkEnd();
+		void			error(int num);
+		void			createHeader();
+		void			setDateHeader();
+		void			setStatusLine();
+		void			sendFinalChunk();
+		void			setClientError();
+		void			setServerHeader();
+		void			checkSend(int bytes);
+		void			sendChunkSize(int len);
+		void			setContentTypeHeader();
+		void			sendErrorPage(int num);
+		void			setContentLengthHeader();
+		void			sendContent(ifstream &file);
+		void			movedPermanently(string uri);
+		void			directoryListing(string path);
+		void			setKeepAliveConnectionHeader();
+		void			sendDirectoryPage(string path);
+		HttpRequest		*getRequest() const;
+		vector<string>	getIndexes() const;
 	public:
 		HttpResponse();
 		HttpResponse(Client *client);
@@ -45,21 +64,13 @@ class HttpResponse {
 
 		HttpResponse &operator=(const HttpResponse &rhs);
 		
-		void		createHeader();
-		void		sendHeader();
-		void		sendResponse();
-		void		sendContent(std::ifstream &file);
-		void		sendErrorPage(int num);
-		void		error(int num);
-		Server		*getServer() const;
-		HttpRequest	*getRequest() const;
-		int			getStatusCode() const;
-		std::string	getMime() const;
-		std::string	getHeader() const;
-		void		sendDirectoryPage(std::string path);
-		void		directoryListing(std::string path);
+		int				getStatusCode() const;
+		void			sendResponse();
+		string			getMime() const;
+		string			getHeader() const;
+		Server			*getServer() const;
 };
 
-std::ostream &operator<<(std::ostream &o, const HttpResponse &response);
+ostream &operator<<(ostream &o, const HttpResponse &response);
 
 #endif

@@ -6,7 +6,7 @@
 /*   By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/09 15:44:41 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/12 15:46:18 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/04/14 18:01:41 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ StatusCode	&StatusCode::operator=(const StatusCode &rhs) {
 	return (*this);
 }
 
-std::string	StatusCode::name(int err) {
+string	StatusCode::name(int err) {
 	if (err == 100)
 		return ("100 Continue");
 	else if (err == 101)
@@ -111,17 +111,21 @@ std::string	StatusCode::name(int err) {
 	return ("");
 }
 
-std::string	StatusCode::page(int num) {
-	std::string	html;
+string	StatusCode::page(int num) {
+	string	html;
 
-	html = "<!doctype html><html><head><title>" + StatusCode::name(num).erase(0, 4) + "</title>\
-			<link href=\"https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/\
-			bootstrap.min.css\" rel=\"stylesheet\"></head><body class=\"m-3\">\
-			<div class=\"container p-4\"><div class=\"d-flex\
-			align-items-center justify-content-center\"><div><div class=\"text-center\
-			p-4 bg-dark text-body rounded-top-4\" style=\"--bs-bg-opacity: .2;\">\
-			<h1 class=\"fw-bold\">" + StatusCode::name(num) + "</h1></div><div class=\"text-center\
-			pt-3 pb-1 bg-dark text-body rounded-bottom-4\" style=\"--bs-bg-opacity: .1\">\
-			<p><i>webserv</i></p></div></div></div></div></body></html>";
+	html = "<!doctype html><html><head><title>" + StatusCode::name(num).erase(0, 4)
+		+ "=</title><link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/\
+		bootstrap@5.3.3/dist/css/bootstrap.min.css\"><link rel=\"preconnect\"\
+		href=\"https://fonts.googleapis.com\"><link rel=\"preconnect\"\
+		href=\"https://fonts.gstatic.com\" crossorigin><link href=\
+		\"https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,\
+		wght@0,100..700;1,100..700&display=swap\" rel=\"stylesheet\"></head>\
+		<body class=\"m-3 mt-5\" style=\"background-color:#353535\"><div \
+		class=\"container text-white p-3\"><div class=\"rounded-3 p-5\" \
+		style=\"background-color:#2b2a33; border:solid 1px #1b1b1b\"><center><h4>"
+		+ StatusCode::name(num) + "</h4></center><hr /><center style=\
+		\"font-family:'Roboto Mono', monospace; font-size:0.9em\">webserv\
+		</center></div></div></body></html>";
 	return (html);
 }

@@ -6,7 +6,7 @@
 /*   By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/09 15:44:58 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/11 15:21:32 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/04/14 17:53:00 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,8 +22,8 @@ class StatusCode {
 		StatusCode	&operator=(const StatusCode &rhs);
 	
 	public:
-		static std::string	page(int num);
-		static std::string	name(int num);
+		static string	page(int num);
+		static string	name(int num);
 };
 
 #endif

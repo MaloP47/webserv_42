@@ -6,7 +6,7 @@
 /*   By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/08 09:04:04 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/12 11:51:53 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/04/14 18:00:10 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@ Client::Client(): _server(NULL), _request(NULL), _response(NULL), _error(false) 
 
 Client::Client(Server *server, int fd):
 	_server(server), _request(NULL), _response(NULL), _fd(fd), _error(false) {
-	this->_creationDate = std::time(0);
+	this->_creationDate = time(0);
 }
 
 Client::Client(const Client &cpy) {
@@ -41,10 +41,10 @@ Client	&Client::operator=(const Client &rhs) {
 	return (*this);
 }
 
-bool	Client::appendRequest(const std::string str) {
+bool	Client::appendRequest(const string str) {
 	if (!this->_request)
 		this->_request = new HttpRequest(this);
-	this->_creationDate = std::time(0);
+	this->_creationDate = time(0);
 	return (this->_request->appendRequest(str));
 }
 
@@ -60,7 +60,7 @@ HttpResponse	*Client::getResponse() const {
 	return (this->_response);
 }
 
-std::string	Client::getRawRequest() const {
+string	Client::getRawRequest() const {
 	if (this->_request)
 		return (this->_request->getRawRequest());
 	else
@@ -93,7 +93,7 @@ int	Client::getFd() const {
 }
 
 bool	Client::olderThan(int sec) const {
-	if (static_cast<int>(std::time(0) - this->_creationDate) > sec)
+	if (static_cast<int>(time(0) - this->_creationDate) > sec)
 		return (true);
 	return (false);
 }
@@ -106,24 +106,24 @@ bool	Client::error() const {
 	return (this->_error);
 }
 
-void	Client::addEnv(std::string name, std::string value) {
-	this->_env.insert(std::pair<std::string, std::string>(name, value));
+void	Client::addEnv(string name, string value) {
+	this->_env.insert(pair<string, string>(name, value));
 }
 
 mapStrStr	Client::getEnv() const {
 	return (this->_env);
 }
 
-std::ostream	&operator<<(std::ostream &o, const Client &client) {
+ostream	&operator<<(ostream &o, const Client &client) {
 	if (client.getServer()->getLogLevel() == 0)
 		return (o);
-	o << RED BOLD "Client (fd: " << client.getFd() << ")" END_STYLE << std::endl;
+	o << RED BOLD "Client (fd: " << client.getFd() << ")" END_STYLE << endl;
 	if (client.getServer())
-		o << *client.getServer() << std::endl;
+		o << *client.getServer() << endl;
 	if (client.getRequest())
 		o << *client.getRequest();
 	if (client.getResponse())
 		o << *client.getResponse();
-	o << std::endl;
+	o << endl;
 	return(o);
 }
