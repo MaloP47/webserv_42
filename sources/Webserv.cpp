@@ -6,7 +6,7 @@
 /*   By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/05 15:49:31 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/12 11:52:19 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/04/14 18:01:25 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 
 Webserv::Webserv() {}
 
-Webserv::Webserv(std::string config): _logLevel(0) {
+Webserv::Webserv(string config): _logLevel(0) {
 	(void) config;
 	// something here to parse the config file;
 	// for now, i'm adding manually 2 servers for testing purpose
@@ -58,8 +58,8 @@ int	Webserv::initEpoll() {
 		return (ret(ERR_EPOLL_CREATE));
 	}
 	for(serverIt it = this->_servers.begin(); it != this->_servers.end(); it++) {
-		std::cout << *it << std::endl;
-		std::memset(&event, 0, sizeof(struct epoll_event));
+		cout << *it << endl;
+		memset(&event, 0, sizeof(struct epoll_event));
 		event.events = EPOLLIN;
 		event.data.fd = it->getFd();
 		if (epoll_ctl(this->_epoll_fd, EPOLL_CTL_ADD, it->getFd(), &event) < 0) {
@@ -67,8 +67,8 @@ int	Webserv::initEpoll() {
 			return (ret(ERR_EPOLL_CTL));
 		}
 	}
-	std::cout << std::endl;
-	std::memset(&event, 0, sizeof(struct epoll_event));
+	cout << endl;
+	memset(&event, 0, sizeof(struct epoll_event));
 	event.events = EPOLLIN;
 	event.data.fd = 0;
 	if (epoll_ctl(this->_epoll_fd, EPOLL_CTL_ADD, 0, &event) < 0) {
@@ -87,8 +87,8 @@ void	Webserv::closeUnusedSockets() {
 		else {
 			fd = it->second.getFd();
 			if (this->getLogLevel() > 0) {
-				std::cout << PURPLE BOLD ITALIC "Closing Client (fd: " << fd;
-				std::cout << ")\n" END_STYLE << std::endl;
+				cout << PURPLE BOLD ITALIC "Closing Client (fd: " << fd;
+				cout << ")\n" END_STYLE << endl;
 			}
 			++it;
 			this->deleteClient(fd);
@@ -108,13 +108,13 @@ int	Webserv::start() {
 		nfds = epoll_wait(this->_epoll_fd, events, MAX_EVENTS, EPOLL_TIMEOUT);
 		if (nfds < 0 && !env()->ctrl_c) {
 			perror("epoll_wait");
-			std::cout << errno << std::endl;
+			cout << errno << endl;
 			return (ret(ERR_EPOLL_WAIT));
 		}
 		for (int i = 0; i < nfds; i++) {
 			event = events[i].events;
 			if ((event & EPOLLERR) || (event & EPOLLHUP)) {
-				std::cerr << "epoll_event events error" << std::endl;
+				cerr << "epoll_event events error" << endl;
 				close(events[i].data.fd);
 			}
 			else if (events[i].data.fd == 0)
@@ -151,7 +151,7 @@ int	Webserv::acceptConnection(int fd) {
 	connected_fd = accept(fd, &in_addr, &in_addr_len);
 	if (connected_fd < 0) {
 		if (errno == EAGAIN || errno == EWOULDBLOCK)
-			std::cerr << "Connection already processed" << std::endl;
+			cerr << "Connection already processed" << endl;
 		else
 			perror("accept");
 		return (ret(ERR_ACCEPT));
@@ -160,7 +160,7 @@ int	Webserv::acceptConnection(int fd) {
 		perror("fcntl");
 		return (ret(ERR_FCNTL));
 	}
-	std::memset(&event, 0, sizeof(struct epoll_event));
+	memset(&event, 0, sizeof(struct epoll_event));
 	event.events = EPOLLIN;
 	event.data.fd = connected_fd;
 	if (epoll_ctl(this->_epoll_fd, EPOLL_CTL_ADD, connected_fd, &event) < 0) {
@@ -181,10 +181,10 @@ void	Webserv::deleteClient(int fd) {
 }
 
 void	Webserv::processRequest(int fd) {
-	char		buf[BUFFER_SIZE + 1];
-	int			received;
-	Client		&client = this->_clients[fd];
-	std::string	header;
+	char	buf[BUFFER_SIZE + 1];
+	int		received;
+	Client	&client = this->_clients[fd];
+	string	header;
 
 	if (!client.getServer())
 		return ;
@@ -196,7 +196,7 @@ void	Webserv::processRequest(int fd) {
 	buf[received] = 0;	
 	if (client.appendRequest(buf) && !client.error()) {
 		client.sendResponse();
-		std::cout << client;
+		cout << client;
 		if (client.error()) {
 			this->deleteClient(fd);
 			return ;
@@ -229,28 +229,28 @@ void	Webserv::processStdIn() {
 }
 
 bool	Webserv::isFullCommand() const {
-	return (this->_command.find("\n") != std::string::npos);
+	return (this->_command.find("\n") != string::npos);
 }
 
 void	Webserv::processCommand() {
 	if (this->_command == "\n")
 		return ;
 	else if (this->_command == "exit\n"){
-		std::cout << CYAN "exit" END_STYLE << std::endl;
+		cout << CYAN "exit" END_STYLE << endl;
 		this->_run = false;
 	} else if (this->_command == "logs 0\n") {
-		std::cout << CYAN "logs level: 0" END_STYLE << std::endl;
+		cout << CYAN "logs level: 0" END_STYLE << endl;
 		this->_logLevel = 0;
 	} else if (this->_command == "logs 1\n") {
-		std::cout << CYAN "logs level: 1" END_STYLE << std::endl;
+		cout << CYAN "logs level: 1" END_STYLE << endl;
 		this->_logLevel = 1;
 	} else if (this->_command == "logs 2\n") {
-		std::cout << CYAN "logs level: 2" END_STYLE << std::endl;
+		cout << CYAN "logs level: 2" END_STYLE << endl;
 		this->_logLevel = 2;
 	} else {
 		this->_command[this->_command.length() - 1] = 0;
-		std::cerr << RED << "command not found: " END_STYLE;
-		std::cerr << RED << this->_command << END_STYLE <<std::endl;
+		cerr << RED << "command not found: " END_STYLE;
+		cerr << RED << this->_command << END_STYLE <<endl;
 	}
 }
 

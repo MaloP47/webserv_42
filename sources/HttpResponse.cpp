@@ -6,7 +6,7 @@
 /*   By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/08 17:29:38 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/11 15:44:07 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/04/14 18:16:44 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,8 +37,8 @@ void	HttpResponse::setStatusLine() {
 }
 
 void	HttpResponse::setServerHeader() {
-	if (this->_client->getServer()->getName() != "")
-		this->_header += "Server: " + this->_client->getServer()->getName() + "\r\n";
+	if (this->getServer()->getName() != "")
+		this->_header += "Server: " + this->getServer()->getName() + "\r\n";
 }
 
 void	HttpResponse::setDateHeader() {
@@ -47,11 +47,11 @@ void	HttpResponse::setDateHeader() {
 	struct tm			*info;
 	size_t				length;
 
-	std::time(&rawtime);
-	info = std::gmtime(&rawtime);
+	time(&rawtime);
+	info = gmtime(&rawtime);
 	length = strftime(date, 128, "%a, %d %h %Y %T %Z", info);
 	date[length] = 0;
-	this->_header += "Date: " + std::string(date) + "\r\n";
+	this->_header += "Date: " + string(date) + "\r\n";
 }
 
 void	HttpResponse::setContentTypeHeader() {
@@ -64,7 +64,7 @@ void	HttpResponse::setKeepAliveConnectionHeader() {
 }
 
 void	HttpResponse::setContentLengthHeader() {
-	std::stringstream	str;
+	stringstream	str;
 
 	if (this->_statusCode == 200)
 		str << this->_contentLength;
@@ -79,7 +79,7 @@ void	HttpResponse::createHeader() {
 	this->setServerHeader();
 	this->setDateHeader();
 	this->setContentTypeHeader();
-	if (this->getRequest()->keepAlive())
+	if (this->keepAlive())
 		this->setKeepAliveConnectionHeader();
 	else
 		this->setContentLengthHeader();
@@ -87,151 +87,208 @@ void	HttpResponse::createHeader() {
 }
 
 void	HttpResponse::sendHeader() {
-	int			bytes;
-	std::string	header;
+	int	bytes;
 
-	this->createHeader();
-	bytes = send(this->_client->getFd(), this->_header.c_str(), this->_header.length(), 0);
-	if (bytes < 0) {
-		perror("send");
-		this->_client->setError();
-		return ;
-	}
+	bytes = send(this->getClientFd(), this->_header.c_str(), this->_header.length(), 0);
+	this->checkSend(bytes);
+}
+
+void	HttpResponse::sendChunkSize(int len) {
+	stringstream	str;
+	int				bytes;
+	
+	str << hex << uppercase << len << "\r\n";
+	bytes = send(this->getClientFd(), str.str().c_str(), str.str().length(), 0);
+	this->checkSend(bytes);
+}
+
+void	HttpResponse::sendChunkEnd() {
+	int	bytes;
+
+	bytes = send(this->getClientFd(), "\r\n", 2, 0);
+	this->checkSend(bytes);
+}
+
+void	HttpResponse::sendFinalChunk() {
+	int	bytes;
+
+	bytes = send(this->getClientFd(), "0\r\n\r\n", 5, 0);
+	this->checkSend(bytes);
 }
 
 int	HttpResponse::sendData(const void *data, int len) {
-	const char			*ptr = static_cast<const char *>(data);
-	std::stringstream	str;
-	int					bytes;
+	const char	*ptr = static_cast<const char *>(data);
+	int			bytes;
 
-	if (this->getRequest()->keepAlive()) {
-		str << std::hex << std::uppercase << len << "\r\n";
-		bytes = send(this->_client->getFd(), str.str().c_str(), str.str().length(), 0);
-		if (bytes <= 0) {
-			perror("send");
-			this->_client->setError();
-			return (ret(ERR_SEND));		
-		}
-	}
-	while (len > 0) {
-		bytes = send(this->_client->getFd(), ptr, len, 0);
-		if (bytes <= 0) {
-			perror("send");
-			this->_client->setError();
-			return (ret(ERR_SEND));		
-		}
+	if (this->keepAlive() && !this->getClientError())
+		this->sendChunkSize(len);
+	while (len > 0 && !this->getClientError()) {
+		bytes = send(this->getClientFd(), ptr, len, 0);
+		this->checkSend(bytes);
 		ptr += bytes;
 		len -= bytes;
 	}
-	if (this->getRequest()->keepAlive()) {
-		bytes = send(this->_client->getFd(), "\r\n", 2, 0);
-		if (bytes <= 0) {
-			perror("send");
-			this->_client->setError();
-			return (ret(ERR_SEND));	
-		}
-	}
+	if (this->keepAlive() && !this->getClientError())
+		this->sendChunkEnd();
 	return (0);
 }
 
-void	HttpResponse::sendContent(std::ifstream &file) {
-	char		data[1024];
-	std::size_t	sended = 0;
-	int			bytes;
-
-	if (this->_contentLength > 0 && !this->_client->error()) {
-		while (sended != this->_contentLength && !this->_client->error()) {
-			if (!file.read(data, std::min(this->_contentLength - sended, static_cast<std::size_t>(1024)))) {
+void	HttpResponse::sendContent(ifstream &file) {
+	char	data[1024];
+	size_t	sended = 0;
+	int		bytes;
+	
+	if (this->_contentLength > 0 && !this->getClientError()) {
+		while (sended != this->_contentLength && !this->getClientError()) {
+			if (!file.read(data, min(this->_contentLength - sended,
+							static_cast<size_t>(1024)))) {
 				perror("read");
-				this->_client->setError();
+				this->setClientError();
+				ret(ERR_READ);
 				return ;
 			}
 			bytes = file.gcount();
 			this->sendData(data, bytes);
 			sended += bytes;
 		}
-		bytes = send(this->_client->getFd(), "0\r\n\r\n", 5, 0);
-		if (bytes <= 0) {
-			perror("send");
-			this->_client->setError();
-			return ;
-		}
+		if (this->keepAlive())
+			this->sendFinalChunk();
 	}	
 }
 
-void	HttpResponse::sendErrorPage(int num) {
-	int					bytes;
-	std::stringstream	str;
-	std::string			page = StatusCode::page(num);
-
-	if (this->getRequest()->keepAlive() && !this->_client->error()) {
-		str << std::hex << std::uppercase << page.length() << "\r\n";
-		bytes = send(this->_client->getFd(), str.str().c_str(), str.str().length(), 0);
-		if (bytes <= 0) {
-			perror("send");
-			this->_client->setError();
-			return ;
-		}
-	}
-	bytes = send(this->_client->getFd(), page.c_str(), page.length(), 0);
+void	HttpResponse::checkSend(int bytes) {
 	if (bytes <= 0) {
 		perror("send");
-		this->_client->setError();
-		return ;
+		this->setClientError();
+		ret(ERR_SEND);
 	}
-	if (this->getRequest()->keepAlive()) {
-		bytes = send(this->_client->getFd(), "\r\n0\r\n\r\n", 7, 0);
-		if (bytes <= 0) {
-			perror("send");
-			this->_client->setError();
-			return ;
-		}
+}
+
+void	HttpResponse::sendErrorPage(int num) {
+	int		bytes;
+	string	page = StatusCode::page(num);
+
+	if (this->keepAlive() && !this->getClientError())
+		this->sendChunkSize(page.length());
+	bytes = send(this->getClientFd(), page.c_str(), page.length(), 0);
+	this->checkSend(bytes);
+	if (this->keepAlive() && !this->getClientError()) {
+		this->sendChunkEnd();
+		this->sendFinalChunk();
 	}
+}
+
+void	HttpResponse::movedPermanently(string uri) {
+	this->_statusCode = 301;
+	this->_mime = Mime::ext("html");
+	this->_header = "HTTP/1.1 301 Moved Permanently\r\nLocation: " + uri + "\r\n\r\n";
+	this->sendHeader();
+	this->setClientError();
 }
 
 void	HttpResponse::error(int num) {
 	this->_statusCode = num;
 	this->_mime = Mime::ext("html");
+	this->createHeader();
 	this->sendHeader();
 	this->sendErrorPage(num);
 }
 
+void	HttpResponse::sendDirectoryPage(string path) {
+	int		bytes;
+	string	page = DirectoryListing::html(path, this->getServer()->getRoot());
+
+	if (this->keepAlive() && !this->getClientError())
+		this->sendChunkSize(page.length());
+	bytes = send(this->getClientFd(), page.c_str(), page.length(), 0);
+	this->checkSend(bytes);
+	if (this->keepAlive() && !this->getClientError()) {
+		this->sendChunkEnd();
+		this->sendFinalChunk();
+	}
+}
+
+void	HttpResponse::directoryListing(string path) {
+	this->_statusCode = 200;
+	this->_mime = Mime::ext("html");
+	this->createHeader();
+	this->sendHeader();
+	this->sendDirectoryPage(path);	
+}
+
+vector<string>	HttpResponse::getIndexes() const {
+	return (this->getServer()->getIndexes());
+}
+
+bool	HttpResponse::expandUri(string &uri, bool &isDir) {
+	struct stat		s;
+	vector<string>	indexes;
+
+	uri = this->getServer()->getRoot() + this->getRequest()->getUri();
+	indexes = this->getIndexes();
+	if (stat(uri.c_str(), &s) == 0) {
+		if (s.st_mode & S_IFDIR) {
+			isDir = true;
+			if (uri[uri.length() - 1] != '/') {
+				this->movedPermanently(this->getRequest()->getUri() + "/");
+				return (false);
+			}
+		}
+		else
+			isDir = false;
+	} else {
+		this->error(404);
+		return (false);
+	}
+	if (isDir) {
+		for (vector<string>::iterator it = indexes.begin(); it != indexes.end(); it++) {
+			if (access((uri + *it).c_str(), F_OK) != -1) {
+				uri += *it;
+				isDir = false;
+				break;
+			}
+		}
+	}
+	return (true);
+}
+
 void	HttpResponse::sendResponse() {
-	std::ifstream		file;
-	std::string			ext;
+	ifstream		file;
+	string			ext;
+	string			uri;
+	bool			isDir;
 
 	if (!this->getRequest()->isGood()) {
 		this->error(400);
 		return ;
 	}
-	//temp : need to add infos form config file
-	if (this->getRequest()->getUri() == "/")
-		ext = this->getRequest()->getUri() + "index.html";
-	else
-		ext = this->getRequest()->getUri();
-	// end temp
+	if (!this->expandUri(uri, isDir))
+		return ;
 	ext = ext.substr(ext.find_last_of(".") + 1);
-	if (ext.find("/") == std::string::npos)
+	if (ext.find("/") == string::npos)
 		this->_mime = Mime::ext(ext);
-	//temp : need to add infos form config file
-	if (this->getRequest()->getUri() == "/")
-		file.open(("." + this->getRequest()->getUri() + "index.html").c_str(), std::ios::binary);
-	else
-		file.open(("." + this->getRequest()->getUri()).c_str(), std::ios::binary);
-	// end temp
+	if (isDir) {
+		if (this->getServer()->getDirectoryListing())
+			this->directoryListing(uri);
+		else
+			this->error(404);
+		return ;
+	} else {
+		file.open(uri.c_str(), ios::binary);
+	}
 	if (!file.is_open()) {
 		this->error(404);
 		return ;
 	}
-	file.seekg(0, std::ios::end);
+	file.seekg(0, ios::end);
 	this->_contentLength = file.tellg();
-	file.seekg(0, std::ios::beg);
+	file.seekg(0, ios::beg);
 	if (file.fail()) {
-		this->_statusCode = 500;
+		this->error(500);
 		return ;
 	}
 	this->_statusCode = 200;
-
+	this->createHeader();
 	this->sendHeader();
 	this->sendContent(file);
 }
@@ -248,21 +305,37 @@ int	HttpResponse::getStatusCode() const {
 	return (this->_statusCode);
 }
 
-std::string	HttpResponse::getMime() const {
+string	HttpResponse::getMime() const {
 	return (this->_mime);
 }
 
-std::string	HttpResponse::getHeader() const {
+string	HttpResponse::getHeader() const {
 	return (this->_header);
 }
 
-std::ostream &operator<<(std::ostream &o, const HttpResponse &response) {
+int	HttpResponse::getClientFd() const {
+	return (this->_client->getFd());
+}
+
+bool	HttpResponse::getClientError() const {
+	return (this->_client->error());
+}
+
+void	HttpResponse::setClientError() {
+	this->_client->setError();
+}
+
+bool	HttpResponse::keepAlive() const {
+	return (this->getRequest()->keepAlive());
+}
+
+ostream &operator<<(ostream &o, const HttpResponse &response) {
 	if (response.getServer()->getLogLevel() == 0)
 		return (o);
 	o << GREEN BOLD << "Response" END_STYLE " → " CYAN << response.getStatusCode();
-	o << YELLOW " " << response.getMime() << END_STYLE << std::endl;
+	o << YELLOW " " << response.getMime() << END_STYLE << endl;
 	if (response.getServer()->getLogLevel() == 2){
-		o << THIN ITALIC << response.getHeader() << END_STYLE << std::endl;
+		o << THIN ITALIC << response.getHeader() << END_STYLE << endl;
 	}
 	return (o);
 }
