@@ -6,7 +6,7 @@
 /*   By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/08 11:01:52 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/15 11:40:43 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/04/15 17:43:13 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 HttpRequest::HttpRequest() {}
 
 HttpRequest::HttpRequest(Client *client):
-	_client(client), _goodRequest(true), _method(OTHER), _contentLength(0){
+	_client(client), _requestLength(0), _goodRequest(true), _method(OTHER), _contentLength(0){
 }
 
 HttpRequest::HttpRequest(const HttpRequest &cpy) {
@@ -31,20 +31,31 @@ HttpRequest	&HttpRequest::operator=(const HttpRequest &rhs) {
 	this->_goodRequest = rhs._goodRequest;
 	this->_uri = rhs._uri;
 	this->_acceptedMimes = rhs._acceptedMimes;
+	this->_rawBytes = rhs._rawBytes;
+	this->_contentLength = rhs._contentLength;
 	return (*this);
 }
 
 bool	HttpRequest::isFullRequest() {
 	size_t	pos;
-	string	data;
 
 	if (findLower(this->_rawRequest, "content-length")) {
 		pos = this->_rawRequest.find("\r\n\r\n");
 		if (pos != string::npos && pos + 4 < this->_rawRequest.length()) {
 			this->parseContentLength();
-			data = this->_rawRequest.substr(this->_rawRequest.find("\r\n\r\n") + 4);
-			if (data.length() == this->_contentLength) {
-				this->_content = this->_rawRequest.substr(this->_rawRequest.find("\r\n\r\n") + 4);
+			this->_headerLength = this->_rawRequest.find("\r\n\r\n") + 4;
+			if (this->_requestLength - this->_headerLength == this->_contentLength) {
+				this->_rawBytes.erase(this->_rawBytes.begin(), this->_rawBytes.begin() + this->_headerLength);
+//				for (vector<char>::iterator it = this->_rawBytes.begin(); it != this->_rawBytes.end(); it++) {
+//					if (*it == '\r')
+//						cout << "\\r";
+//					else if (*it == '\n')
+//						cout << "\\n\n";
+//					else
+//						cout << *it;
+//				}
+//				cout << endl;
+//				this->_content = this->_rawRequest.substr(this->_rawRequest.find("\r\n\r\n") + 4);
 				return (true);
 			}
 		}
@@ -54,8 +65,13 @@ bool	HttpRequest::isFullRequest() {
 				this->_rawRequest.length() - 4) != string::npos);	
 }
 
-bool	HttpRequest::appendRequest(const string str) {
-	this->_rawRequest += str;
+bool	HttpRequest::appendRequest(const char *data, int bytes) {
+	for (int i = 0; i < bytes; i++) {
+		this->_rawBytes.push_back(*data);
+		this->_rawRequest += *data;
+		data++;
+	}
+	this->_requestLength += bytes;
 	if (isFullRequest()) {
 		this->parse();
 		return (true);
@@ -71,19 +87,80 @@ void	HttpRequest::parse() {
 	vector<string>	line;
 
 	this->_goodRequest = true;
-	line = split_trim(this->_rawRequest, "\r\n");
+	line = split_trim(this->_rawRequest.substr(0, this->_headerLength), "\r\n");
 
 	if (line.size() < 1)
 		return ;
 	this->parseRequestLine(line[0]);	
 	for (strVecIt it = line.begin() + 1; it != line.end(); it++) {
 //		cout << GREEN << *it << END_STYLE << endl; // Need to parse some header elem
-		if (findLower(*it, static_cast<string>("accept:"))) {
+		if (findLower(*it, "accept:"))
 			this->parseAcceptedMimes(*it);
-		}
-		if (findLower(*it, static_cast<string>("connection:"))) {
+		else if (findLower(*it, "connection:"))
 			this->parseConnection(*it);
+		else if (findLower(*it, "content-type:"))
+			this->parseContentType(*it);
+	}
+	if (this->_contentType == "multipart/form-data")
+		this->decodeFormData();
+	else if (this->_contentType == "application/x-www-form-urlencoded")
+		cout << "parse urlencoded" << endl;
+	else if (this->_contentType == "text/plain")
+		cout << "parse text/plain" << endl;
+}
+
+void	HttpRequest::decodeFormData() {
+	size_t			pos;
+	string			header;
+	string			filename;
+	vector<char>	file;
+
+	if ((pos = findInCharVec("\r\n\r\n", this->_rawBytes)) != string::npos) {
+		header = strFromCharVec(pos + 4, this->_rawBytes);
+		vector<string> split;
+		split = split_trim(header, "filename=\"");
+		if (split.size() == 2) {
+			split = split_trim(split[1], "\"\r\n");
+			if (split.size() == 2)
+				filename = split[0];
 		}
+		this->_rawBytes.erase(this->_rawBytes.begin(), this->_rawBytes.begin() + pos + 4);
+		if ((pos = findInCharVec("\r\n--" + this->_boundary, this->_rawBytes)) != string::npos) {
+			file.insert(file.begin(), this->_rawBytes.begin(), this->_rawBytes.begin() + pos);
+			this->_uploadedFiles.push_back(Upload(filename, file));
+			this->_rawBytes.erase(this->_rawBytes.begin(), this->_rawBytes.begin() + pos);
+
+		}
+	}
+	if (findInCharVec("--" + this->_boundary + "\r\n", this->_rawBytes) != string::npos)
+		this->decodeFormData();
+	else {
+		if (findInCharVec("--" + this->_boundary + "--", this->_rawBytes) == string::npos)
+			this->_goodRequest = false;
+		else
+			for (uploadIt it = this->_uploadedFiles.begin(); it != this->_uploadedFiles.end(); it++)
+				it->createFile();
+	}
+}
+
+void	HttpRequest::parseContentType(string line) {
+	vector<string>	split;
+
+	line.erase(0, 13);
+	ltrim(line);
+	rtrim(line);
+	if (findLower(line, "application/x-www-form-urlencoded"))
+		this->_contentType = "application/x-www-form-urlencoded";
+	else if (findLower(line, "text/plain"))
+		this->_contentType = "text/plain";
+	else if (findLower(line, "multipart/form-data")) {
+		this->_contentType = "multipart/form-data";
+		split = split_trim(line, ";");
+		if (split.size() == 2) {
+			if (findLower(split[1], "boundary="))
+				this->_boundary = split[1].erase(0, 9);
+		} else
+			this->_goodRequest = false;
 	}
 }
 
@@ -121,9 +198,9 @@ void	HttpRequest::parseRequestLine(string line) {
 	}
 	this->setMethod(split[0]);
 	this->getUriAndEnv(split[1]);
-	mapStrStr temp = this->_client->getEnv();
-	for (mapStrStrIt it = temp.begin(); it != temp.end(); it++)
-		cout << it->first << " - " << it->second << endl;
+//	mapStrStr temp = this->_client->getEnv();
+//	for (mapStrStrIt it = temp.begin(); it != temp.end(); it++)
+//		cout << it->first << " - " << it->second << endl;
 	split = split_trim(split[2], "/");
 	if (split.size() != 2) {
 		this->_goodRequest = false;	
@@ -153,18 +230,19 @@ void	HttpRequest::getUriAndEnv(string str) {
 		}
 	}
 	this->_uri = decodeUri(split[0]);
-	if (this->_contentLength != 0) {
+//	if (this->_contentLength != 0) {
 		// si application/x-www-form-urlencoded mime
-		vars = split_trim(this->_content, "&");
-		for (strVecIt it = vars.begin(); it != vars.end(); it++) {
-			tempEnv = split_trim(*it, "=");
-			if (tempEnv.size() != 2) {
-				this->_goodRequest = false;
-				return ;
-			}
-			this->_client->addEnv(decodeEnv(tempEnv[0]), decodeEnv(tempEnv[1]));
-		}
-	}
+//		vars = split_trim(this->_content, "&");
+//		for (strVecIt it = vars.begin(); it != vars.end(); it++) {
+//			tempEnv = split_trim(*it, "=");
+//			if (tempEnv.size() != 2) {
+//				cout << "ici" << endl;
+//				this->_goodRequest = false;
+//				return ;
+//			}
+//			this->_client->addEnv(decodeEnv(tempEnv[0]), decodeEnv(tempEnv[1]));
+//		}
+//	}
 }
 
 Client	*HttpRequest::getClient() const {

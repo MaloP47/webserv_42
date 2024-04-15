@@ -1,6 +1,7 @@
 <!doctype html>
 <html>
 	<head>
+		<meta charset="utf-8">
         	<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
 	</head>
 	<body>
@@ -13,6 +14,13 @@
 			<label for="lname">Last name:</label>
 			<input type="text" id="lname" name="lname"><br><br>
 			<input type="submit" value="Submit">
+		</form>
+		<form method="post" enctype="multipart/form-data">
+			<label for="file">File</label>
+			<input id="file" name="file" type="file" />
+			<label for="file2">File2</label>
+			<input id="file2" name="file2" type="file" />
+			<button>Upload</button>
 		</form>
 	</body>
 	<script src="./script.js"></script>
