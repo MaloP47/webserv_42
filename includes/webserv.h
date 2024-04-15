@@ -6,14 +6,12 @@
 /*   By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/05 15:15:28 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/14 17:55:05 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/04/15 10:25:12 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef WEBSERV_H
 # define WEBSERV_H
-
-using namespace std;
 
 # include "style.h"
 # include <iostream>
@@ -38,6 +36,9 @@ using namespace std;
 # include <cstdlib>
 # include <csignal>
 # include <dirent.h>
+
+using namespace std;
+
 # include "Mime.hpp"
 # include "StatusCode.hpp"
 # include "DirectoryListing.hpp"

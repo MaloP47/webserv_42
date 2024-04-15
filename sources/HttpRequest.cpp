@@ -6,7 +6,7 @@
 /*   By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/08 11:01:52 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/14 19:55:25 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/04/15 11:40:43 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 HttpRequest::HttpRequest() {}
 
 HttpRequest::HttpRequest(Client *client):
-	_client(client), _goodRequest(true), _method(OTHER){
+	_client(client), _goodRequest(true), _method(OTHER), _contentLength(0){
 }
 
 HttpRequest::HttpRequest(const HttpRequest &cpy) {
@@ -35,7 +35,22 @@ HttpRequest	&HttpRequest::operator=(const HttpRequest &rhs) {
 }
 
 bool	HttpRequest::isFullRequest() {
-	return (this->_rawRequest.find("\r\n\r\n",
+	size_t	pos;
+	string	data;
+
+	if (findLower(this->_rawRequest, "content-length")) {
+		pos = this->_rawRequest.find("\r\n\r\n");
+		if (pos != string::npos && pos + 4 < this->_rawRequest.length()) {
+			this->parseContentLength();
+			data = this->_rawRequest.substr(this->_rawRequest.find("\r\n\r\n") + 4);
+			if (data.length() == this->_contentLength) {
+				this->_content = this->_rawRequest.substr(this->_rawRequest.find("\r\n\r\n") + 4);
+				return (true);
+			}
+		}
+		return (false);
+	} else
+		return (this->_rawRequest.find("\r\n\r\n",
 				this->_rawRequest.length() - 4) != string::npos);	
 }
 
@@ -69,6 +84,18 @@ void	HttpRequest::parse() {
 		if (findLower(*it, static_cast<string>("connection:"))) {
 			this->parseConnection(*it);
 		}
+	}
+}
+
+void	HttpRequest::parseContentLength() {
+	vector<string>	line;
+
+	line = split_trim(this->_rawRequest, "\r\n");
+	for (strVecIt it = line.begin() + 1; it != line.end(); it++) {
+		if (findLower(*it, static_cast<string>("content-length:"))) {
+			(*it).erase(0, 15);
+			this->_contentLength = atoi((*it).c_str());
+		}	
 	}
 }
 
@@ -126,6 +153,18 @@ void	HttpRequest::getUriAndEnv(string str) {
 		}
 	}
 	this->_uri = decodeUri(split[0]);
+	if (this->_contentLength != 0) {
+		// si application/x-www-form-urlencoded mime
+		vars = split_trim(this->_content, "&");
+		for (strVecIt it = vars.begin(); it != vars.end(); it++) {
+			tempEnv = split_trim(*it, "=");
+			if (tempEnv.size() != 2) {
+				this->_goodRequest = false;
+				return ;
+			}
+			this->_client->addEnv(decodeEnv(tempEnv[0]), decodeEnv(tempEnv[1]));
+		}
+	}
 }
 
 Client	*HttpRequest::getClient() const {

@@ -6,7 +6,7 @@
 /*   By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/08 15:13:19 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/14 17:58:26 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/04/15 10:55:23 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,8 +70,6 @@ string	decodeUri(const string uri) {
 			int hex = strtol(uri.substr(i + 1, 2).c_str(), NULL, 16);
 			decoded += static_cast<char>(hex);
 			i += 2;
-		} else if (uri[i] == '+'){
-			decoded += ' ';
 		} else {
 			decoded += uri[i];
 		}
