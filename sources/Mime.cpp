@@ -6,7 +6,7 @@
 /*   By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/08 16:47:57 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/08 17:22:27 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/04/14 17:57:42 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ Mime &Mime::operator=(const Mime &rhs) {
 	return (*this);
 }
 
-std::string	Mime::ext(const std::string str) {
+string	Mime::ext(const string str) {
 	if (str == "aac")
 		return ("audio/aac");
 	else if (str == "abw")

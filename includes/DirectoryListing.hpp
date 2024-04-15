@@ -1,30 +1,33 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Mime.hpp                                           :+:      :+:    :+:   */
+/*   DirectoryListing.hpp                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/04/08 16:45:50 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/14 17:53:12 by gbrunet          ###   ########.fr       */
+/*   Created: 2024/04/12 14:37:18 by gbrunet           #+#    #+#             */
+/*   Updated: 2024/04/14 18:22:30 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef MIME_HPP
-# define MIME_HPP
+#ifndef DIRECTORYLISTING_HPP
+# define DIRECTORYLISTING_HPP
 
 # include "webserv.h"
 
-class Mime {
+typedef map<string, struct dirent*>		dirMap;
+typedef dirMap::iterator				dirMapIt;
+typedef pair<string, struct dirent*>	dirPair;
+
+class DirectoryListing {
 	private:
-		Mime();
-		Mime(const Mime &cpy);
-		~Mime();
+		DirectoryListing();
+		DirectoryListing(const DirectoryListing &cpy);
+		~DirectoryListing();
 
-		Mime &operator=(const Mime &rhs);
-
+		DirectoryListing	&operator=(const DirectoryListing &rhs);
 	public:
-		static string	ext(const string str);
+		static string	html(string path, string root);
 };
 
 #endif

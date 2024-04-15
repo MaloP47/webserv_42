@@ -6,7 +6,7 @@
 /*   By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/05 15:43:55 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/11 12:12:29 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/04/14 17:49:04 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,30 +20,30 @@
 class Server;
 class Client;
 
-typedef std::map<int, Client>::iterator	clientIt;
-typedef std::vector<Server>::iterator	serverIt;
+typedef map<int, Client>::iterator	clientIt;
+typedef vector<Server>::iterator	serverIt;
 
 class Webserv{
 	private:
-		std::vector<Server>		_servers;
-		std::map<int, Client>	_clients;
-		int						_epoll_fd;
-		std::string				_command;
-		bool					_run;
-		int						_logLevel;
+		int					_logLevel;
+		int					_epoll_fd;
+		bool				_run;
+		string				_command;
+		vector<Server>		_servers;
+		map<int, Client>	_clients;
 
-		void	addServer(Server &serv);
-		int		initEpoll();
 		int		start();
+		int		initEpoll();
 		int		acceptConnection(int fd);
-		void	processRequest(int fd);
-		void	processStdIn();
 		bool	isServerFd(int fd);
-		Server	*getServer(int fd);
 		bool	isFullCommand() const;
+		void	processStdIn();
 		void	processCommand();
-		void	closeUnusedSockets();
 		void	deleteClient(int fd);
+		void	closeUnusedSockets();
+		void	processRequest(int fd);
+		void	addServer(Server &serv);
+		Server	*getServer(int fd);
 
 		Webserv();
 		Webserv(const Webserv &cpy);
@@ -51,7 +51,7 @@ class Webserv{
 		Webserv &operator=(const Webserv &rhs);
 
 	public:
-		Webserv(std::string config);
+		Webserv(string config);
 		~Webserv();
 
 
