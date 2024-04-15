@@ -6,7 +6,7 @@
 /*   By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/05 14:39:36 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/14 17:59:34 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/04/15 10:51:46 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@ Server::Server(Webserv *webserv, int port, string host, string name):
 	_webserv(webserv), _port(port), _host(host), _name(name), _fd(-1) {
 	// TEMP : set manually for testing purpose
 	this->_directoryListing = true;
-	this->_root = "/home/uotiug/Desktop/webserv_42/www";
+	this->_root = "/home/gbrunet/Desktop/webserv_42/www";
 	this->_indexes.push_back("index.html");
 	this->init();
 }

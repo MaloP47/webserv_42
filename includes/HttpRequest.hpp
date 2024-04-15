@@ -6,7 +6,7 @@
 /*   By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/08 10:57:23 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/14 18:03:01 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/04/15 11:30:28 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,8 @@ class HttpRequest {
 		string			_uri;
 		vector<string>	_acceptedMimes;
 		bool			_keepAliveConnection;
+		size_t			_contentLength;
+		string			_content;
 
 		bool	isFullRequest();
 		void	parse();
@@ -39,6 +41,7 @@ class HttpRequest {
 		void	parseConnection(string line);
 		void	parseRequestLine(string line);
 		void	parseAcceptedMimes(string line);
+		void	parseContentLength();
 
 	public:
 		HttpRequest();
