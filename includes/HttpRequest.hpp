@@ -6,7 +6,7 @@
 /*   By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/08 10:57:23 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/12 11:14:13 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/04/14 18:03:01 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,23 +20,25 @@
 class Server;
 class Client;
 
+typedef vector<string>::iterator	strVecIt;
+
 class HttpRequest {
 	private:
-		Client						*_client;
-		std::string					_rawRequest;
-		bool						_goodRequest;
-		enum HttpMethod				_method;
-		std::string					_uri;
-		std::vector<std::string>	_acceptedMimes;
-		bool						_keepAliveConnection;
+		Client			*_client;
+		string			_rawRequest;
+		bool			_goodRequest;
+		enum HttpMethod	_method;
+		string			_uri;
+		vector<string>	_acceptedMimes;
+		bool			_keepAliveConnection;
 
 		bool	isFullRequest();
 		void	parse();
-		void	parseRequestLine(std::string line);
-		void	setMethod(std::string str);
-		void	parseAcceptedMimes(std::string line);
-		void	parseConnection(std::string line);
-		void	getUriAndEnv(std::string str);
+		void	setMethod(string str);
+		void	getUriAndEnv(string str);
+		void	parseConnection(string line);
+		void	parseRequestLine(string line);
+		void	parseAcceptedMimes(string line);
 
 	public:
 		HttpRequest();
@@ -46,16 +48,16 @@ class HttpRequest {
 
 		HttpRequest	&operator=(const HttpRequest &rhs);
 
+		bool			isGood() const;
+		bool			keepAlive() const;
+		bool			appendRequest(const string str);
+		string			getUri() const;
+		string			getRawRequest() const;
 		Server			*getServer() const;
 		Client			*getClient() const;
-		std::string		getRawRequest() const;
-		bool			appendRequest(const std::string str);
-		bool			isGood() const;
 		enum HttpMethod	getMethod() const;
-		std::string		getUri() const;
-		bool			keepAlive() const;
 };
 
-std::ostream &operator<<(std::ostream &o, const HttpRequest &request);
+ostream &operator<<(ostream &o, const HttpRequest &request);
 
 #endif

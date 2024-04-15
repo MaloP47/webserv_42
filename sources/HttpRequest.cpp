@@ -6,7 +6,7 @@
 /*   By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/08 11:01:52 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/12 11:48:10 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/04/14 19:55:25 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,10 +35,11 @@ HttpRequest	&HttpRequest::operator=(const HttpRequest &rhs) {
 }
 
 bool	HttpRequest::isFullRequest() {
-	return (this->_rawRequest.find("\r\n\r\n", this->_rawRequest.length() - 4) != std::string::npos);	
+	return (this->_rawRequest.find("\r\n\r\n",
+				this->_rawRequest.length() - 4) != string::npos);	
 }
 
-bool	HttpRequest::appendRequest(const std::string str) {
+bool	HttpRequest::appendRequest(const string str) {
 	this->_rawRequest += str;
 	if (isFullRequest()) {
 		this->parse();
@@ -47,12 +48,12 @@ bool	HttpRequest::appendRequest(const std::string str) {
 	return (false);
 }
 
-std::string	HttpRequest::getRawRequest() const {
+string	HttpRequest::getRawRequest() const {
 	return (this->_rawRequest);
 }
 
 void	HttpRequest::parse() {
-	std::vector<std::string>	line;
+	vector<string>	line;
 
 	this->_goodRequest = true;
 	line = split_trim(this->_rawRequest, "\r\n");
@@ -60,31 +61,31 @@ void	HttpRequest::parse() {
 	if (line.size() < 1)
 		return ;
 	this->parseRequestLine(line[0]);	
-	for (std::vector<std::string>::iterator it = line.begin() + 1; it != line.end(); it++) {
-//		std::cout << GREEN << *it << END_STYLE << std::endl; // Need to parse some header elem
-		if (findLower(*it, static_cast<std::string>("accept:"))) {
+	for (strVecIt it = line.begin() + 1; it != line.end(); it++) {
+//		cout << GREEN << *it << END_STYLE << endl; // Need to parse some header elem
+		if (findLower(*it, static_cast<string>("accept:"))) {
 			this->parseAcceptedMimes(*it);
 		}
-		if (findLower(*it, static_cast<std::string>("connection:"))) {
+		if (findLower(*it, static_cast<string>("connection:"))) {
 			this->parseConnection(*it);
 		}
 	}
 }
 
-void	HttpRequest::parseConnection(std::string line) {
+void	HttpRequest::parseConnection(string line) {
 	line.erase(0, 11);
 	ltrim(line);
 	rtrim(line);
-	this->_keepAliveConnection = findLower(line, static_cast<std::string>("keep-alive"));
+	this->_keepAliveConnection = findLower(line, static_cast<string>("keep-alive"));
 }
 
-void	HttpRequest::parseAcceptedMimes(std::string line) {
+void	HttpRequest::parseAcceptedMimes(string line) {
 	line.erase(0, 7);
 	this->_acceptedMimes = split_trim(line, ",");
 }
 
-void	HttpRequest::parseRequestLine(std::string line) {
-	std::vector<std::string>	split;
+void	HttpRequest::parseRequestLine(string line) {
+	vector<string>	split;
 
 	split = split_trim(line, " ");
 	if (split.size() != 3) {
@@ -95,22 +96,22 @@ void	HttpRequest::parseRequestLine(std::string line) {
 	this->getUriAndEnv(split[1]);
 	mapStrStr temp = this->_client->getEnv();
 	for (mapStrStrIt it = temp.begin(); it != temp.end(); it++)
-		std::cout << it->first << " - " << it->second << std::endl;
+		cout << it->first << " - " << it->second << endl;
 	split = split_trim(split[2], "/");
 	if (split.size() != 2) {
 		this->_goodRequest = false;	
 		return ;
 	}
-	if (std::atof(split[1].c_str()) < 1.1 || split[0] != "HTTP") {
+	if (atof(split[1].c_str()) < 1.1 || split[0] != "HTTP") {
 		this->_goodRequest = false;	
 		return ;
 	}
 }
 
-void	HttpRequest::getUriAndEnv(std::string str) {
-	std::vector<std::string>	split;
-	std::vector<std::string>	vars;
-	std::vector<std::string>	tempEnv;
+void	HttpRequest::getUriAndEnv(string str) {
+	vector<string>	split;
+	vector<string>	vars;
+	vector<string>	tempEnv;
 
 	split = split_trim(str, "?");
 	if (split.size() == 2) {
@@ -121,7 +122,7 @@ void	HttpRequest::getUriAndEnv(std::string str) {
 				this->_goodRequest = false;
 				return ;
 			}
-			this->_client->addEnv(decodeUri(tempEnv[0]), decodeUri(tempEnv[1]));
+			this->_client->addEnv(decodeEnv(tempEnv[0]), decodeEnv(tempEnv[1]));
 		}
 	}
 	this->_uri = decodeUri(split[0]);
@@ -135,7 +136,7 @@ Server	*HttpRequest::getServer() const {
 	return (this->getClient()->getServer());
 }
 
-void	HttpRequest::setMethod(std::string str) {
+void	HttpRequest::setMethod(string str) {
 	if (str == "GET")
 		this->_method = GET;
 	else if (str == "POST")
@@ -152,7 +153,7 @@ enum HttpMethod	HttpRequest::getMethod() const {
 	return (this->_method);
 }
 
-std::string	HttpRequest::getUri() const {
+string	HttpRequest::getUri() const {
 	return (this->_uri);
 }
 
@@ -160,7 +161,7 @@ bool	HttpRequest::keepAlive() const {
 	return (this->_keepAliveConnection);
 }
 
-static std::string	stringMethod(enum HttpMethod method) {
+static string	stringMethod(enum HttpMethod method) {
 	if (method == GET)
 		return ("GET");
 	else if (method == POST)
@@ -170,14 +171,14 @@ static std::string	stringMethod(enum HttpMethod method) {
 	return ("OTHER");
 }
 
-std::ostream &operator<<(std::ostream &o, const HttpRequest &request) {
+ostream &operator<<(ostream &o, const HttpRequest &request) {
 	if (request.getServer()->getLogLevel() == 0)
 		return (o);
 	o << PURPLE BOLD << "Request " END_STYLE;
 	o << " → " CYAN << stringMethod(request.getMethod()) << " " YELLOW;
-	o << request.getUri() << END_STYLE << std::endl;
+	o << request.getUri() << END_STYLE << endl;
 	if (request.getServer()->getLogLevel() == 2){
-		o << THIN ITALIC << request.getRawRequest() << END_STYLE << std::endl;
+		o << THIN ITALIC << request.getRawRequest() << END_STYLE << endl;
 	}
 	return (o);
 }
