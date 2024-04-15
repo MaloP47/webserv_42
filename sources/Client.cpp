@@ -6,7 +6,7 @@
 /*   By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/08 09:04:04 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/15 11:39:31 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/04/15 14:44:06 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,11 +41,11 @@ Client	&Client::operator=(const Client &rhs) {
 	return (*this);
 }
 
-bool	Client::appendRequest(const string str) {
+bool	Client::appendRequest(const char *data, int bytes) {
 	if (!this->_request)
 		this->_request = new HttpRequest(this);
 	this->_creationDate = time(0);
-	return (this->_request->appendRequest(str));
+	return (this->_request->appendRequest(data, bytes));
 }
 
 Server	*Client::getServer() const {

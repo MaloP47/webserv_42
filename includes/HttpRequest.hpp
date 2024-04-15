@@ -6,7 +6,7 @@
 /*   By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/08 10:57:23 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/15 11:30:28 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/04/15 17:10:51 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,23 +16,33 @@
 # include "webserv.h"
 # include "Server.hpp"
 # include "Client.hpp"
+# include "Upload.hpp"
 
 class Server;
 class Client;
+class Upload;
 
 typedef vector<string>::iterator	strVecIt;
+typedef vector<char>::iterator		charVecIt;
+typedef vector<Upload>::iterator	uploadIt;
 
 class HttpRequest {
 	private:
-		Client			*_client;
-		string			_rawRequest;
-		bool			_goodRequest;
-		enum HttpMethod	_method;
-		string			_uri;
-		vector<string>	_acceptedMimes;
-		bool			_keepAliveConnection;
-		size_t			_contentLength;
-		string			_content;
+		Client					*_client;
+		string					_rawRequest;
+		vector<char>			_rawBytes;
+		vector<Upload>			_uploadedFiles;
+		size_t					_headerLength;
+		size_t					_requestLength;
+		bool					_goodRequest;
+		enum HttpMethod			_method;
+		string					_uri;
+		vector<string>			_acceptedMimes;
+		bool					_keepAliveConnection;
+		size_t					_contentLength;
+		string					_content;
+		string					_contentType;
+		string					_boundary;
 
 		bool	isFullRequest();
 		void	parse();
@@ -42,6 +52,8 @@ class HttpRequest {
 		void	parseRequestLine(string line);
 		void	parseAcceptedMimes(string line);
 		void	parseContentLength();
+		void	parseContentType(string line);
+		void	decodeFormData();
 
 	public:
 		HttpRequest();
@@ -53,7 +65,7 @@ class HttpRequest {
 
 		bool			isGood() const;
 		bool			keepAlive() const;
-		bool			appendRequest(const string str);
+		bool			appendRequest(const char *data, int bytes);
 		string			getUri() const;
 		string			getRawRequest() const;
 		Server			*getServer() const;

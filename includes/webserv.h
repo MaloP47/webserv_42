@@ -6,7 +6,7 @@
 /*   By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/05 15:15:28 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/15 10:25:12 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/04/15 16:17:09 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,6 +88,8 @@ void			rtrim(string &str);
 t_env			*env();
 string			decodeUri(const string uri);
 string			decodeEnv(const string uri);
+string			strFromCharVec(size_t len, vector<char> &vec);
+size_t			findInCharVec(string str, vector<char> &vec);
 vector<string>	split_trim(string str, string needle);
 
 #endif
