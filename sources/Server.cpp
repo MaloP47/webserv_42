@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "webserv.h"
+#include <vector>
 #include "Server.hpp"
 
 Server::Server():
@@ -22,6 +23,8 @@ Server::Server(Webserv *webserv, int port, string host, string name):
 	this->_directoryListing = true;
 	this->_root = "/home/gbrunet/Desktop/webserv_42/www";
 	this->_indexes.push_back("index.html");
+	this->_allowedMethod.push_back(GET);
+	this->_allowedMethod.push_back(POST);
 	this->init();
 }
 
@@ -41,6 +44,7 @@ Server &Server::operator=(const Server &rhs) {
 	this->_directoryListing = rhs._directoryListing;
 	this->_root = rhs._root;
 	this->_indexes = rhs._indexes;
+	this->_allowedMethod = rhs._allowedMethod;
 	return (*this);
 }
 
@@ -114,6 +118,13 @@ vector<string>	Server::getIndexes() const {
 
 int	Server::getMaxBodySize() const {
 	return (this->_maxBodySize);
+}
+
+bool	Server::methodeAllowed(enum HttpMethod methode) {
+	for (methodeIt it = this->_allowedMethod.begin(); it != this->_allowedMethod.end(); it++)
+		if (*it == methode)
+			return (true);
+	return (false);
 }
 
 ostream	&operator<<(ostream &o, const Server &server) {

@@ -18,18 +18,21 @@
 
 class Webserv;
 
+typedef vector<enum HttpMethod>::iterator	methodeIt;
+
 class Server {
 	private:
-		Webserv				*_webserv;
-		int					_port;
-		string				_host;
-		string 				_name;
-		int					_fd;
-		struct sockaddr_in	_addr;
-		bool				_directoryListing;
-		string				_root;
-		vector<string>		_indexes;
-		int					_maxBodySize;
+		Webserv					*_webserv;
+		int						_port;
+		string					_host;
+		string					_name;
+		int						_fd;
+		struct sockaddr_in		_addr;
+		bool					_directoryListing;
+		string					_root;
+		vector<string>			_indexes;
+		int						_maxBodySize;
+		vector<enum HttpMethod>	_allowedMethod;
 
 		int		init();
 		void	setAddr();
@@ -51,6 +54,7 @@ class Server {
 		string			getHost() const;
 		string			getRoot() const;
 		vector<string>	getIndexes() const;
+		bool			methodeAllowed(enum HttpMethod methode);
 };
 
 ostream &operator<<(ostream &o, const Server &server);
