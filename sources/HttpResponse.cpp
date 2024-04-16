@@ -252,6 +252,23 @@ bool	HttpResponse::expandUri(string &uri, bool &isDir) {
 	return (true);
 }
 
+void	HttpResponse::tryDeleteFile() {
+	string	uri;
+
+	if (this->getRequest()->getUri()[0] == '/')
+		uri = this->getServer()->getRoot() + this->getRequest()->getUri();
+	else
+		uri = this->getServer()->getRoot() + "/" + this->getRequest()->getUri();
+	if (!childPath(getFullPath(this->getServer()->getRoot()), getFullPath(uri)))
+		this->error(403);
+	else {
+		if (remove(uri.c_str()) == 0)
+			this->error(200);
+		else
+			this->error(204);
+	}
+}
+
 void	HttpResponse::sendResponse() {
 	ifstream		file;
 	string			ext;
@@ -260,6 +277,10 @@ void	HttpResponse::sendResponse() {
 
 	if (!this->getRequest()->isGood()) {
 		this->error(400);
+		return ;
+	}
+	if (this->getRequest()->getMethod() == DELETE) {
+		tryDeleteFile();
 		return ;
 	}
 	if (!this->expandUri(uri, isDir))

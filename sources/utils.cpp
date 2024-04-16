@@ -143,3 +143,35 @@ string	timeStamp() {
 	date[length] = 0;
 	return (THIN + string(date) + END_STYLE);
 }
+
+string	getFullPath(string path) {
+	vector<string>	sub;
+	vector<string>	new_path;
+	string			full_path = "/";
+	bool			last = path[path.length() - 1] == '/';
+
+	sub = split_trim(path, "/");
+	for (vector<string>::iterator it = sub.begin(); it != sub.end(); it++) {
+		if (*it == "..") {
+			if (new_path.size() > 0)
+				new_path.pop_back();
+		} else if (*it != ".")
+			new_path.push_back(*it);
+	}
+	for (vector<string>::iterator it = new_path.begin(); it != new_path.end(); it++) {
+		full_path += *it;
+		if ((it + 1) != new_path.end())
+			full_path += "/";
+	}
+	if (last)
+		full_path += "/";
+	return (full_path);
+}
+
+bool	childPath(string parent, string child) {
+	if (child.length() <= parent.length())
+		return (false);
+	if (child.find(parent) != 0)
+		return (false);
+	return (true);
+}
