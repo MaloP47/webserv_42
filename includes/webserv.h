@@ -6,21 +6,13 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/05 15:15:28 by gbrunet           #+#    #+#             */
-<<<<<<< HEAD
-/*   Updated: 2024/04/15 16:56:21 by mpeulet          ###   ########.fr       */
-=======
-/*   Updated: 2024/04/15 16:17:09 by gbrunet          ###   ########.fr       */
->>>>>>> origin/main
+/*   Updated: 2024/04/16 14:23:48 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef WEBSERV_H
 # define WEBSERV_H
 
-<<<<<<< HEAD
-
-=======
->>>>>>> origin/main
 # include "style.h"
 # include <iostream>
 # include <sys/types.h>
@@ -44,14 +36,9 @@
 # include <cstdlib>
 # include <csignal>
 # include <dirent.h>
-<<<<<<< HEAD
 # include <exception>
 using namespace std;
-=======
 
-using namespace std;
-
->>>>>>> origin/main
 # include "Mime.hpp"
 # include "StatusCode.hpp"
 # include "DirectoryListing.hpp"
@@ -98,9 +85,12 @@ typedef struct s_env {
 
 int				ret(int return_val);
 bool			findLower(string str, string needle);
+bool			childPath(string parent, string child);
 void			ltrim(string &str);
 void			rtrim(string &str);
 t_env			*env();
+string			timeStamp();
+string			getFullPath(string path);
 string			decodeUri(const string uri);
 string			decodeEnv(const string uri);
 string			strFromCharVec(size_t len, vector<char> &vec);
