@@ -15,7 +15,7 @@
 
 Webserv::Webserv() {}
 
-Webserv::Webserv(string config): _logLevel(0) {
+Webserv::Webserv(string config): _logLevel(1) {
 	(void) config;
 	// something here to parse the config file;
 	// for now, i'm adding manually 2 servers for testing purpose
@@ -87,8 +87,8 @@ void	Webserv::closeUnusedSockets() {
 		else {
 			fd = it->second.getFd();
 			if (this->getLogLevel() > 0) {
-				cout << PURPLE BOLD ITALIC "Closing Client (fd: " << fd;
-				cout << ")\n" END_STYLE << endl;
+				cout << timeStamp() << BLUE BOLD ITALIC " Closing " RED "Client (fd: " << fd;
+				cout << ")" END_STYLE << endl;
 			}
 			++it;
 			this->deleteClient(fd);

@@ -336,7 +336,7 @@ bool	HttpResponse::keepAlive() const {
 ostream &operator<<(ostream &o, const HttpResponse &response) {
 	if (response.getServer()->getLogLevel() == 0)
 		return (o);
-	o << GREEN BOLD << "Response" END_STYLE " → " CYAN << response.getStatusCode();
+	o << timeStamp() << GREEN BOLD << " Response" END_STYLE " → " CYAN << response.getStatusCode();
 	o << YELLOW " " << response.getMime() << END_STYLE << endl;
 	if (response.getServer()->getLogLevel() == 2){
 		o << THIN ITALIC << response.getHeader() << END_STYLE << endl;

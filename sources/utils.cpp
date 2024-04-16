@@ -10,6 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "style.h"
 #include "webserv.h"
 
 void	ltrim(string &str) {
@@ -128,4 +129,17 @@ string	strFromCharVec(size_t len, vector<char> &vec) {
 	for (size_t i = 0; i < vec.size() && i < len; i++)
 		str += vec[i];
 	return (str);
+}
+
+string	timeStamp() {
+	char				date[128];
+	time_t				rawtime;
+	struct tm			*info;
+	size_t				length;
+
+	time(&rawtime);
+	info = gmtime(&rawtime);
+	length = strftime(date, 128, "[%Y-%m-%d  %H:%M:%S]", info);
+	date[length] = 0;
+	return (THIN + string(date) + END_STYLE);
 }

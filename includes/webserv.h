@@ -86,6 +86,7 @@ bool			findLower(string str, string needle);
 void			ltrim(string &str);
 void			rtrim(string &str);
 t_env			*env();
+string			timeStamp();
 string			decodeUri(const string uri);
 string			decodeEnv(const string uri);
 string			strFromCharVec(size_t len, vector<char> &vec);

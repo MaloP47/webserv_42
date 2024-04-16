@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "HttpRequest.hpp"
+#include "webserv.h"
 
 HttpRequest::HttpRequest() {}
 
@@ -286,7 +287,7 @@ static string	stringMethod(enum HttpMethod method) {
 ostream &operator<<(ostream &o, const HttpRequest &request) {
 	if (request.getServer()->getLogLevel() == 0)
 		return (o);
-	o << PURPLE BOLD << "Request " END_STYLE;
+	o << timeStamp() << PURPLE BOLD << " Request " END_STYLE;
 	o << " → " CYAN << stringMethod(request.getMethod()) << " " YELLOW;
 	o << request.getUri() << END_STYLE << endl;
 	if (request.getServer()->getLogLevel() == 2){
