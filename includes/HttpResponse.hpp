@@ -41,6 +41,7 @@ class HttpResponse {
 		void			createHeader();
 		void			setDateHeader();
 		void			setStatusLine();
+		void			tryDeleteFile();
 		void			sendFinalChunk();
 		void			setClientError();
 		void			setServerHeader();

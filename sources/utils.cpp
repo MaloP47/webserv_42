@@ -10,6 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "style.h"
 #include "webserv.h"
 
 void	ltrim(string &str) {
@@ -128,4 +129,49 @@ string	strFromCharVec(size_t len, vector<char> &vec) {
 	for (size_t i = 0; i < vec.size() && i < len; i++)
 		str += vec[i];
 	return (str);
+}
+
+string	timeStamp() {
+	char				date[128];
+	time_t				rawtime;
+	struct tm			*info;
+	size_t				length;
+
+	time(&rawtime);
+	info = gmtime(&rawtime);
+	length = strftime(date, 128, "[%Y-%m-%d  %H:%M:%S]", info);
+	date[length] = 0;
+	return (THIN + string(date) + END_STYLE);
+}
+
+string	getFullPath(string path) {
+	vector<string>	sub;
+	vector<string>	new_path;
+	string			full_path = "/";
+	bool			last = path[path.length() - 1] == '/';
+
+	sub = split_trim(path, "/");
+	for (vector<string>::iterator it = sub.begin(); it != sub.end(); it++) {
+		if (*it == "..") {
+			if (new_path.size() > 0)
+				new_path.pop_back();
+		} else if (*it != ".")
+			new_path.push_back(*it);
+	}
+	for (vector<string>::iterator it = new_path.begin(); it != new_path.end(); it++) {
+		full_path += *it;
+		if ((it + 1) != new_path.end())
+			full_path += "/";
+	}
+	if (last)
+		full_path += "/";
+	return (full_path);
+}
+
+bool	childPath(string parent, string child) {
+	if (child.length() <= parent.length())
+		return (false);
+	if (child.find(parent) != 0)
+		return (false);
+	return (true);
 }
