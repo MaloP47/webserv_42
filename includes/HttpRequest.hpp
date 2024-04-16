@@ -6,7 +6,11 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/08 10:57:23 by gbrunet           #+#    #+#             */
+<<<<<<< HEAD
 /*   Updated: 2024/04/15 16:56:07 by mpeulet          ###   ########.fr       */
+=======
+/*   Updated: 2024/04/15 17:10:51 by gbrunet          ###   ########.fr       */
+>>>>>>> origin/main
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +20,7 @@
 # include "webserv.h"
 # include "Server.hpp"
 # include "Client.hpp"
+# include "Upload.hpp"
 
 enum HttpMethod {
 	GET,
@@ -27,18 +32,30 @@ enum HttpMethod {
 
 class Server;
 class Client;
+class Upload;
 
 typedef vector<string>::iterator	strVecIt;
+typedef vector<char>::iterator		charVecIt;
+typedef vector<Upload>::iterator	uploadIt;
 
 class HttpRequest {
 	private:
 		Client			*_client;
 		string			_rawRequest;
+		vector<char>	_rawBytes;
+		vector<Upload>	_uploadedFiles;
+		size_t			_headerLength;
+		size_t			_requestLength;
 		bool			_goodRequest;
 		enum HttpMethod	_method;
 		string			_uri;
 		vector<string>	_acceptedMimes;
 		bool			_keepAliveConnection;
+		size_t			_contentLength;
+		string			_content;
+		string			_contentType;
+		string			_boundary;
+		string			_textPost;
 
 		bool	isFullRequest();
 		void	parse();
@@ -47,6 +64,10 @@ class HttpRequest {
 		void	parseConnection(string line);
 		void	parseRequestLine(string line);
 		void	parseAcceptedMimes(string line);
+		void	parseContentLength();
+		void	parseContentType(string line);
+		void	decodeFormData();
+		void	decodeUrlEncoded();
 
 	public:
 		HttpRequest();
@@ -58,7 +79,7 @@ class HttpRequest {
 
 		bool			isGood() const;
 		bool			keepAlive() const;
-		bool			appendRequest(const string str);
+		bool			appendRequest(const char *data, int bytes);
 		string			getUri() const;
 		string			getRawRequest() const;
 		Server			*getServer() const;

@@ -6,14 +6,21 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/05 15:15:28 by gbrunet           #+#    #+#             */
+<<<<<<< HEAD
 /*   Updated: 2024/04/15 16:56:21 by mpeulet          ###   ########.fr       */
+=======
+/*   Updated: 2024/04/15 16:17:09 by gbrunet          ###   ########.fr       */
+>>>>>>> origin/main
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef WEBSERV_H
 # define WEBSERV_H
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/main
 # include "style.h"
 # include <iostream>
 # include <sys/types.h>
@@ -37,8 +44,14 @@
 # include <cstdlib>
 # include <csignal>
 # include <dirent.h>
+<<<<<<< HEAD
 # include <exception>
 using namespace std;
+=======
+
+using namespace std;
+
+>>>>>>> origin/main
 # include "Mime.hpp"
 # include "StatusCode.hpp"
 # include "DirectoryListing.hpp"
@@ -90,6 +103,8 @@ void			rtrim(string &str);
 t_env			*env();
 string			decodeUri(const string uri);
 string			decodeEnv(const string uri);
+string			strFromCharVec(size_t len, vector<char> &vec);
+size_t			findInCharVec(string str, vector<char> &vec);
 vector<string>	split_trim(string str, string needle);
 
 #endif
