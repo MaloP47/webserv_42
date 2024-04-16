@@ -264,6 +264,10 @@ void	HttpResponse::sendResponse() {
 	}
 	if (!this->expandUri(uri, isDir))
 		return ;
+	if (!this->getServer()->methodeAllowed(this->getRequest()->getMethod())) {
+		this->error(405);
+		return ;
+	}
 	ext = ext.substr(ext.find_last_of(".") + 1);
 	if (ext.find("/") == string::npos)
 		this->_mime = Mime::ext(ext);

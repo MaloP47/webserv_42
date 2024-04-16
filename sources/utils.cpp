@@ -6,7 +6,7 @@
 /*   By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/08 15:13:19 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/14 17:58:26 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/04/15 16:17:03 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,8 +70,6 @@ string	decodeUri(const string uri) {
 			int hex = strtol(uri.substr(i + 1, 2).c_str(), NULL, 16);
 			decoded += static_cast<char>(hex);
 			i += 2;
-		} else if (uri[i] == '+'){
-			decoded += ' ';
 		} else {
 			decoded += uri[i];
 		}
@@ -102,4 +100,32 @@ int	ret(int return_val) {
 	env()->return_val = return_val;
 	env()->ctrl_c = true;
 	return (return_val);
+}
+
+size_t	findInCharVec(string str, vector<char> &vec) {
+	bool	finded = false;
+	size_t	pos = 0;
+
+	if (str.length() > vec.size())
+		return (string::npos);
+	for (charVecIt it = vec.begin(); it != vec.end() - str.length(); it++) {
+		finded = true;
+		for (size_t i = 0; i < str.length(); i++) {
+			if (str[i] != *(it + i)) {
+				finded = false;
+				break;
+			}
+		}
+		if (finded)
+			return (pos);
+		pos++;
+	}
+	return (string::npos);
+}
+
+string	strFromCharVec(size_t len, vector<char> &vec) {
+	string	str = "";
+	for (size_t i = 0; i < vec.size() && i < len; i++)
+		str += vec[i];
+	return (str);
 }

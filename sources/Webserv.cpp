@@ -6,7 +6,7 @@
 /*   By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/05 15:49:31 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/14 18:01:25 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/04/15 17:33:23 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -108,7 +108,6 @@ int	Webserv::start() {
 		nfds = epoll_wait(this->_epoll_fd, events, MAX_EVENTS, EPOLL_TIMEOUT);
 		if (nfds < 0 && !env()->ctrl_c) {
 			perror("epoll_wait");
-			cout << errno << endl;
 			return (ret(ERR_EPOLL_WAIT));
 		}
 		for (int i = 0; i < nfds; i++) {
@@ -194,7 +193,7 @@ void	Webserv::processRequest(int fd) {
 		return ;
 	}
 	buf[received] = 0;	
-	if (client.appendRequest(buf) && !client.error()) {
+	if (client.appendRequest(buf, received) && !client.error()) {
 		client.sendResponse();
 		cout << client;
 		if (client.error()) {

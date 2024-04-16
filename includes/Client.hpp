@@ -6,13 +6,14 @@
 /*   By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/08 08:50:25 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/14 19:54:54 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/04/15 14:43:40 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef CLIENT_HPP
 # define CLIENT_HPP
 
+# include "webserv.h"
 # include "Server.hpp"
 # include "HttpRequest.hpp"
 # include "HttpResponse.hpp"
@@ -46,7 +47,7 @@ class Client {
 		int				getFd() const;
 		bool			error() const;
 		bool			olderThan(int sec) const;
-		bool			appendRequest(const string str);
+		bool			appendRequest(const char *data, int bytes);
 		void			setError();
 		void			deleteEnv();
 		void			sendResponse();
