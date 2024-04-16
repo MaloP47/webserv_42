@@ -12,7 +12,6 @@
 
 #include "webserv.h"
 #include "Webserv.hpp"
-#include <map>
 
 void	handler(int signum) {
 	static_cast<void>(signum);

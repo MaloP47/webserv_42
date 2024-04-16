@@ -15,7 +15,7 @@
 HttpRequest::HttpRequest() {}
 
 HttpRequest::HttpRequest(Client *client):
-	_client(client), _requestLength(0), _goodRequest(true), _method(OTHER), _contentLength(0){
+	_client(client), _headerLength(0), _requestLength(0), _goodRequest(true), _method(OTHER), _contentLength(0){
 }
 
 HttpRequest::HttpRequest(const HttpRequest &cpy) {
@@ -46,16 +46,6 @@ bool	HttpRequest::isFullRequest() {
 			this->_headerLength = this->_rawRequest.find("\r\n\r\n") + 4;
 			if (this->_requestLength - this->_headerLength == this->_contentLength) {
 				this->_rawBytes.erase(this->_rawBytes.begin(), this->_rawBytes.begin() + this->_headerLength);
-//				for (vector<char>::iterator it = this->_rawBytes.begin(); it != this->_rawBytes.end(); it++) {
-//					if (*it == '\r')
-//						cout << "\\r";
-//					else if (*it == '\n')
-//						cout << "\\n\n";
-//					else
-//						cout << *it;
-//				}
-//				cout << endl;
-//				this->_content = this->_rawRequest.substr(this->_rawRequest.find("\r\n\r\n") + 4);
 				return (true);
 			}
 		}
@@ -87,13 +77,14 @@ void	HttpRequest::parse() {
 	vector<string>	line;
 
 	this->_goodRequest = true;
-	line = split_trim(this->_rawRequest.substr(0, this->_headerLength), "\r\n");
-
+	if (this->_headerLength != 0)
+		line = split_trim(this->_rawRequest.substr(0, this->_headerLength), "\r\n");
+	else
+		line = split_trim(this->_rawRequest, "\r\n");
 	if (line.size() < 1)
 		return ;
 	this->parseRequestLine(line[0]);	
 	for (strVecIt it = line.begin() + 1; it != line.end(); it++) {
-//		cout << GREEN << *it << END_STYLE << endl; // Need to parse some header elem
 		if (findLower(*it, "accept:"))
 			this->parseAcceptedMimes(*it);
 		else if (findLower(*it, "connection:"))
@@ -104,9 +95,29 @@ void	HttpRequest::parse() {
 	if (this->_contentType == "multipart/form-data")
 		this->decodeFormData();
 	else if (this->_contentType == "application/x-www-form-urlencoded")
-		cout << "parse urlencoded" << endl;
-	else if (this->_contentType == "text/plain")
-		cout << "parse text/plain" << endl;
+		this->decodeUrlEncoded();
+	else if (this->_contentType == "text/plain") {
+		this->_textPost = this->_rawRequest;
+		this->_textPost.erase(0, this->_headerLength);
+	}
+}
+
+void	HttpRequest::decodeUrlEncoded() {
+	string			content;
+	vector<string>	vars;
+	vector<string>	tempEnv;
+
+	content = this->_rawRequest;
+	content.erase(0, this->_headerLength);
+	vars = split_trim(content, "&");
+	for (strVecIt it = vars.begin(); it != vars.end(); it++) {
+		tempEnv = split_trim(*it, "=");
+		if (tempEnv.size() != 2) {
+			this->_goodRequest = false;
+			return ;
+		}
+		this->_client->addEnv(decodeEnv(tempEnv[0]), decodeEnv(tempEnv[1]));
+	}
 }
 
 void	HttpRequest::decodeFormData() {
@@ -137,7 +148,7 @@ void	HttpRequest::decodeFormData() {
 	else {
 		if (findInCharVec("--" + this->_boundary + "--", this->_rawBytes) == string::npos)
 			this->_goodRequest = false;
-		else
+		else if (this->getServer()->methodeAllowed(this->_method))
 			for (uploadIt it = this->_uploadedFiles.begin(); it != this->_uploadedFiles.end(); it++)
 				it->createFile();
 	}
@@ -198,9 +209,6 @@ void	HttpRequest::parseRequestLine(string line) {
 	}
 	this->setMethod(split[0]);
 	this->getUriAndEnv(split[1]);
-//	mapStrStr temp = this->_client->getEnv();
-//	for (mapStrStrIt it = temp.begin(); it != temp.end(); it++)
-//		cout << it->first << " - " << it->second << endl;
 	split = split_trim(split[2], "/");
 	if (split.size() != 2) {
 		this->_goodRequest = false;	
@@ -230,19 +238,6 @@ void	HttpRequest::getUriAndEnv(string str) {
 		}
 	}
 	this->_uri = decodeUri(split[0]);
-//	if (this->_contentLength != 0) {
-		// si application/x-www-form-urlencoded mime
-//		vars = split_trim(this->_content, "&");
-//		for (strVecIt it = vars.begin(); it != vars.end(); it++) {
-//			tempEnv = split_trim(*it, "=");
-//			if (tempEnv.size() != 2) {
-//				cout << "ici" << endl;
-//				this->_goodRequest = false;
-//				return ;
-//			}
-//			this->_client->addEnv(decodeEnv(tempEnv[0]), decodeEnv(tempEnv[1]));
-//		}
-//	}
 }
 
 Client	*HttpRequest::getClient() const {

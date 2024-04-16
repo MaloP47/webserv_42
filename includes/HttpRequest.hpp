@@ -28,21 +28,22 @@ typedef vector<Upload>::iterator	uploadIt;
 
 class HttpRequest {
 	private:
-		Client					*_client;
-		string					_rawRequest;
-		vector<char>			_rawBytes;
-		vector<Upload>			_uploadedFiles;
-		size_t					_headerLength;
-		size_t					_requestLength;
-		bool					_goodRequest;
-		enum HttpMethod			_method;
-		string					_uri;
-		vector<string>			_acceptedMimes;
-		bool					_keepAliveConnection;
-		size_t					_contentLength;
-		string					_content;
-		string					_contentType;
-		string					_boundary;
+		Client			*_client;
+		string			_rawRequest;
+		vector<char>	_rawBytes;
+		vector<Upload>	_uploadedFiles;
+		size_t			_headerLength;
+		size_t			_requestLength;
+		bool			_goodRequest;
+		enum HttpMethod	_method;
+		string			_uri;
+		vector<string>	_acceptedMimes;
+		bool			_keepAliveConnection;
+		size_t			_contentLength;
+		string			_content;
+		string			_contentType;
+		string			_boundary;
+		string			_textPost;
 
 		bool	isFullRequest();
 		void	parse();
@@ -54,6 +55,7 @@ class HttpRequest {
 		void	parseContentLength();
 		void	parseContentType(string line);
 		void	decodeFormData();
+		void	decodeUrlEncoded();
 
 	public:
 		HttpRequest();
