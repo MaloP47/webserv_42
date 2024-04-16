@@ -6,7 +6,7 @@
 /*   By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/08 08:50:25 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/12 11:51:01 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/04/14 19:54:54 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,9 +21,9 @@ class Server;
 class HttpRequest;
 class HttpResponse;
 
-typedef std::vector<std::string>::iterator	strVecIt;
-typedef std::map<std::string, std::string>	mapStrStr;
-typedef mapStrStr::iterator					mapStrStrIt;
+typedef vector<string>::iterator	strVecIt;
+typedef map<string, string>			mapStrStr;
+typedef mapStrStr::iterator			mapStrStrIt;
 
 class Client {
 	private:
@@ -32,7 +32,7 @@ class Client {
 		HttpResponse	*_response;
 		mapStrStr		_env;
 		int				_fd;
-		std::time_t		_creationDate;
+		time_t			_creationDate;
 		bool			_error;
 
 	public:
@@ -43,23 +43,23 @@ class Client {
 
 		Client &operator=(const Client &rhs);
 
-		Server			*getServer() const;
-		HttpRequest		*getRequest() const;
-		HttpResponse	*getResponse() const;
-		std::string		getRawRequest() const;
-		bool			appendRequest(const std::string str);
+		int				getFd() const;
+		bool			error() const;
+		bool			olderThan(int sec) const;
+		bool			appendRequest(const string str);
+		void			setError();
+		void			deleteEnv();
 		void			sendResponse();
 		void			deleteRequest();
-		void			deleteEnv();
 		void			deleteResponse();
-		int				getFd() const;
-		bool			olderThan(int sec) const;
-		void			setError();
-		bool			error() const;
-		void			addEnv(std::string name, std::string value);
+		void			addEnv(string name, string value);
+		string			getRawRequest() const;
+		Server			*getServer() const;
 		mapStrStr		getEnv() const;
+		HttpRequest		*getRequest() const;
+		HttpResponse	*getResponse() const;
 };
 
-std::ostream &operator<<(std::ostream &o, const Client &client);
+ostream &operator<<(ostream &o, const Client &client);
 
 #endif
