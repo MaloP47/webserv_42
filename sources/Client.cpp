@@ -117,13 +117,13 @@ mapStrStr	Client::getEnv() const {
 ostream	&operator<<(ostream &o, const Client &client) {
 	if (client.getServer()->getLogLevel() == 0)
 		return (o);
-	o << RED BOLD "Client (fd: " << client.getFd() << ")" END_STYLE << endl;
+	o << timeStamp();
+	o << RED BOLD " Client (fd: " << client.getFd() << ") " END_STYLE;
 	if (client.getServer())
 		o << *client.getServer() << endl;
 	if (client.getRequest())
 		o << *client.getRequest();
 	if (client.getResponse())
 		o << *client.getResponse();
-	o << endl;
 	return(o);
 }

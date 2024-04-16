@@ -36,6 +36,7 @@
 # include <cstdlib>
 # include <csignal>
 # include <dirent.h>
+# include <cstdio>
 
 using namespace std;
 
@@ -83,9 +84,12 @@ typedef struct s_env {
 
 int				ret(int return_val);
 bool			findLower(string str, string needle);
+bool			childPath(string parent, string child);
 void			ltrim(string &str);
 void			rtrim(string &str);
 t_env			*env();
+string			timeStamp();
+string			getFullPath(string path);
 string			decodeUri(const string uri);
 string			decodeEnv(const string uri);
 string			strFromCharVec(size_t len, vector<char> &vec);
