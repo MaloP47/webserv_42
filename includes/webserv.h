@@ -6,14 +6,13 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/05 15:15:28 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/15 10:21:16 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/04/15 16:56:21 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef WEBSERV_H
 # define WEBSERV_H
 
-using namespace std;
 
 # include "style.h"
 # include <iostream>
@@ -38,16 +37,20 @@ using namespace std;
 # include <cstdlib>
 # include <csignal>
 # include <dirent.h>
+# include <exception>
+using namespace std;
 # include "Mime.hpp"
 # include "StatusCode.hpp"
 # include "DirectoryListing.hpp"
+# include "Config.hpp"
 
-enum HttpMethod {
-	GET,
-	POST,
-	DELETE,
-	OTHER
-};
+
+// enum HttpMethod {
+// 	GET,
+// 	POST,
+// 	DELETE,
+// 	OTHER
+// };
 
 # include "Webserv.hpp"
 

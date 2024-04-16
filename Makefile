@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+         #
+#    By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/02/14 14:06:15 by gbrunet           #+#    #+#              #
-#    Updated: 2024/04/12 14:49:26 by gbrunet          ###   ########.fr        #
+#    Updated: 2024/04/15 16:50:23 by mpeulet          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -37,7 +37,7 @@ SRC_DIR = sources/
 OBJ_DIR = objects/
 
 SRC = main Webserv Client Server HttpRequest HttpResponse Mime StatusCode \
-	  DirectoryListing utils
+	  DirectoryListing utils Config
 
 SRC_FILES = $(addprefix $(SRC_DIR), $(addsuffix .cpp, $(SRC)))
 
