@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpRequest.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+        */
+/*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/08 10:57:23 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/15 17:10:51 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/04/16 14:34:13 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,14 @@
 # include "Server.hpp"
 # include "Client.hpp"
 # include "Upload.hpp"
+
+// enum HttpMethod {
+// 	GET,
+// 	POST,
+// 	DELETE,
+// 	OTHER
+// };
+
 
 class Server;
 class Client;

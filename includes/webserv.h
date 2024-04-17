@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   webserv.h                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+        */
+/*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/05 15:15:28 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/15 16:17:09 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/04/17 15:54:46 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,13 +36,13 @@
 # include <cstdlib>
 # include <csignal>
 # include <dirent.h>
-# include <cstdio>
-
+# include <exception>
 using namespace std;
 
 # include "Mime.hpp"
 # include "StatusCode.hpp"
 # include "DirectoryListing.hpp"
+
 
 enum HttpMethod {
 	GET,
@@ -52,6 +52,7 @@ enum HttpMethod {
 };
 
 # include "Webserv.hpp"
+# include "Config.hpp"
 
 typedef struct s_env {
 	Webserv	*webserv;
@@ -95,5 +96,6 @@ string			decodeEnv(const string uri);
 string			strFromCharVec(size_t len, vector<char> &vec);
 size_t			findInCharVec(string str, vector<char> &vec);
 vector<string>	split_trim(string str, string needle);
+vector<string>	split_trim_conf(string str, string needle);
 
 #endif
