@@ -6,7 +6,7 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/12 11:10:50 by mpeulet           #+#    #+#             */
-/*   Updated: 2024/04/15 16:57:27 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/04/17 15:28:44 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,9 +24,18 @@ class	Config {
 		Config( string const & path ) ;
 		~Config( void ) ;
 
+		int				getNbServer( void ) const ;
+		string const &	getRawConfig( void ) const ;
+
 	private:
 
 		int		_nbServer ;
+		string	_rawConfig ;
+
+		bool	isDirectory( string const & path ) ;
+		bool	isConf( string const & path ) ;
+		void	cleanRawConfig( ifstream & config ) ;
+		bool	parseRawConfig( void ) ;
 
 		Config( void ) ;
 		Config( Config const & cpy ) ;

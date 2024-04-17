@@ -6,7 +6,7 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/05 15:15:28 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/16 14:23:48 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/04/17 15:54:46 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,17 +42,17 @@ using namespace std;
 # include "Mime.hpp"
 # include "StatusCode.hpp"
 # include "DirectoryListing.hpp"
-# include "Config.hpp"
 
 
-// enum HttpMethod {
-// 	GET,
-// 	POST,
-// 	DELETE,
-// 	OTHER
-// };
+enum HttpMethod {
+	GET,
+	POST,
+	DELETE,
+	OTHER
+};
 
 # include "Webserv.hpp"
+# include "Config.hpp"
 
 typedef struct s_env {
 	Webserv	*webserv;
@@ -96,5 +96,6 @@ string			decodeEnv(const string uri);
 string			strFromCharVec(size_t len, vector<char> &vec);
 size_t			findInCharVec(string str, vector<char> &vec);
 vector<string>	split_trim(string str, string needle);
+vector<string>	split_trim_conf(string str, string needle);
 
 #endif
