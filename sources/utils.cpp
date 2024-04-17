@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   utils.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+        */
+/*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/08 15:13:19 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/15 16:17:03 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/04/17 16:33:04 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,6 +51,31 @@ vector<string> split_trim(string str, string needle) {
 	rtrim(str);
 	split.push_back(str);
 	return (split);
+}
+
+vector<string> split_trim_conf(string str, string needle) {
+    vector<string>	split ;
+    size_t 			start = 0 ;
+ 	size_t			end = 0 ;
+	string			subs ;
+	string			remaining ;
+
+    while ((end = str.find(needle, start)) != string::npos) {
+        subs = str.substr(start, end - start);
+        ltrim(subs);
+        rtrim(subs);
+        if (!subs.empty()) {
+            split.push_back(subs);
+        }
+        start = end + needle.length();
+    }
+    remaining = str.substr(start);
+    ltrim(remaining);
+    rtrim(remaining);
+    if (!remaining.empty()) {
+        split.push_back(remaining);
+    }
+    return split;
 }
 
 static bool	compareCharLower(char a, char b) {
