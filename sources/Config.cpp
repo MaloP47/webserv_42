@@ -6,7 +6,7 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/12 11:21:53 by mpeulet           #+#    #+#             */
-/*   Updated: 2024/04/18 11:49:19 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/04/18 14:11:09 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,6 +76,7 @@ void	Config::parseRawConfig( void ) {
 			throw runtime_error( oss.str() ) ;
 		}
 	}
+	_nbServer = _serverBlocks.size() ;
 }
 
 /* *** operator = *** */

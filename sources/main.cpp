@@ -6,7 +6,7 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 15:20:01 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/17 16:54:07 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/04/18 14:13:50 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,16 +34,8 @@ int	main( int ac, char **av ) {
 		try {
 			string	input = av[1] ;
 			Config	conf(input) ;
-			// cout << conf.getRawConfig() << endl ;
+			cout << conf.getRawConfig() << endl ;
 			vector<string>	sp( split_trim_conf( conf.getRawConfig(), "server{" ) );	
-			for ( size_t i = 0; i < sp.size(); i++ ) {
-				cout << sp[i] << endl ;
-			}
-			cout << "[" << sp.size() << "]" << endl ;
-			for ( size_t i = 0; i < sp.size(); i++ ) {
-				if ( sp[i][sp[i].size() - 1 ]!= '}' )
-					cout << "Err" << endl ;
-			}
 		}
 		catch ( const runtime_error & e ) {
 			std::cout << e.what() << std::endl ;
