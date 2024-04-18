@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Webserv.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+        */
+/*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/05 15:43:55 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/14 17:49:04 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/04/18 18:40:23 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 # define WEBSERV_HPP
 
 # include "webserv.h"
+# include "AServerAttributes.hpp"
 # include "Server.hpp"
 # include "Client.hpp"
 
@@ -53,7 +54,6 @@ class Webserv{
 	public:
 		Webserv(string config);
 		~Webserv();
-
 
 		int		getLogLevel() const;
 };

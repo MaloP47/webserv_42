@@ -6,10 +6,11 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/05 15:15:28 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/17 15:54:46 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/04/18 18:37:35 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#pragma once
 #ifndef WEBSERV_H
 # define WEBSERV_H
 
@@ -52,6 +53,7 @@ enum HttpMethod {
 };
 
 # include "Webserv.hpp"
+# include "AServerAttributes.hpp"
 # include "Config.hpp"
 
 typedef struct s_env {
