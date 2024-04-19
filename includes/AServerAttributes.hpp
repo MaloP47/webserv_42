@@ -6,7 +6,7 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/18 15:25:14 by mpeulet           #+#    #+#             */
-/*   Updated: 2024/04/18 18:37:10 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/04/19 13:16:53 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@ class	AServerAttributes {
 		virtual void			abstraction( void ) const = 0 ;
 
 		void					setErrorPages( map<int,string> const & err ) ;
-		void					setReturnURL( string const & url ) ;
+		void					setReturnURI( string const & uri ) ;
 		void					setUploadPath( string const & path ) ;
 
 		map<int,string> const &	getErrorPages( void ) const ;
@@ -37,11 +37,9 @@ class	AServerAttributes {
 	protected:
 
 		map<int,string>			_errorPages ;
-		string					_returnURL ;
+		string					_returnURI ;
 		string					_uploadPath ;
 
 } ;
-
-// #endif
 
 /* *** ASERVERATTRIBUTES.HPP *** */

@@ -6,7 +6,7 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/12 11:21:53 by mpeulet           #+#    #+#             */
-/*   Updated: 2024/04/18 14:11:09 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/04/19 15:26:46 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,11 +66,11 @@ void	Config::cleanRawConfig( ifstream & config ) {
 }
 
 void	Config::parseRawConfig( void ) {
-	if ( _rawConfig.find("server{") != 0 )
+	if ( _rawConfig.find( "server{" ) != 0 )
 		throw runtime_error( "File is not starting with a server block." ) ;
 	_serverBlocks = split_trim_conf( _rawConfig, "server{" ) ;
 	for ( size_t i = 0; i < _serverBlocks.size(); i++ ) {
-		if ( _serverBlocks[i][_serverBlocks[i].size() - 1 ]!= '}' ) {
+		if ( _serverBlocks[i][_serverBlocks[i].size() - 1 ] != '}' ) {
 			std::ostringstream oss;
             oss << "Server block does not close properly.\nBlock: " << i ;
 			throw runtime_error( oss.str() ) ;

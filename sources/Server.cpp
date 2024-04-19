@@ -6,7 +6,7 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/05 14:39:36 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/18 18:14:23 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/04/19 13:53:15 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -118,6 +118,10 @@ vector<string>	Server::getIndexes() const {
 
 int	Server::getMaxBodySize() const {
 	return (this->_maxBodySize);
+}
+
+vector<Location> const &	Server::getLocation() const {
+	return (this->_locationBlock);
 }
 
 bool	Server::methodeAllowed(enum HttpMethod methode) {
