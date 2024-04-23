@@ -6,7 +6,7 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/08 15:13:19 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/17 16:33:04 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/04/23 18:33:10 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -199,4 +199,11 @@ bool	childPath(string parent, string child) {
 	if (child.find(parent) != 0)
 		return (false);
 	return (true);
+}
+bool	isAllDigits( string const & str ) {
+    for (size_t i = 0; i < str.length(); i++) {
+        if ( !isdigit( static_cast<unsigned char>( str[i] ) ) ) 
+            return false;
+    }
+    return true;
 }

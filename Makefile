@@ -6,7 +6,7 @@
 #    By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/02/14 14:06:15 by gbrunet           #+#    #+#              #
-#    Updated: 2024/04/19 13:50:53 by mpeulet          ###   ########.fr        #
+#    Updated: 2024/04/23 14:47:15 by mpeulet          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -37,7 +37,7 @@ SRC_DIR = sources/
 OBJ_DIR = objects/
 
 SRC = main Webserv Client AServerAttributes Server HttpRequest HttpResponse Mime StatusCode \
-	  DirectoryListing utils Config Upload Location
+	  DirectoryListing utils Config Upload Location ConfigServer
 
 SRC_FILES = $(addprefix $(SRC_DIR), $(addsuffix .cpp, $(SRC)))
 

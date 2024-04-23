@@ -6,7 +6,7 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/19 13:27:17 by mpeulet           #+#    #+#             */
-/*   Updated: 2024/04/19 15:25:53 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/04/23 11:00:29 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 Location::Location( string const & locationBlock ) {
 	if ( locationBlock.find( "location/" ))
-		throw runtime_error( "Location block is not " ) ;
+		throw runtime_error( "Location block is not set properly" ) ;
 }
 
 Location::~Location( void ) {}

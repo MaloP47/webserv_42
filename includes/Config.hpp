@@ -6,7 +6,7 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/12 11:10:50 by mpeulet           #+#    #+#             */
-/*   Updated: 2024/04/18 11:08:29 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/04/23 11:02:17 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,9 +30,9 @@ class	Config {
 
 	private:
 
-		int				_nbServer ;
-		string			_rawConfig ;
-		vector<string>	_serverBlocks ;
+		int					_nbServer ;
+		string				_rawConfig ;
+		vector<string>		_serverBlocks ;
 
 		bool	isDirectory( string const & path ) ;
 		bool	isConf( string const & path ) ;
