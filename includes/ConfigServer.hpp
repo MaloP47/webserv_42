@@ -6,7 +6,7 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/23 13:37:40 by mpeulet           #+#    #+#             */
-/*   Updated: 2024/04/23 17:57:59 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/04/25 13:19:35 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,10 +32,11 @@ class	ConfigServer {
 		void					setName( string const & name ) ;
 		void					setIndexes( vector<string> const & indexes ) ;
 		void					setErrorPages( map<int,string> const & err ) ;
-		void					setReturnURI( string const & uri ) ;
+		void					setReturnURI( map<int,string> const & uri ) ;
 		void					setUploadPath( string const & path ) ;
 		// void					setLocationBlock( vector<Location> const & locationBlock ) ;
 
+		int								getServerIndex( void ) const ;
 		int								getPort( void ) const ;
 		string const &					getRoot( void ) const ;
 		string const &					getHost( void ) const ;
@@ -45,12 +46,13 @@ class	ConfigServer {
 		string const &					getName( void ) const ;
 		vector<string> const &			getIndexes( void ) const ;
 		map<int,string> const &			getErrorPages( void ) const ;
-		string const &					getReturnURL( void ) const ;
+		map<int,string> const &			getReturnURI( void ) const ;
 		string const &					getUploadPath( void ) const ;
 		// vector<Location> const &		getLocationBlock( void ) const ;
 
 	private:
 
+		int						_indexServer ;
 		vector<string>			_location ;
 
 		/* MANDATORY */
@@ -59,7 +61,7 @@ class	ConfigServer {
 
 		/* SET TO DEFAULT IF NOT SPECIFIED */
 		string					_host;
-		int						_maxBodySize ;
+		long long				_maxBodySize ;
 		vector<enum HttpMethod>	_allowedMethod ;
 		bool					_directoryListing ;
 		string					_name ;
@@ -67,13 +69,17 @@ class	ConfigServer {
 		/* OPTIONAL */
 		vector<string>			_indexes ;
 		map<int,string>			_errorPages ;
-		string					_returnURI ;
+		map<int,string>			_returnURI ;
 		string					_uploadPath ;
 		// vector<Location>		_locationBlock ;
 
 		void	extractLocation( string & block ) ;
 		string 	extractStringVariable( string & block, string const & var ) ;
 		void	checkPort( string & block ) ;
+		void	checkMBS( string & block ) ;
+		void	checkAutoIndex( string & block ) ;
+		void	checkName( string & block, int index ) ;
+		void	checkMethod( string & block ) ;
 
 		ConfigServer( void ) ;
 		ConfigServer( ConfigServer const & cpy ) ;
