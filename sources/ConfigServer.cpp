@@ -6,7 +6,7 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/23 13:37:58 by mpeulet           #+#    #+#             */
-/*   Updated: 2024/04/25 13:20:49 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/04/25 20:02:04 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,10 +14,8 @@
 
 // Constructeur qui initialise par defaut les 5 definis dans .hpp
 
-ConfigServer::ConfigServer( string const & serverBlock, int indexOfServerBlock ) /* : 
-	 _host( "127.0.0.1" ),
-	_maxBodySize( MAXCLIENTBS ),
-	_directoryListing( false ) */ : _indexServer( indexOfServerBlock ) {
+ConfigServer::ConfigServer( string const & serverBlock, int indexOfServerBlock ) : 
+ 		 _indexServer( indexOfServerBlock ) {
 
 	string 	block = serverBlock ;
 	extractLocation( block ) ;
@@ -25,7 +23,7 @@ ConfigServer::ConfigServer( string const & serverBlock, int indexOfServerBlock )
 	// CREATE VECTOR FOR LOCATION
 	_root = extractStringVariable( block, "root" ) ;
 	if ( _root.empty() )
-		 throw runtime_error( "Missing root, mandatory field." ) ;
+		throw runtime_error( "Missing root, mandatory field." ) ;
 	checkPort( block ) ;
 	_host = extractStringVariable( block, "host" ) ;
 	if ( _host.empty() )
@@ -34,14 +32,15 @@ ConfigServer::ConfigServer( string const & serverBlock, int indexOfServerBlock )
 	checkAutoIndex( block ) ;
 	checkName( block, indexOfServerBlock ) ;
 	_uploadPath = extractStringVariable( block, "upload_path" ) ;
-	checkMethod( block ) ; 
-
-	
-	// cout << block << endl ;
-	// cout << _name << endl ;
+	checkMethod( block ) ;
+	_index = extractStringVariable( block, "index" ) ;
+	extractMap( block, "error_page", _errorPage ) ;
+	extractMap( block, "return", _returnURI ) ;
+	if ( block != "}" )
+		throw runtime_error( "Config file contains unknown instructions :" + block ) ;
 }
 
-string	ConfigServer::extractStringVariable( string & tmp, string const & var ) {
+string 	ConfigServer::extractStringVariable( string & tmp, string const & var ) {
 	size_t	start = 0 ;
 	size_t	end = 0 ;
 	string	ret ;
@@ -133,6 +132,21 @@ void	ConfigServer::checkMethod( string & block ) {
 		
 }
 
+void	ConfigServer::extractMap( string & block, string const & var, map<int,string> & Map ) {
+	char	*endptr ;
+	int		key = 0 ;
+	string	tmp = extractStringVariable( block, var ) ;
+	if ( tmp.empty() )
+		return ;
+	if ( tmp.size() < 3 )
+		throw runtime_error( "Invalid error page / return format." ) ;
+	key = strtol( tmp.substr( 0, 3 ).c_str(), &endptr, 10 ) ;
+	if ( *endptr != 0 || ( key < 100 && key > 505 ) )
+		throw runtime_error( "Invalid error page / return format." ) ;
+	tmp.erase( 0, 3 ) ;
+	Map.insert( pair<int,string>( key, tmp )) ;
+}
+
 void	ConfigServer::extractLocation( string & tmp ) {
 	size_t	pos = 0 ;
 	size_t	start = 0 ;
@@ -166,8 +180,8 @@ void	ConfigServer::setMaxBodySize( int maxBodySize ) { _maxBodySize = maxBodySiz
 void	ConfigServer::setAllowedMethod( vector<enum HttpMethod> const & allowedMethod ) { _allowedMethod = allowedMethod ; }
 void	ConfigServer::setDirectoryListing( bool directoryListing ) { _directoryListing = directoryListing ; }
 void	ConfigServer::setName( string const & name ) { _name = name ; }
-void	ConfigServer::setIndexes( vector<string> const & indexes ) { _indexes = indexes ; }
-void	ConfigServer::setErrorPages( map<int,string> const & err ) { _errorPages = err ; }
+void	ConfigServer::setIndex( string const & index ) { _index = index ; }
+void	ConfigServer::setErrorPages( map<int,string> const & err ) { _errorPage = err ; }
 void	ConfigServer::setReturnURI( map<int,string> const & uri ) { _returnURI = uri ; }
 void	ConfigServer::setUploadPath( string const & path ) { _uploadPath = path ; }
 // void	ConfigServer::setLocationBlock( vector<Location> const & locationBlock ) { _locationBlock = locationBlock ; }
@@ -180,8 +194,8 @@ int								ConfigServer::getMaxBodySize( void ) const { return _maxBodySize ; }
 vector<enum HttpMethod> const &	ConfigServer::getAllowedMethod( void ) const { return _allowedMethod ; }
 bool							ConfigServer::getDirectoryListing( void ) const { return _directoryListing ; }
 string const &					ConfigServer::getName( void ) const { return _name ; }
-vector<string> const &			ConfigServer::getIndexes( void ) const { return _indexes ; }
-map<int,string> const &			ConfigServer::getErrorPages( void ) const { return _errorPages ; }
+string const &					ConfigServer::getIndex( void ) const { return _index ; }
+map<int,string> const &			ConfigServer::getErrorPages( void ) const { return _errorPage ; }
 map<int,string> const &			ConfigServer::getReturnURI( void ) const { return _returnURI ; }
 string const &					ConfigServer::getUploadPath( void ) const { return _uploadPath ; }
 // vector<Location> const &		ConfigServer::getLocationBlock( void ) const { return _locationBlock ; }
@@ -195,30 +209,35 @@ ostream &	operator<<( ostream & o, ConfigServer const & rhs ) {
 	o << "MaxBodySize: " << rhs.getMaxBodySize() << std::endl ;
 	o << "AllowedMethod: " ;
 	for ( size_t i = 0 ; i < rhs.getAllowedMethod().size() ; i++ ) {
-		o << rhs.getAllowedMethod()[i] ;
+		string	ret ;
+		if ( rhs.getAllowedMethod()[i] == 0 )
+			ret = "GET" ;
+		else if ( rhs.getAllowedMethod()[i] == 1 )
+			ret = "POST" ;
+		else if ( rhs.getAllowedMethod()[i] == 2 )
+			ret = "DELETE" ;
+		o << ret ;
 		if ( i + 1 < rhs.getAllowedMethod().size() )
 			o << ", " ;
 	}
 	o << std::endl ;
-	o << "DirectoryListing: " << rhs.getDirectoryListing() << std::endl ;
-	o << "Indexes: " ;
-	for ( size_t i = 0 ; i < rhs.getIndexes().size() ; i++ ) {
-		o << rhs.getIndexes()[i] ;
-		if ( i + 1 < rhs.getIndexes().size() )
-			o << ", " ;
-	}
-	o << std::endl;
+	o << "Autoindex: " ;
+	if ( rhs.getDirectoryListing() == false )
+		o << "off" << endl ;
+	else if ( rhs.getDirectoryListing() == false )
+		o << "on" << endl ;
+	o << "Index: " << rhs.getIndex() << std::endl; 
 	o << "ErrorPages: " ;
 	for ( map<int,string>::const_iterator it = rhs.getErrorPages().begin() ; it != rhs.getErrorPages().end() ; it++ ) {
 		o << it->first << " -> " << it->second;
-		if ( ++it != rhs.getErrorPages().end() )
+		if ( it != --rhs.getErrorPages().end() )
 			o << ", " ;
 	}
 	o << std::endl ;
 	o << "ReturnURI: " ;
 	for ( map<int,string>::const_iterator it = rhs.getReturnURI().begin() ; it != rhs.getReturnURI().end() ; it++ ) {
 		o << it->first << " -> " << it->second;
-		if ( ++it != rhs.getReturnURI().end() )
+		if ( it != --rhs.getReturnURI().end() )
 			o << ", " ;
 	}
 	o << std::endl ;

@@ -6,7 +6,7 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/23 13:37:40 by mpeulet           #+#    #+#             */
-/*   Updated: 2024/04/25 13:19:35 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/04/25 19:51:38 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ class	ConfigServer {
 		void					setAllowedMethod( vector<enum HttpMethod> const & allowedMethod ) ;
 		void					setDirectoryListing( bool directoryListing ) ;
 		void					setName( string const & name ) ;
-		void					setIndexes( vector<string> const & indexes ) ;
+		void					setIndex( string const & index ) ;
 		void					setErrorPages( map<int,string> const & err ) ;
 		void					setReturnURI( map<int,string> const & uri ) ;
 		void					setUploadPath( string const & path ) ;
@@ -44,7 +44,7 @@ class	ConfigServer {
 		vector<enum HttpMethod> const &	getAllowedMethod( void ) const ;
 		bool							getDirectoryListing( void ) const ;
 		string const &					getName( void ) const ;
-		vector<string> const &			getIndexes( void ) const ;
+		string const &					getIndex( void ) const ;
 		map<int,string> const &			getErrorPages( void ) const ;
 		map<int,string> const &			getReturnURI( void ) const ;
 		string const &					getUploadPath( void ) const ;
@@ -67,19 +67,20 @@ class	ConfigServer {
 		string					_name ;
 
 		/* OPTIONAL */
-		vector<string>			_indexes ;
-		map<int,string>			_errorPages ;
-		map<int,string>			_returnURI ;
-		string					_uploadPath ;
-		// vector<Location>		_locationBlock ;
+		string				_index ;
+		map<int,string>		_errorPage ;
+		map<int,string>		_returnURI ;
+		string				_uploadPath ;
+		// vector<Location>	_locationBlock ;
 
-		void	extractLocation( string & block ) ;
-		string 	extractStringVariable( string & block, string const & var ) ;
-		void	checkPort( string & block ) ;
-		void	checkMBS( string & block ) ;
-		void	checkAutoIndex( string & block ) ;
-		void	checkName( string & block, int index ) ;
-		void	checkMethod( string & block ) ;
+		void		extractLocation( string & block ) ;
+		string 		extractStringVariable( string & block, string const & var ) ;
+		void		checkPort( string & block ) ;
+		void		checkMBS( string & block ) ;
+		void		checkAutoIndex( string & block ) ;
+		void		checkName( string & block, int index ) ;
+		void		checkMethod( string & block ) ;
+		void		extractMap( string & block, string const & var, map<int,string> & Map ) ;
 
 		ConfigServer( void ) ;
 		ConfigServer( ConfigServer const & cpy ) ;

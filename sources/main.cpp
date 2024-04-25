@@ -6,7 +6,7 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 15:20:01 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/25 12:28:49 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/04/25 19:59:30 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,7 @@ int	main( int ac, char **av ) {
 			for ( int i = 0; i < conf.getNbServer(); i++ )
 				cout << conf.getServerBlocks()[i] << "\n" << endl ;
 			ConfigServer	cs( conf.getServerBlocks()[0], 0 ) ;
-			cout << cs << endl ;
+			cout << cs ;			
 		}
 		catch ( const runtime_error & e ) {
 			std::cout << e.what() << std::endl ;
