@@ -6,10 +6,11 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/05 15:15:28 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/17 15:54:46 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/04/23 18:33:37 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#pragma once
 #ifndef WEBSERV_H
 # define WEBSERV_H
 
@@ -52,7 +53,9 @@ enum HttpMethod {
 };
 
 # include "Webserv.hpp"
+# include "AServerAttributes.hpp"
 # include "Config.hpp"
+# include "ConfigServer.hpp"
 
 typedef struct s_env {
 	Webserv	*webserv;
@@ -82,6 +85,7 @@ typedef struct s_env {
 # define ERR_SEND 104
 # define ERR_READ 105
 
+# define MAXCLIENTBS 1024
 
 int				ret(int return_val);
 bool			findLower(string str, string needle);
@@ -97,5 +101,6 @@ string			strFromCharVec(size_t len, vector<char> &vec);
 size_t			findInCharVec(string str, vector<char> &vec);
 vector<string>	split_trim(string str, string needle);
 vector<string>	split_trim_conf(string str, string needle);
+bool			isAllDigits( string const & str ) ;
 
 #endif

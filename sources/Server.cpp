@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+        */
+/*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/05 14:39:36 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/15 10:51:46 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/04/19 13:53:15 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,10 +14,10 @@
 #include <vector>
 #include "Server.hpp"
 
-Server::Server():
+Server::Server(): AServerAttributes(),
 	_webserv(NULL), _port(8080), _host("127.0.0.1"), _name("default"), _fd(-1) {}
 
-Server::Server(Webserv *webserv, int port, string host, string name):
+Server::Server(Webserv *webserv, int port, string host, string name): AServerAttributes(),
 	_webserv(webserv), _port(port), _host(host), _name(name), _fd(-1) {
 	// TEMP : set manually for testing purpose
 	this->_directoryListing = true;
@@ -28,7 +28,7 @@ Server::Server(Webserv *webserv, int port, string host, string name):
 	this->init();
 }
 
-Server::Server(Server const &cpy) {
+Server::Server(Server const &cpy) : AServerAttributes() {
 	*this = cpy;
 }
 
@@ -120,6 +120,10 @@ int	Server::getMaxBodySize() const {
 	return (this->_maxBodySize);
 }
 
+vector<Location> const &	Server::getLocation() const {
+	return (this->_locationBlock);
+}
+
 bool	Server::methodeAllowed(enum HttpMethod methode) {
 	for (methodeIt it = this->_allowedMethod.begin(); it != this->_allowedMethod.end(); it++)
 		if (*it == methode)
@@ -133,3 +137,5 @@ ostream	&operator<<(ostream &o, const Server &server) {
 	o << END_STYLE " (fd: " << server.getFd() << ")";
 	return(o);
 }
+
+void	Server::abstraction( void ) const {}

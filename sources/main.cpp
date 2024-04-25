@@ -6,7 +6,7 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 15:20:01 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/17 16:54:07 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/04/23 18:17:51 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,20 +30,13 @@
 
 int	main( int ac, char **av ) {
 
-	if ( ac == 2) {
+	if ( ac == 2 ) {
 		try {
 			string	input = av[1] ;
 			Config	conf(input) ;
-			// cout << conf.getRawConfig() << endl ;
-			vector<string>	sp( split_trim_conf( conf.getRawConfig(), "server{" ) );	
-			for ( size_t i = 0; i < sp.size(); i++ ) {
-				cout << sp[i] << endl ;
-			}
-			cout << "[" << sp.size() << "]" << endl ;
-			for ( size_t i = 0; i < sp.size(); i++ ) {
-				if ( sp[i][sp[i].size() - 1 ]!= '}' )
-					cout << "Err" << endl ;
-			}
+			for ( int i = 0; i < conf.getNbServer(); i++ )
+				cout << conf.getServerBlocks()[i] << "\n" << endl ;
+			ConfigServer	cs( conf.getServerBlocks()[0], 0 ) ;
 		}
 		catch ( const runtime_error & e ) {
 			std::cout << e.what() << std::endl ;
@@ -54,3 +47,13 @@ int	main( int ac, char **av ) {
 
 	return 0;
 }
+
+// int	main( void ) {
+// 	try {
+// 		ConfigServer	cs("rotvar/www;", 1) ;
+// 		// cout << cs ;
+// 	}
+// 	catch ( const runtime_error & e ) {
+// 		std::cout << e.what() << std::endl ;
+// 	}
+// }

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+        */
+/*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/05 14:13:35 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/14 17:52:20 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/04/19 13:56:02 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,13 +14,16 @@
 # define SERVER_HPP
 
 # include "webserv.h"
+# include "AServerAttributes.hpp"
 # include "Webserv.hpp"
+# include "Location.hpp"
 
 class Webserv;
+class Location;
 
 typedef vector<enum HttpMethod>::iterator	methodeIt;
 
-class Server {
+class Server : public AServerAttributes {
 	private:
 		Webserv					*_webserv;
 		int						_port;
@@ -33,9 +36,12 @@ class Server {
 		vector<string>			_indexes;
 		int						_maxBodySize;
 		vector<enum HttpMethod>	_allowedMethod;
+		vector<Location>		_locationBlock;
+			
 
 		int		init();
 		void	setAddr();
+		void	abstraction( void ) const;
 
 	public:
 		Server();
@@ -45,16 +51,18 @@ class Server {
 
 		Server &operator=(const Server &rhs);
 
-		int				getFd() const;
-		int				getPort() const;
-		int				getLogLevel() const;
-		int				getMaxBodySize() const;
-		bool			getDirectoryListing() const;
-		string			getName() const;
-		string			getHost() const;
-		string			getRoot() const;
-		vector<string>	getIndexes() const;
-		bool			methodeAllowed(enum HttpMethod methode);
+		int							getFd() const;
+		int							getPort() const;
+		int							getLogLevel() const;
+		int							getMaxBodySize() const;
+		bool						getDirectoryListing() const;
+		string						getName() const;
+		string						getHost() const;
+		string						getRoot() const;
+		vector<string>				getIndexes() const;
+		vector<Location> const &	getLocation() const;
+		bool						methodeAllowed(enum HttpMethod methode);
+
 };
 
 ostream &operator<<(ostream &o, const Server &server);

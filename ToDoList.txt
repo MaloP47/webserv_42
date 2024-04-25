@@ -1,6 +1,3 @@
-- Is config readable
-- Check is at least 1 server bracket
-- Count nb of server (Count closed server bracket)
 - Is each mandatory field present in server block : 
 	- port
 	- root

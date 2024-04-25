@@ -6,12 +6,12 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/12 11:21:53 by mpeulet           #+#    #+#             */
-/*   Updated: 2024/04/17 16:09:53 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/04/19 15:26:46 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 # include "Config.hpp"
-
+# include "webserv.h"
 
 /* *** constructors *** */
 
@@ -30,8 +30,7 @@ Config::Config( string const & path ) : _nbServer( 0 ) {
 	cleanRawConfig( config ) ;
 	if ( _rawConfig.find( '#' ) != string::npos )
 		throw runtime_error( "Invalid character found in config file: #." ) ;
-	if ( !parseRawConfig() )
-		throw runtime_error( "Error in config file." ) ;
+	parseRawConfig() ;
 }
 
 /* *** destructor *** */
@@ -40,8 +39,9 @@ Config::~Config( void ) {}
 
 /* *** public functions *** */
 
-int				Config::getNbServer( void ) const { return _nbServer ; }
-string const &	Config::getRawConfig( void ) const { return _rawConfig ;}
+int						Config::getNbServer( void ) const { return _nbServer ; }
+string const &			Config::getRawConfig( void ) const { return _rawConfig ;}
+vector<string> const &	Config::getServerBlocks( void ) const { return _serverBlocks ; }
 
 /* *** private functions *** */
 
@@ -53,7 +53,7 @@ bool	Config::isDirectory( string const & path ) {
 }
 
 bool	Config::isConf( string const & path ) {
-	string::size_type pos = path.rfind(".conf");
+	string::size_type pos = path.rfind(".conf" );
 	return pos != string::npos && pos == path.length() - 5;
 }
 
@@ -65,10 +65,18 @@ void	Config::cleanRawConfig( ifstream & config ) {
 		_rawConfig += word ;
 }
 
-bool	Config::parseRawConfig( void ) {
-	if ( _rawConfig.find("server{") == string::npos )
-		return false ;
-	return true ;
+void	Config::parseRawConfig( void ) {
+	if ( _rawConfig.find( "server{" ) != 0 )
+		throw runtime_error( "File is not starting with a server block." ) ;
+	_serverBlocks = split_trim_conf( _rawConfig, "server{" ) ;
+	for ( size_t i = 0; i < _serverBlocks.size(); i++ ) {
+		if ( _serverBlocks[i][_serverBlocks[i].size() - 1 ] != '}' ) {
+			std::ostringstream oss;
+            oss << "Server block does not close properly.\nBlock: " << i ;
+			throw runtime_error( oss.str() ) ;
+		}
+	}
+	_nbServer = _serverBlocks.size() ;
 }
 
 /* *** operator = *** */
