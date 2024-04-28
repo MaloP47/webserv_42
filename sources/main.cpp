@@ -6,13 +6,14 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 15:20:01 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/28 12:52:22 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/04/28 13:27:36 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "webserv.h"
 #include "Webserv.hpp"
 #include "ConfigServer.hpp"
+#include "Location.hpp"
 
 // void	handler(int signum) {
 // 	static_cast<void>(signum);
@@ -44,8 +45,7 @@ int	main( int ac, char **av ) {
 			cout << cs.getLocation()[2] << endl ;
 			cout << cs.getLocation()[3] << endl ;		
 			cout << cs.getLocation()[4] << endl ;
-			// (void)av ;
-			// Location	loc( "/test1{rootvar/www/test1;indextest1.html;allowedMethodsGETDELETE;}", 1 ) ;
+			Location	loc( "/test/1{rootvar/www/test1;indextest1.html;allowedMethodsGETDELETE;}", 1 ) ;
 		}
 		catch ( const runtime_error & e ) {
 			std::cout << e.what() << std::endl ;
