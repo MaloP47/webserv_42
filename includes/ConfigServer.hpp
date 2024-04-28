@@ -6,22 +6,16 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/23 13:37:40 by mpeulet           #+#    #+#             */
-/*   Updated: 2024/04/28 12:09:44 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/04/28 12:49:32 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef CONFIGSERVER_HPP
 # define CONFIGSERVER_HPP
 
-# include <map>
-# include <vector>
-# include <string>
-# include <iostream>
+# include <webserv.h>
 
-# include "enum.h"
-# include "utils.h"
-
-using namespace std;
+// class Location;
 
 class	ConfigServer {
 
