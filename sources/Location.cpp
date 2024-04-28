@@ -5,36 +5,41 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/04/19 13:27:17 by mpeulet           #+#    #+#             */
-/*   Updated: 2024/04/23 11:00:29 by mpeulet          ###   ########.fr       */
+/*   Created: 2024/04/27 11:42:58 by mpeulet           #+#    #+#             */
+/*   Updated: 2024/04/27 12:52:24 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Location.hpp"
 
-Location::Location( string const & locationBlock ) {
-	if ( locationBlock.find( "location/" ))
-		throw runtime_error( "Location block is not set properly" ) ;
+Location::Location( string const & locBlock, int index ) : ConfigServer(),
+	_locIndex( index ) {
+
+	string	loc = locBlock ;
+	extractLocPath( loc ) ;
+	cout << _locPath << endl ;
+	cout << loc << endl ;
 }
 
 Location::~Location( void ) {}
 
-void	Location::setDirectoryListing( bool onOff ) { _directoryListing = onOff ; }
-void	Location::setRoot( string const & root ) { _root = root ; }
-void	Location::setIndexes( vector<string> const & indexes ) { _indexes = indexes ; }
-void	Location::setMaxBodySize( int MBS ) { _maxBodySize = MBS ; }
-void	Location::setAlloweMethod( vector<enum HttpMethod> const & AM ) { _allowedMethod = AM ; }
-void	Location::setErrorPages( map<int,string> const & EP ) { _errorPages = EP ; }
-void	Location::setReturnURI( string const & uri ) { _returnURI = uri ; }
-void	Location::setUploadPath( string const & path ) { _uploadPath = path ; }
-void	Location::setLocPath( string const & locpath ) { _locPath = locpath ; }
+void	Location::extractLocPath( string & locBloc ) {
+	size_t	slash = locBloc.find( "/" ) ;
+	size_t	end = 0 ;
+	if ( slash == string::npos )
+		throw runtime_error( "Route for location block missing in block: " + locBloc ) ;
+	end = locBloc.find( "{" ) ;
+	_locPath = locBloc.substr( slash, end - slash + 1 ) ;
+	locBloc.erase( slash, end - slash + 1 ) ;
+}
 
-bool const &					Location::getDirectoryListing( void ) const { return _directoryListing ; }
-string const &					Location::getRoot( void ) const { return _root ; }
-vector<string> const &			Location::getIndexes( void ) const { return _indexes ; }
-int const &						Location::getMaxBodySize( void ) const { return _maxBodySize ; }
-vector<enum HttpMethod> const &	Location::getAlloweMethod( void ) const { return _allowedMethod ; }
-map<int,string> const &			Location::getErrorPages( void ) const { return _errorPages ; }
-string const &					Location::getReturnURI( void ) const { return _returnURI ;}
-string const &					Location::getUploadPath( void ) const { return _uploadPath ; }
-string const &					Location::getLocPath( void ) const { return _locPath ; }
+void	Location::setLocPath( string const & lp ) { _locPath = lp ; }
+void	Location::setLocIndex( int index ) { _locIndex = index ; }
+
+string const &	Location::getLocPath( void ) const { return _locPath ; }
+int				Location::getLocIndex( void ) const { return _locIndex ; }
+
+ostream &	operator<<( ostream & o, Location const & rhs ) {
+	(void)rhs ;
+	return o ;
+}

@@ -32,12 +32,19 @@ int	main( int ac, char **av ) {
 
 	if ( ac == 2 ) {
 		try {
-			string	input = av[1] ;
-			Config	conf(input) ;
-			for ( int i = 0; i < conf.getNbServer(); i++ )
-				cout << conf.getServerBlocks()[i] << "\n" << endl ;
-			ConfigServer	cs( conf.getServerBlocks()[0], 0 ) ;
-			cout << cs ;			
+			// string	input = av[1] ;
+			// Config	conf(input) ;
+			// for ( int i = 0; i < conf.getNbServer(); i++ )
+			// 	cout << conf.getServerBlocks()[i] << "\n" << endl ;
+			// ConfigServer	cs( conf.getServerBlocks()[0], 0 ) ;
+			// cout << cs ;
+			// cout << cs.getLocation()[0] << endl ;
+			// cout << cs.getLocation()[1] << endl ;
+			// cout << cs.getLocation()[2] << endl ;
+			// cout << cs.getLocation()[3] << endl ;		
+			// cout << cs.getLocation()[4] << endl ;
+			(void)av ;
+			Location	loc( "/test1{rootvar/www/test1;indextest1.html;allowedMethodsGETDELETE;}", 1 ) ;
 		}
 		catch ( const runtime_error & e ) {
 			std::cout << e.what() << std::endl ;

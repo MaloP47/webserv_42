@@ -6,13 +6,13 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/23 13:37:58 by mpeulet           #+#    #+#             */
-/*   Updated: 2024/04/25 20:02:04 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/04/26 22:55:22 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ConfigServer.hpp"
 
-// Constructeur qui initialise par defaut les 5 definis dans .hpp
+ConfigServer::ConfigServer( void ) {}
 
 ConfigServer::ConfigServer( string const & serverBlock, int indexOfServerBlock ) : 
  		 _indexServer( indexOfServerBlock ) {
@@ -159,13 +159,13 @@ void	ConfigServer::extractLocation( string & tmp ) {
 			ss << _location.size() + 1 ;
 			throw runtime_error( "Missing location } in location block " + ss.str() ) ;
 		}
-		start =  tmp.find( "{", pos ) ;
+		start = tmp.find( "{", pos ) ;
 		if ( start == string::npos || start > end ) {
 			stringstream	ss;
 			ss << _location.size() + 1 ;
 			throw runtime_error( "Missing location { in location block " + ss.str() ) ;
 		}
-		_location.push_back( tmp.substr( pos + 8, end - pos + 1 ) ) ;
+		_location.push_back( tmp.substr( pos + 8, ( end - pos + 1 ) - 8 ) ) ;
 		tmp.erase( pos, end - pos + 1 ) ;
 		pos = 0 ;
 	}
@@ -184,6 +184,7 @@ void	ConfigServer::setIndex( string const & index ) { _index = index ; }
 void	ConfigServer::setErrorPages( map<int,string> const & err ) { _errorPage = err ; }
 void	ConfigServer::setReturnURI( map<int,string> const & uri ) { _returnURI = uri ; }
 void	ConfigServer::setUploadPath( string const & path ) { _uploadPath = path ; }
+void	ConfigServer::setLocation( vector<string> loc ) { _location = loc ; }
 // void	ConfigServer::setLocationBlock( vector<Location> const & locationBlock ) { _locationBlock = locationBlock ; }
 
 int								ConfigServer::getServerIndex( void ) const { return _indexServer ; }
@@ -198,6 +199,7 @@ string const &					ConfigServer::getIndex( void ) const { return _index ; }
 map<int,string> const &			ConfigServer::getErrorPages( void ) const { return _errorPage ; }
 map<int,string> const &			ConfigServer::getReturnURI( void ) const { return _returnURI ; }
 string const &					ConfigServer::getUploadPath( void ) const { return _uploadPath ; }
+vector<string> const &			ConfigServer::getLocation( void ) const { return _location ; } ;
 // vector<Location> const &		ConfigServer::getLocationBlock( void ) const { return _locationBlock ; }
 
 ostream &	operator<<( ostream & o, ConfigServer const & rhs ) {
