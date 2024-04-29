@@ -6,7 +6,7 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/23 13:37:58 by mpeulet           #+#    #+#             */
-/*   Updated: 2024/04/29 17:25:23 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/04/29 18:36:25 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -170,6 +170,19 @@ void	ConfigServer::extractLocation( string & tmp ) {
 		pos = 0 ;
 	}
 }
+
+#include "Location.hpp"
+
+void		ConfigServer::initLocation( void ) {
+	// size_t	locSize = _location.size() ;
+	// if ( locSize ) {
+	// 	for ( size_t i = 0; i < locSize; ++i ) {
+	// 		Location lc( _location[i], i) ;
+	// 		_locationBlock.push_back( lc ) ;
+	// 	}
+	// }	
+}
+
 
 ConfigServer::~ConfigServer( void ) {}
 

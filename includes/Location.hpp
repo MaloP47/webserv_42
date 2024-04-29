@@ -6,7 +6,7 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/27 11:41:57 by mpeulet           #+#    #+#             */
-/*   Updated: 2024/04/28 13:29:50 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/04/29 18:19:28 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,8 +42,8 @@ class	Location : public ConfigServer {
 		void	extractLocPath( string & locBloc ) ;
 
 		Location( void ) ;
-		Location( Location const & cpy ) ;
-		Location &	operator=( Location const & rhs ) ;
+		// Location( Location const & cpy ) ;
+		// Location &	operator=( Location const & rhs ) ;
 			
 } ;
 

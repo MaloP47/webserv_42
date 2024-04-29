@@ -6,16 +6,16 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/23 13:37:40 by mpeulet           #+#    #+#             */
-/*   Updated: 2024/04/28 12:49:32 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/04/29 18:34:26 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef CONFIGSERVER_HPP
 # define CONFIGSERVER_HPP
 
-# include <webserv.h>
+# include "webserv.h"
 
-// class Location;
+class Location;
 
 class	ConfigServer {
 
@@ -37,7 +37,7 @@ class	ConfigServer {
 		void	setReturnURI( map<int,string> const & uri ) ;
 		void	setUploadPath( string const & path ) ;
 		void	setLocation( vector<string> loc ) ;
-		// void					setLocationBlock( vector<Location> const & locationBlock ) ;
+		// void	setLocationBlock( vector<Location> const & locationBlock ) ;
 
 		int								getServerIndex( void ) const ;
 		int								getPort( void ) const ;
@@ -85,6 +85,7 @@ class	ConfigServer {
 		void		checkName( string & block, int index ) ;
 		void		checkMethod( string & block ) ;
 		void		extractMap( string & block, string const & var, map<int,string> & Map ) ;
+		void		initLocation( void ) ;
 
 	private:
 
