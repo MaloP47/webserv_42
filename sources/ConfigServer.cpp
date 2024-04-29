@@ -6,7 +6,7 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/23 13:37:58 by mpeulet           #+#    #+#             */
-/*   Updated: 2024/04/26 22:55:22 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/04/29 17:25:23 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -226,7 +226,7 @@ ostream &	operator<<( ostream & o, ConfigServer const & rhs ) {
 	o << "Autoindex: " ;
 	if ( rhs.getDirectoryListing() == false )
 		o << "off" << endl ;
-	else if ( rhs.getDirectoryListing() == false )
+	else if ( rhs.getDirectoryListing() == true )
 		o << "on" << endl ;
 	o << "Index: " << rhs.getIndex() << std::endl; 
 	o << "ErrorPages: " ;
