@@ -6,15 +6,17 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/23 13:37:40 by mpeulet           #+#    #+#             */
-/*   Updated: 2024/04/23 17:57:59 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/04/30 13:49:28 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#pragma once
+#ifndef CONFIGSERVER_HPP
+# define CONFIGSERVER_HPP
 
 # include "webserv.h"
+# include "Location.hpp"
 
-// class Location;
+class Location;
 
 class	ConfigServer {
 
@@ -22,20 +24,24 @@ class	ConfigServer {
 
 		ConfigServer( string const & serverBlock, int indexOfServerBlock ) ;
 		~ConfigServer( void ) ;
+		ConfigServer( ConfigServer const & cpy ) ;
+		ConfigServer &	operator=( ConfigServer const & rhs ) ;
 
-		void					setPort( int port ) ;
-		void					setRoot( string const & root ) ;
-		void					setHost( string const & host ) ;
-		void					setMaxBodySize( int maxBodySize ) ;
-		void					setAllowedMethod( vector<enum HttpMethod> const & allowedMethod ) ;
-		void					setDirectoryListing( bool directoryListing ) ;
-		void					setName( string const & name ) ;
-		void					setIndexes( vector<string> const & indexes ) ;
-		void					setErrorPages( map<int,string> const & err ) ;
-		void					setReturnURI( string const & uri ) ;
-		void					setUploadPath( string const & path ) ;
-		// void					setLocationBlock( vector<Location> const & locationBlock ) ;
+		void	setPort( int port ) ;
+		void	setRoot( string const & root ) ;
+		void	setHost( string const & host ) ;
+		void	setMaxBodySize( int maxBodySize ) ;
+		void	setAllowedMethod( vector<enum HttpMethod> const & allowedMethod ) ;
+		void	setDirectoryListing( bool directoryListing ) ;
+		void	setName( string const & name ) ;
+		void	setIndex( string const & index ) ;
+		void	setErrorPages( map<int,string> const & err ) ;
+		void	setReturnURI( map<int,string> const & uri ) ;
+		void	setUploadPath( string const & path ) ;
+		void	setLocation( vector<string> loc ) ;
+		void	setLocationBlock( vector<Location> const & locationBlock ) ;
 
+		int								getServerIndex( void ) const ;
 		int								getPort( void ) const ;
 		string const &					getRoot( void ) const ;
 		string const &					getHost( void ) const ;
@@ -43,14 +49,17 @@ class	ConfigServer {
 		vector<enum HttpMethod> const &	getAllowedMethod( void ) const ;
 		bool							getDirectoryListing( void ) const ;
 		string const &					getName( void ) const ;
-		vector<string> const &			getIndexes( void ) const ;
+		string const &					getIndex( void ) const ;
 		map<int,string> const &			getErrorPages( void ) const ;
-		string const &					getReturnURL( void ) const ;
+		map<int,string> const &			getReturnURI( void ) const ;
 		string const &					getUploadPath( void ) const ;
-		// vector<Location> const &		getLocationBlock( void ) const ;
+		vector<string> const &			getLocation( void ) const ;
+		vector<Location> const &		getLocationBlock( void ) const ;
 
 	private:
 
+		string					_serverBlock ;
+		int						_indexServer ;
 		vector<string>			_location ;
 
 		/* MANDATORY */
@@ -59,28 +68,34 @@ class	ConfigServer {
 
 		/* SET TO DEFAULT IF NOT SPECIFIED */
 		string					_host;
-		int						_maxBodySize ;
+		long long				_maxBodySize ;
 		vector<enum HttpMethod>	_allowedMethod ;
 		bool					_directoryListing ;
 		string					_name ;
 
 		/* OPTIONAL */
-		vector<string>			_indexes ;
-		map<int,string>			_errorPages ;
-		string					_returnURI ;
-		string					_uploadPath ;
-		// vector<Location>		_locationBlock ;
+		string				_index ;
+		map<int,string>		_errorPage ;
+		map<int,string>		_returnURI ;
+		string				_uploadPath ;
+		vector<Location>	_locationBlock ;
 
-		void	extractLocation( string & block ) ;
-		string 	extractStringVariable( string & block, string const & var ) ;
-		void	checkPort( string & block ) ;
+		void		extractLocation( string & block ) ;
+		string 		extractStringVariable( string & block, string const & var ) ;
+		void		checkPort( string & block ) ;
+		void		checkMBS( string & block ) ;
+		void		checkAutoIndex( string & block ) ;
+		void		checkName( string & block, int index ) ;
+		void		checkMethod( string & block ) ;
+		void		extractMap( string & block, string const & var, map<int,string> & Map ) ;
+		void		initLocation( void ) ;
 
 		ConfigServer( void ) ;
-		ConfigServer( ConfigServer const & cpy ) ;
-		ConfigServer &	operator=( ConfigServer const & rhs ) ;
 
 } ;
 
 ostream &	operator<<( ostream & o, ConfigServer const & rhs ) ;
 
 /* *** CONFIGSERVER.HPP *** */
+
+#endif

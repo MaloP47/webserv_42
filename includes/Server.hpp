@@ -6,7 +6,7 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/05 14:13:35 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/19 13:56:02 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/04/30 14:10:59 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,10 +16,10 @@
 # include "webserv.h"
 # include "AServerAttributes.hpp"
 # include "Webserv.hpp"
-# include "Location.hpp"
+# include "ConfigServer.hpp"
 
 class Webserv;
-class Location;
+class ConfigServer;
 
 typedef vector<enum HttpMethod>::iterator	methodeIt;
 
@@ -34,11 +34,10 @@ class Server : public AServerAttributes {
 		bool					_directoryListing;
 		string					_root;
 		vector<string>			_indexes;
-		int						_maxBodySize;
+		long long				_maxBodySize;
 		vector<enum HttpMethod>	_allowedMethod;
-		vector<Location>		_locationBlock;
+		// vector<Location>		_locationBlock;
 			
-
 		int		init();
 		void	setAddr();
 		void	abstraction( void ) const;
@@ -46,6 +45,7 @@ class Server : public AServerAttributes {
 	public:
 		Server();
 		Server(Webserv *webserv, int port, string host, string name);
+		Server( ConfigServer const & conf ) ;
 		Server(const Server &cpy);
 		~Server();
 
@@ -60,7 +60,7 @@ class Server : public AServerAttributes {
 		string						getHost() const;
 		string						getRoot() const;
 		vector<string>				getIndexes() const;
-		vector<Location> const &	getLocation() const;
+		// vector<Location> const &	getLocation() const;
 		bool						methodeAllowed(enum HttpMethod methode);
 
 };

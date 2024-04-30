@@ -6,12 +6,14 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 15:20:01 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/23 18:17:51 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/04/30 13:44:19 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "webserv.h"
 #include "Webserv.hpp"
+#include "ConfigServer.hpp"
+#include "Location.hpp"
 
 // void	handler(int signum) {
 // 	static_cast<void>(signum);
@@ -34,9 +36,15 @@ int	main( int ac, char **av ) {
 		try {
 			string	input = av[1] ;
 			Config	conf(input) ;
-			for ( int i = 0; i < conf.getNbServer(); i++ )
-				cout << conf.getServerBlocks()[i] << "\n" << endl ;
-			ConfigServer	cs( conf.getServerBlocks()[0], 0 ) ;
+			size_t	nbServer = conf.getNbServer() ;
+			vector<ConfigServer>	serv ;
+			for ( size_t i = 0; i < nbServer; i++ ) {
+				ConfigServer	servConf( conf.getServerBlocks()[i], i ) ;
+				serv.push_back( servConf ) ;
+			}
+			for ( size_t i = 0; i < nbServer; i++ ) {
+				cout << serv[i] ;
+			}
 		}
 		catch ( const runtime_error & e ) {
 			std::cout << e.what() << std::endl ;

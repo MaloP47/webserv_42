@@ -6,11 +6,10 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/05 15:15:28 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/23 18:33:37 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/04/28 12:50:13 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#pragma once
 #ifndef WEBSERV_H
 # define WEBSERV_H
 
@@ -52,6 +51,7 @@ enum HttpMethod {
 	OTHER
 };
 
+// # include "Location.hpp"
 # include "Webserv.hpp"
 # include "AServerAttributes.hpp"
 # include "Config.hpp"
