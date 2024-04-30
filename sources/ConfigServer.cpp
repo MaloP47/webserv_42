@@ -6,7 +6,7 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/23 13:37:58 by mpeulet           #+#    #+#             */
-/*   Updated: 2024/04/30 13:58:38 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/04/30 15:15:20 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -146,6 +146,8 @@ void	ConfigServer::checkMethod( string & block ) {
 	if ( pos != string::npos ) {
 		_allowedMethod.push_back( POST ) ;
 		tmp.erase( pos, 4 ) ;
+		if ( _uploadPath.empty() )
+			throw runtime_error( "Upload path is mandatory if POST method is allowed." ) ;
 	}
 	pos = tmp.find( "DELETE" ) ;
 	if ( pos != string::npos ) {

@@ -6,7 +6,7 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/27 11:42:58 by mpeulet           #+#    #+#             */
-/*   Updated: 2024/04/30 11:46:46 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/04/30 15:20:23 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -113,6 +113,8 @@ void	Location::checkMethod( string & block ) {
 	if ( pos != string::npos ) {
 		_allowedMethod.push_back( POST ) ;
 		tmp.erase( pos, 4 ) ;
+		if ( _uploadPath.empty() )
+			throw runtime_error( "Upload path is mandatory if POST method is allowed." ) ;
 	}
 	pos = tmp.find( "DELETE" ) ;
 	if ( pos != string::npos ) {
