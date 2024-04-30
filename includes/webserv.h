@@ -6,7 +6,7 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/05 15:15:28 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/30 15:35:21 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/04/30 16:26:42 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,7 +54,6 @@ enum HttpMethod {
 
 // # include "Location.hpp"
 # include "Webserv.hpp"
-# include "AServerAttributes.hpp"
 # include "Config.hpp"
 # include "ConfigServer.hpp"
 

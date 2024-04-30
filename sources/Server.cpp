@@ -6,7 +6,7 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/05 14:39:36 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/30 15:00:11 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/04/30 16:56:06 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,11 +14,11 @@
 #include <vector>
 #include "Server.hpp"
 
-Server::Server(): AServerAttributes(),
-	_webserv(NULL), _port(8080), _host("127.0.0.1"), _name("default"), _fd(-1) {}
+Server::Server()
+	:_webserv(NULL), _fd(-1), _port(8080), _host("127.0.0.1"), _name("default") {}
 
-Server::Server(Webserv *webserv, int port, string host, string name): AServerAttributes(),
-	_webserv(webserv), _port(port), _host(host), _name(name), _fd(-1) {
+Server::Server(Webserv *webserv, int port, string host, string name) :
+	_webserv(webserv), _fd(-1), _port(port), _host(host), _name(name) {
 	// TEMP : set manually for testing purpose
 	this->_directoryListing = true;
 	this->_root = "/home/gbrunet/Desktop/webserv_42/www";
@@ -28,14 +28,27 @@ Server::Server(Webserv *webserv, int port, string host, string name): AServerAtt
 	this->init();
 }
 
-// Server::Server( ConfigServer const & conf ) :
-// 	this->_port( conf.getPort() ),
-// 	this->_host( conf.getHost() ),
-// 	{
-		
-// 	}
+Server::Server( Webserv *webserv, ConfigServer const & conf ) :
+	_webserv( webserv ),
+	_fd( -1 ),
+	_port( conf.getPort() ),
+	_host( conf.getHost() ),
+	_name( conf.getName() ),
+	_directoryListing( conf.getDirectoryListing() ),
+	_root( conf.getRoot() ),
+	_index( conf.getIndex() ),
+	_maxBodySize( conf.getMaxBodySize() ),
+	_allowedMethod( conf.getAllowedMethod() ),
+	_locationBlock( conf.getLocationBlock() ),
+	_errorPages( conf.getErrorPages() ),
+	_returnURI( conf.getReturnURI() ),
+	_uploadPath( conf.getUploadPath() )
+	{
+		this->_indexes.push_back("indesx.html");
+		init() ;
+	}
 
-Server::Server(Server const &cpy) : AServerAttributes() {
+Server::Server(Server const &cpy) {
 	*this = cpy;
 }
 
@@ -127,9 +140,9 @@ int	Server::getMaxBodySize() const {
 	return (this->_maxBodySize);
 }
 
-// vector<Location> const &	Server::getLocation() const {
-// 	return (this->_locationBlock);
-// }
+vector<Location> const &	Server::getLocation() const {
+	return (this->_locationBlock);
+}
 
 bool	Server::methodeAllowed(enum HttpMethod methode) {
 	for (methodeIt it = this->_allowedMethod.begin(); it != this->_allowedMethod.end(); it++)
@@ -137,6 +150,11 @@ bool	Server::methodeAllowed(enum HttpMethod methode) {
 			return (true);
 	return (false);
 }
+
+map<int,string> const &	Server::getErrorPages( void ) const { return _returnURI ; }
+map<int,string> const &	Server::getReturnURI( void ) const { return _returnURI ; }
+string const &			Server::getUploadPath( void ) const { return _uploadPath ; }
+
 
 ostream	&operator<<(ostream &o, const Server &server) {
 	o << CYAN BOLD<< server.getName() << END_STYLE " → " GREEN BOLD;

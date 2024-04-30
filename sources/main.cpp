@@ -6,7 +6,7 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 15:20:01 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/30 15:35:32 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/04/30 16:46:49 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,11 +15,11 @@
 #include "ConfigServer.hpp"
 #include "Location.hpp"
 
-// void	handler(int signum) {
-// 	static_cast<void>(signum);
-// 	cout << DEL_LINE CYAN "exit" END_STYLE << endl;
-// 	env()->ctrl_c = true;
-// }
+void	handler(int signum) {
+	static_cast<void>(signum);
+	cout << DEL_LINE CYAN "exit" END_STYLE << endl;
+	env()->ctrl_c = true;
+}
 
 // int	main(void) {
 // 	signal(SIGINT, handler);
@@ -43,9 +43,15 @@ int	main( int ac, char **av ) {
 				serv.push_back( servConf ) ;
 			}
 			checkDuplicatePorts( serv ) ;
-			for ( size_t i = 0; i < nbServer; i++ ) {
-				cout << serv[i] ;
-			}
+			// for ( size_t i = 0; i < nbServer; i++ ) {
+			// 	cout << serv[i] ;
+			// }
+			signal(SIGINT, handler);
+			env()->ctrl_c = false;
+			env()->return_val = 0;
+			env()->webserv = new Webserv( serv );
+			delete (env()->webserv);
+			return (env()->return_val);
 		}
 		catch ( const runtime_error & e ) {
 			std::cout << e.what() << std::endl ;

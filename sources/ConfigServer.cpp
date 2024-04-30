@@ -6,7 +6,7 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/23 13:37:58 by mpeulet           #+#    #+#             */
-/*   Updated: 2024/04/30 15:38:25 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/04/30 16:45:21 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,10 +86,10 @@ void	ConfigServer::checkPort( string & block ) {
 	string	tmp = extractStringVariable( block, "listen" ) ;
 	if ( tmp.empty() )
 		throw runtime_error( "Missing port, mandatory field." ) ;
-	if ( tmp.size() < 5 || tmp.size() > 5 || !isAllDigits( tmp ) )
+	if ( tmp.size() < 4 || tmp.size() > 5 || !isAllDigits( tmp ) )
 		throw runtime_error( "Wrong port format." ) ;
 	_port = atoi( tmp.c_str() ) ;
-	if ( _port < 49152 || _port > 65535 )
+	if ( _port < 8079 || _port > 65535 )
 		throw runtime_error( "By convention port must be between 49152 et 65535" ) ;
 }
 

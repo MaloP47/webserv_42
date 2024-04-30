@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Webserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+        */
+/*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/05 15:49:31 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/15 17:33:23 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/04/30 16:38:48 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,17 @@ Webserv::Webserv(string config): _logLevel(1) {
 	Server two(this, 8081, "127.0.0.1", "server_two");
 	this->addServer(two);
 
+	if (this->initEpoll() != SUCCESS)
+		return ;
+	this->start();
+}
+
+Webserv::Webserv( vector<ConfigServer> const & conf ) :
+	_logLevel(1) {
+	for ( size_t i = 0; i < conf.size(); i++ ) {
+		Server serv(this, conf[i]) ;
+		this->addServer(serv) ;
+	}
 	if (this->initEpoll() != SUCCESS)
 		return ;
 	this->start();
