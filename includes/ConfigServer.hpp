@@ -6,7 +6,7 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/23 13:37:40 by mpeulet           #+#    #+#             */
-/*   Updated: 2024/04/30 11:07:03 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/04/30 13:49:28 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,8 @@ class	ConfigServer {
 
 		ConfigServer( string const & serverBlock, int indexOfServerBlock ) ;
 		~ConfigServer( void ) ;
+		ConfigServer( ConfigServer const & cpy ) ;
+		ConfigServer &	operator=( ConfigServer const & rhs ) ;
 
 		void	setPort( int port ) ;
 		void	setRoot( string const & root ) ;
@@ -56,6 +58,7 @@ class	ConfigServer {
 
 	private:
 
+		string					_serverBlock ;
 		int						_indexServer ;
 		vector<string>			_location ;
 
@@ -88,8 +91,6 @@ class	ConfigServer {
 		void		initLocation( void ) ;
 
 		ConfigServer( void ) ;
-		ConfigServer( ConfigServer const & cpy ) ;
-		ConfigServer &	operator=( ConfigServer const & rhs ) ;
 
 } ;
 

@@ -6,7 +6,7 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/05 14:39:36 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/28 12:53:25 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/04/30 15:00:11 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,13 @@ Server::Server(Webserv *webserv, int port, string host, string name): AServerAtt
 	this->_allowedMethod.push_back(POST);
 	this->init();
 }
+
+// Server::Server( ConfigServer const & conf ) :
+// 	this->_port( conf.getPort() ),
+// 	this->_host( conf.getHost() ),
+// 	{
+		
+// 	}
 
 Server::Server(Server const &cpy) : AServerAttributes() {
 	*this = cpy;

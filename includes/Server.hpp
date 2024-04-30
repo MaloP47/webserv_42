@@ -6,7 +6,7 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/05 14:13:35 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/28 12:52:41 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/04/30 14:10:59 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ class Server : public AServerAttributes {
 		bool					_directoryListing;
 		string					_root;
 		vector<string>			_indexes;
-		int						_maxBodySize;
+		long long				_maxBodySize;
 		vector<enum HttpMethod>	_allowedMethod;
 		// vector<Location>		_locationBlock;
 			
@@ -45,6 +45,7 @@ class Server : public AServerAttributes {
 	public:
 		Server();
 		Server(Webserv *webserv, int port, string host, string name);
+		Server( ConfigServer const & conf ) ;
 		Server(const Server &cpy);
 		~Server();
 

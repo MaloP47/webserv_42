@@ -6,7 +6,7 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 15:20:01 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/30 11:31:45 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/04/30 13:44:19 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,17 +36,15 @@ int	main( int ac, char **av ) {
 		try {
 			string	input = av[1] ;
 			Config	conf(input) ;
-			for ( int i = 0; i < conf.getNbServer(); i++ )
-				cout << conf.getServerBlocks()[i] << "\n" << endl ;
-			ConfigServer	cs( conf.getServerBlocks()[0], 0 ) ;
-			// cout << cs ;
-			// cout << cs.getLocation()[0] << endl ;
-			// cout << cs.getLocation()[1] << endl ;
-			// cout << cs.getLocation()[2] << endl ;
-			// cout << cs.getLocation()[3] << endl ;		
-			// cout << cs.getLocation()[4] << endl ;
-			// Location	loc( "/test1{rootvar/www/test1;indextest1.html;allowedMethodsGETDELETE;client_max_body_size1024;autoindexon;upload_pathupload/files/;error_page404/error/404.html;return301/test2;}", 1 ) ;
-			cout << cs ;
+			size_t	nbServer = conf.getNbServer() ;
+			vector<ConfigServer>	serv ;
+			for ( size_t i = 0; i < nbServer; i++ ) {
+				ConfigServer	servConf( conf.getServerBlocks()[i], i ) ;
+				serv.push_back( servConf ) ;
+			}
+			for ( size_t i = 0; i < nbServer; i++ ) {
+				cout << serv[i] ;
+			}
 		}
 		catch ( const runtime_error & e ) {
 			std::cout << e.what() << std::endl ;

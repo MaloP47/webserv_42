@@ -6,7 +6,7 @@
 #    By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/02/14 14:06:15 by gbrunet           #+#    #+#              #
-#    Updated: 2024/04/28 13:12:19 by mpeulet          ###   ########.fr        #
+#    Updated: 2024/04/30 13:51:51 by mpeulet          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -30,7 +30,7 @@ CC = c++
 
 INCLUDES = includes
 
-CFLAGS = -Wall -Wextra -Werror -std=c++98 -I $(INCLUDES)
+CFLAGS = -Wall -Wextra -Werror -g3 -std=c++98 -I $(INCLUDES)
 
 SRC_DIR = sources/
 
