@@ -6,7 +6,7 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/27 11:41:57 by mpeulet           #+#    #+#             */
-/*   Updated: 2024/04/29 18:19:28 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/04/30 11:21:29 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,36 +14,62 @@
 # define LOCATION_HPP
 
 # include "webserv.h"
-# include "ConfigServer.hpp"
 
-class	Location : public ConfigServer {
+class	Location {
 
 	public:
 
 		Location( string const & locBloc, int index ) ;
 		~Location( void ) ;
+		Location( Location const & cpy ) ;
+		Location &	operator=( Location const & rhs ) ;
 
 		void	setLocPath( string const & lp ) ;
 		void	setLocIndex( int index ) ;
+		void	setRoot( string const & root ) ;
+		void	setMaxBodySize( int maxBodySize ) ;
+		void	setAllowedMethod( vector<enum HttpMethod> const & allowedMethod ) ;
+		void	setDirectoryListing( bool directoryListing ) ;
+		void	setIndex( string const & index ) ;
+		void	setErrorPages( map<int,string> const & err ) ;
+		void	setReturnURI( map<int,string> const & uri ) ;
+		void	setUploadPath( string const & path ) ;
 
-		string const &	getLocPath( void ) const ;
-		int				getLocIndex( void ) const ;
+		string const &					getLocPath( void ) const ;
+		int								getLocIndex( void ) const ;
+
+		string const &					getRoot( void ) const ;
+		int								getMaxBodySize( void ) const ;
+		vector<enum HttpMethod> const &	getAllowedMethod( void ) const ;
+		bool							getDirectoryListing( void ) const ;
+		string const &					getIndex( void ) const ;
+		map<int,string> const &			getErrorPages( void ) const ;
+		map<int,string> const &			getReturnURI( void ) const ;
+		string const &					getUploadPath( void ) const ;
 
 	private:
 
-		int		_locIndex ;
+		int						_locIndex ;
+		string					_locPath ;
 
-		// MANDATORY FOR LOCATION
-		string	_locPath ;
-		/* In ConfigServer 
-		string	_root;
-		*/
+		string					_root ;
+		long long				_maxBodySize ;
+		vector<enum HttpMethod>	_allowedMethod ;
+		bool					_directoryListing ;
+		string					_index ;
+		map<int,string>			_errorPage ;
+		map<int,string>			_returnURI ;
+		string					_uploadPath ;
+
 
 		void	extractLocPath( string & locBloc ) ;
+		string	extractStringVariable( string & tmp, string const & var ) ;
+		void	checkMBS( string & loc ) ;
+		void	checkAutoIndex( string & loc ) ;
+		void	checkMethod( string & loc ) ;
+		void	extractMap( string & loc, string const & key, map<int,string> & map ) ;
 
 		Location( void ) ;
-		// Location( Location const & cpy ) ;
-		// Location &	operator=( Location const & rhs ) ;
 			
 } ;
 

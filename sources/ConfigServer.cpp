@@ -6,19 +6,18 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/23 13:37:58 by mpeulet           #+#    #+#             */
-/*   Updated: 2024/04/29 18:36:25 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/04/30 11:44:12 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ConfigServer.hpp"
-
-ConfigServer::ConfigServer( void ) {}
 
 ConfigServer::ConfigServer( string const & serverBlock, int indexOfServerBlock ) : 
  		 _indexServer( indexOfServerBlock ) {
 
 	string 	block = serverBlock ;
 	extractLocation( block ) ;
+	initLocation() ;
 	// PROBABLY DO THE SAME FOR CGI
 	// CREATE VECTOR FOR LOCATION
 	_root = extractStringVariable( block, "root" ) ;
@@ -39,6 +38,32 @@ ConfigServer::ConfigServer( string const & serverBlock, int indexOfServerBlock )
 	if ( block != "}" )
 		throw runtime_error( "Config file contains unknown instructions :" + block ) ;
 }
+
+ConfigServer::ConfigServer( ConfigServer const & cpy ) {
+	*this = cpy ;
+}
+
+ConfigServer &	ConfigServer::operator=( ConfigServer const & rhs ) {
+	if ( this != &rhs ) {
+		_indexServer = rhs._indexServer ;
+		_port = rhs._port ;
+		_root = rhs._root ;
+		_host = rhs._host ;
+		_maxBodySize = rhs._maxBodySize ;
+		_allowedMethod = rhs._allowedMethod ;
+		_directoryListing = rhs._directoryListing ;
+		_name = rhs._name ;
+		_index = rhs._index ;
+		_errorPage = rhs._errorPage ;
+		_returnURI = rhs._returnURI ;
+		_uploadPath = rhs._uploadPath ;
+		_location = rhs._location ;
+		_locationBlock = rhs._locationBlock ;
+	}
+	return *this ;
+}
+
+ConfigServer::~ConfigServer( void ) {}
 
 string 	ConfigServer::extractStringVariable( string & tmp, string const & var ) {
 	size_t	start = 0 ;
@@ -129,7 +154,6 @@ void	ConfigServer::checkMethod( string & block ) {
 	}
 	if ( !tmp.empty() )
 		throw runtime_error( "Allowed methods are only GET, POST and DELETE" ) ;
-		
 }
 
 void	ConfigServer::extractMap( string & block, string const & var, map<int,string> & Map ) {
@@ -141,7 +165,7 @@ void	ConfigServer::extractMap( string & block, string const & var, map<int,strin
 	if ( tmp.size() < 3 )
 		throw runtime_error( "Invalid error page / return format." ) ;
 	key = strtol( tmp.substr( 0, 3 ).c_str(), &endptr, 10 ) ;
-	if ( *endptr != 0 || ( key < 100 && key > 505 ) )
+	if ( *endptr != 0 || ( key < 100 || key > 505 ) )
 		throw runtime_error( "Invalid error page / return format." ) ;
 	tmp.erase( 0, 3 ) ;
 	Map.insert( pair<int,string>( key, tmp )) ;
@@ -171,20 +195,16 @@ void	ConfigServer::extractLocation( string & tmp ) {
 	}
 }
 
-#include "Location.hpp"
-
 void		ConfigServer::initLocation( void ) {
-	// size_t	locSize = _location.size() ;
-	// if ( locSize ) {
-	// 	for ( size_t i = 0; i < locSize; ++i ) {
-	// 		Location lc( _location[i], i) ;
-	// 		_locationBlock.push_back( lc ) ;
-	// 	}
-	// }	
+	size_t	locSize = _location.size() ;
+	if ( locSize ) {
+		for ( size_t i = 0; i < locSize; ++i ) {
+			Location lc( _location[i], i) ;
+			_locationBlock.push_back( lc ) ;
+		}
+	}	
 }
 
-
-ConfigServer::~ConfigServer( void ) {}
 
 void	ConfigServer::setPort( int port ) { _port = port ; }
 void	ConfigServer::setRoot( string const & root ) { _root = root ; }
@@ -198,7 +218,7 @@ void	ConfigServer::setErrorPages( map<int,string> const & err ) { _errorPage = e
 void	ConfigServer::setReturnURI( map<int,string> const & uri ) { _returnURI = uri ; }
 void	ConfigServer::setUploadPath( string const & path ) { _uploadPath = path ; }
 void	ConfigServer::setLocation( vector<string> loc ) { _location = loc ; }
-// void	ConfigServer::setLocationBlock( vector<Location> const & locationBlock ) { _locationBlock = locationBlock ; }
+void	ConfigServer::setLocationBlock( vector<Location> const & locationBlock ) { _locationBlock = locationBlock ; }
 
 int								ConfigServer::getServerIndex( void ) const { return _indexServer ; }
 int								ConfigServer::getPort( void ) const { return _port ; }
@@ -213,9 +233,10 @@ map<int,string> const &			ConfigServer::getErrorPages( void ) const { return _er
 map<int,string> const &			ConfigServer::getReturnURI( void ) const { return _returnURI ; }
 string const &					ConfigServer::getUploadPath( void ) const { return _uploadPath ; }
 vector<string> const &			ConfigServer::getLocation( void ) const { return _location ; } ;
-// vector<Location> const &		ConfigServer::getLocationBlock( void ) const { return _locationBlock ; }
+vector<Location> const &		ConfigServer::getLocationBlock( void ) const { return _locationBlock ; }
 
 ostream &	operator<<( ostream & o, ConfigServer const & rhs ) {
+	o << "//////////////////////SERVER////////////////////////" << endl ;
 	o << "[ " << "Server block " << rhs.getServerIndex() << " ]" << endl ; 
 	o << "Server: " << rhs.getName() << std::endl ;
 	o << "Port: " << rhs.getPort() << std::endl ;
@@ -257,6 +278,12 @@ ostream &	operator<<( ostream & o, ConfigServer const & rhs ) {
 	}
 	o << std::endl ;
 	o << "UploadPath: " << rhs.getUploadPath() << std::endl ;
-	// o << "LocationBlock: " << rhs.getLocationBlock().size() << std::endl ;
+	o << "LocationBlock: " << rhs.getLocationBlock().size() << std::endl ;
+	for ( size_t i = 0 ; i < rhs.getLocationBlock().size() ; i++ ) {
+		o << rhs.getLocationBlock()[i] ;
+		if ( i + 1 < rhs.getLocationBlock().size() )
+			o << std::endl ;
+	}
+	o << "///////////////////////////////////////////////////" << endl ;
 	return o;
 }

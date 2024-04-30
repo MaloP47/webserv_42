@@ -6,7 +6,7 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/23 13:37:40 by mpeulet           #+#    #+#             */
-/*   Updated: 2024/04/29 18:34:26 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/04/30 11:07:03 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 # define CONFIGSERVER_HPP
 
 # include "webserv.h"
+# include "Location.hpp"
 
 class Location;
 
@@ -21,9 +22,8 @@ class	ConfigServer {
 
 	public:
 
-		ConfigServer( void ) ;
 		ConfigServer( string const & serverBlock, int indexOfServerBlock ) ;
-		virtual ~ConfigServer( void ) ;
+		~ConfigServer( void ) ;
 
 		void	setPort( int port ) ;
 		void	setRoot( string const & root ) ;
@@ -37,7 +37,7 @@ class	ConfigServer {
 		void	setReturnURI( map<int,string> const & uri ) ;
 		void	setUploadPath( string const & path ) ;
 		void	setLocation( vector<string> loc ) ;
-		// void	setLocationBlock( vector<Location> const & locationBlock ) ;
+		void	setLocationBlock( vector<Location> const & locationBlock ) ;
 
 		int								getServerIndex( void ) const ;
 		int								getPort( void ) const ;
@@ -52,9 +52,9 @@ class	ConfigServer {
 		map<int,string> const &			getReturnURI( void ) const ;
 		string const &					getUploadPath( void ) const ;
 		vector<string> const &			getLocation( void ) const ;
-		// vector<Location> const &		getLocationBlock( void ) const ;
+		vector<Location> const &		getLocationBlock( void ) const ;
 
-	protected:
+	private:
 
 		int						_indexServer ;
 		vector<string>			_location ;
@@ -75,7 +75,7 @@ class	ConfigServer {
 		map<int,string>		_errorPage ;
 		map<int,string>		_returnURI ;
 		string				_uploadPath ;
-		// vector<Location>	_locationBlock ;
+		vector<Location>	_locationBlock ;
 
 		void		extractLocation( string & block ) ;
 		string 		extractStringVariable( string & block, string const & var ) ;
@@ -87,8 +87,7 @@ class	ConfigServer {
 		void		extractMap( string & block, string const & var, map<int,string> & Map ) ;
 		void		initLocation( void ) ;
 
-	private:
-
+		ConfigServer( void ) ;
 		ConfigServer( ConfigServer const & cpy ) ;
 		ConfigServer &	operator=( ConfigServer const & rhs ) ;
 
