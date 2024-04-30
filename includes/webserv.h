@@ -6,7 +6,7 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/05 15:15:28 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/28 12:50:13 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/04/30 15:35:21 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,7 @@
 # include <csignal>
 # include <dirent.h>
 # include <exception>
+# include <set>
 using namespace std;
 
 # include "Mime.hpp"
@@ -102,5 +103,6 @@ size_t			findInCharVec(string str, vector<char> &vec);
 vector<string>	split_trim(string str, string needle);
 vector<string>	split_trim_conf(string str, string needle);
 bool			isAllDigits( string const & str ) ;
+void			checkDuplicatePorts( vector<ConfigServer> const & servers ) ;
 
 #endif

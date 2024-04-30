@@ -6,7 +6,7 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 15:20:01 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/30 13:44:19 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/04/30 15:35:32 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,7 @@ int	main( int ac, char **av ) {
 				ConfigServer	servConf( conf.getServerBlocks()[i], i ) ;
 				serv.push_back( servConf ) ;
 			}
+			checkDuplicatePorts( serv ) ;
 			for ( size_t i = 0; i < nbServer; i++ ) {
 				cout << serv[i] ;
 			}

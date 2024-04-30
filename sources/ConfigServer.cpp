@@ -6,14 +6,15 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/23 13:37:58 by mpeulet           #+#    #+#             */
-/*   Updated: 2024/04/30 15:15:20 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/04/30 15:38:25 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ConfigServer.hpp"
 
-ConfigServer::ConfigServer( string const & serverBlock, int indexOfServerBlock ) : 
- 		 _indexServer( indexOfServerBlock ) {
+ConfigServer::ConfigServer( string const & serverBlock, int indexOfServerBlock ) :
+		_serverBlock( serverBlock ), 
+ 		_indexServer( indexOfServerBlock ) {
 
 	string 	block = serverBlock ;
 	extractLocation( block ) ;
@@ -223,6 +224,7 @@ void	ConfigServer::setLocation( vector<string> loc ) { _location = loc ; }
 void	ConfigServer::setLocationBlock( vector<Location> const & locationBlock ) { _locationBlock = locationBlock ; }
 
 int								ConfigServer::getServerIndex( void ) const { return _indexServer ; }
+string const &					ConfigServer::getServerBlock( void ) const { return _serverBlock ; }
 int								ConfigServer::getPort( void ) const { return _port ; }
 string const &					ConfigServer::getRoot( void ) const { return _root ; }
 string const &					ConfigServer::getHost( void ) const { return _host ; }
