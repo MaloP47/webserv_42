@@ -6,14 +6,15 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/23 13:37:58 by mpeulet           #+#    #+#             */
-/*   Updated: 2024/04/30 13:58:38 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/04/30 16:45:21 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ConfigServer.hpp"
 
-ConfigServer::ConfigServer( string const & serverBlock, int indexOfServerBlock ) : 
- 		 _indexServer( indexOfServerBlock ) {
+ConfigServer::ConfigServer( string const & serverBlock, int indexOfServerBlock ) :
+		_serverBlock( serverBlock ), 
+ 		_indexServer( indexOfServerBlock ) {
 
 	string 	block = serverBlock ;
 	extractLocation( block ) ;
@@ -85,10 +86,10 @@ void	ConfigServer::checkPort( string & block ) {
 	string	tmp = extractStringVariable( block, "listen" ) ;
 	if ( tmp.empty() )
 		throw runtime_error( "Missing port, mandatory field." ) ;
-	if ( tmp.size() < 5 || tmp.size() > 5 || !isAllDigits( tmp ) )
+	if ( tmp.size() < 4 || tmp.size() > 5 || !isAllDigits( tmp ) )
 		throw runtime_error( "Wrong port format." ) ;
 	_port = atoi( tmp.c_str() ) ;
-	if ( _port < 49152 || _port > 65535 )
+	if ( _port < 8079 || _port > 65535 )
 		throw runtime_error( "By convention port must be between 49152 et 65535" ) ;
 }
 
@@ -146,6 +147,8 @@ void	ConfigServer::checkMethod( string & block ) {
 	if ( pos != string::npos ) {
 		_allowedMethod.push_back( POST ) ;
 		tmp.erase( pos, 4 ) ;
+		if ( _uploadPath.empty() )
+			throw runtime_error( "Upload path is mandatory if POST method is allowed." ) ;
 	}
 	pos = tmp.find( "DELETE" ) ;
 	if ( pos != string::npos ) {
@@ -221,6 +224,7 @@ void	ConfigServer::setLocation( vector<string> loc ) { _location = loc ; }
 void	ConfigServer::setLocationBlock( vector<Location> const & locationBlock ) { _locationBlock = locationBlock ; }
 
 int								ConfigServer::getServerIndex( void ) const { return _indexServer ; }
+string const &					ConfigServer::getServerBlock( void ) const { return _serverBlock ; }
 int								ConfigServer::getPort( void ) const { return _port ; }
 string const &					ConfigServer::getRoot( void ) const { return _root ; }
 string const &					ConfigServer::getHost( void ) const { return _host ; }

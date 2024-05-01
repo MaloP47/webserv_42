@@ -6,7 +6,7 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/23 13:37:40 by mpeulet           #+#    #+#             */
-/*   Updated: 2024/04/30 13:49:28 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/04/30 15:33:41 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,7 @@ class	ConfigServer {
 		void	setLocationBlock( vector<Location> const & locationBlock ) ;
 
 		int								getServerIndex( void ) const ;
+		string const &					getServerBlock( void ) const ;
 		int								getPort( void ) const ;
 		string const &					getRoot( void ) const ;
 		string const &					getHost( void ) const ;
