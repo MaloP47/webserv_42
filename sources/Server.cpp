@@ -44,8 +44,11 @@ Server::Server( Webserv *webserv, ConfigServer const & conf ) :
 	_returnURI( conf.getReturnURI() ),
 	_uploadPath( conf.getUploadPath() )
 	{
-		this->_indexes.push_back("indesx.html");
-		init() ;
+		vector<string> indexes = split_trim(this->_index, ",");
+		for (strVecIt it = indexes.begin(); it != indexes.end(); it++) {
+			this->_indexes.push_back(*it);
+		}
+		this->init() ;
 	}
 
 Server::Server(Server const &cpy) {

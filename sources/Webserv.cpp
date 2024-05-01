@@ -19,10 +19,10 @@ Webserv::Webserv(string config): _logLevel(1) {
 	(void) config;
 	// something here to parse the config file;
 	// for now, i'm adding manually 2 servers for testing purpose
-	Server one(this, 8080, "127.0.0.1", "server_one");
-	this->addServer(one);
-	Server two(this, 8081, "127.0.0.1", "server_two");
-	this->addServer(two);
+//	Server one(this, 8080, "127.0.0.1", "server_one");
+//	this->addServer(one);
+//	Server two(this, 8081, "127.0.0.1", "server_two");
+//	this->addServer(two);
 
 	if (this->initEpoll() != SUCCESS)
 		return ;
