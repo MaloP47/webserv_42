@@ -17,6 +17,7 @@
 # include "Webserv.hpp"
 # include "ConfigServer.hpp"
 # include "Location.hpp"
+#include <vector>
 
 class Webserv;
 class ConfigServer;
@@ -72,6 +73,7 @@ class Server {
 		map<int,string> const &		getReturnURI( void ) const ;
 		string const &				getUploadPath( void ) const ;
 		bool						methodeAllowed(enum HttpMethod methode);
+		vector<enum HttpMethod>		getAllowedMethod() const;
 
 };
 

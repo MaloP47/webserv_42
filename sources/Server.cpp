@@ -153,6 +153,10 @@ vector<Location> const &	Server::getLocation() const {
 	return (this->_locationBlock);
 }
 
+vector<enum HttpMethod>	Server::getAllowedMethod() const {
+	return (this->_allowedMethod);
+}
+
 bool	Server::methodeAllowed(enum HttpMethod methode) {
 	for (methodeIt it = this->_allowedMethod.begin(); it != this->_allowedMethod.end(); it++)
 		if (*it == methode)

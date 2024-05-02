@@ -116,7 +116,7 @@ static string	htmlFile(struct dirent *dp, string path, string relativePath) {
 			+ "</td></tr>");
 }
 
-string	DirectoryListing::html(string path, string root) {
+string	DirectoryListing::html(string path, string root, string requestPath) {
 	DIR				*dir;
 	struct dirent	*dp;
 	string			html;
@@ -126,8 +126,7 @@ string	DirectoryListing::html(string path, string root) {
 
 	relativePath = path;
 	relativePath.erase(0, root.length());
-
-	html = "<!doctype html><html><head><title>Index of " + relativePath + "=</title>\
+	html = "<!doctype html><html><head><title>Index of " + requestPath + "</title>\
 			<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/\
 			bootstrap@5.3.3/dist/css/bootstrap.min.css\"><link rel=\"preconnect\"\
 			href=\"https://fonts.googleapis.com\"><link rel=\"preconnect\"\
@@ -137,7 +136,7 @@ string	DirectoryListing::html(string path, string root) {
 			<body class=\"m-3 mt-5\" style=\"background-color:#353535\"><div \
 			class=\"container text-white p-3\"><div class=\"rounded-3 p-5\" \
 			style=\"background-color:#2b2a33; border:solid 1px #1b1b1b\"><h4>\
-			Index of " + relativePath + "</h4><hr />";
+			Index of " + requestPath + "</h4><hr />";
 	if (relativePath != "/")
 		html += htmlParentDir();
 	html += "<div class=\"p-3\"><table \
@@ -149,7 +148,6 @@ string	DirectoryListing::html(string path, string root) {
 		perror("Cannot open directory");
 		return (NULL);
 	}
-
 	while ((dp = readdir(dir)) != NULL) {
 		if (string(dp->d_name) == "." || string(dp->d_name) == "..")
 			continue ;
@@ -159,10 +157,9 @@ string	DirectoryListing::html(string path, string root) {
 			file.insert(dirPair(dp->d_name, dp));
 	}
 	for (dirMapIt it = folder.begin(); it != folder.end(); it++)
-		html += htmlDir(it->second, path, relativePath);
+		html += htmlDir(it->second, path, requestPath);
 	for (dirMapIt it = file.begin(); it != file.end(); it++)
-		html += htmlFile(it->second, path, relativePath);
-
+		html += htmlFile(it->second, path, requestPath);
 	html += "</tbody></table></div></div></div></body></html>";
 	return (html);
 }

@@ -213,7 +213,7 @@ void	HttpResponse::error(int num) {
 
 void	HttpResponse::sendDirectoryPage(string path) {
 	int		bytes;
-	string	page = DirectoryListing::html(path, this->getServer()->getRoot());
+	string	page = DirectoryListing::html(path, this->getServer()->getRoot(), this->getRequest()->getUri());
 
 	if (this->keepAlive() && !this->getClientError())
 		this->sendChunkSize(page.length());
@@ -239,49 +239,13 @@ vector<string>	HttpResponse::getIndexes() const {
 
 bool	HttpResponse::expandUri(string &uri, bool &isDir) {
 	struct stat		s;
-	vector<string>	indexes;
-	string			index;
 
-	vector<Location> locations = this->getServer()->getLocation();
-	for (vector<Location>::iterator it = locations.begin(); it != locations.end(); it++) {
-		if (this->getRequest()->getUri().compare(0, it->getLocPath().length(), it->getLocPath()) == 0) {
-			uri = this->getRequest()->getUri();
-			uri.erase(0, it->getLocPath().length());
-			uri = it->getRoot() + uri;
-			index = it->getIndex();
-			vector<string> indexes = split_trim(index, ",");
-			for (strVecIt it = indexes.begin(); it != indexes.end(); it++) {
-				if (*it != "")
-					indexes.push_back(*it);
-			}
-			if (stat(uri.c_str(), &s) == 0) {
-				if (s.st_mode & S_IFDIR) {
-					isDir = true;
-					if (uri[uri.length() - 1] != '/') {
-						this->movedPermanently(this->getRequest()->getUri() + "/");
-						return (false);
-					}
-				}
-				else
-					isDir = false;
-			} else {
-				this->error(404);
-				return (false);
-			}
-			if (isDir) {
-				for (vector<string>::iterator index_it = indexes.begin(); index_it != indexes.end(); index_it++) {
-					if (*index_it != "" && access((uri + *index_it).c_str(), F_OK) != -1) {
-						uri += *index_it;
-						isDir = false;
-						break;
-					}
-				}
-			}
-			return (true);
-		}
-	}
-	uri = this->getServer()->getRoot() + this->getRequest()->getUri();
-	indexes = this->getIndexes();
+	if (this->_isLocation) {
+		uri = this->getRequest()->getUri();
+		uri.erase(0, this->_locPath.length());
+		uri = this->_root + uri;
+	} else
+		uri = this->getServer()->getRoot() + this->getRequest()->getUri();
 	if (stat(uri.c_str(), &s) == 0) {
 		if (s.st_mode & S_IFDIR) {
 			isDir = true;
@@ -297,8 +261,12 @@ bool	HttpResponse::expandUri(string &uri, bool &isDir) {
 		return (false);
 	}
 	if (isDir) {
-		for (vector<string>::iterator it = indexes.begin(); it != indexes.end(); it++) {
+		for (vector<string>::iterator it = this->_indexes.begin(); it != this->_indexes.end(); it++) {
 			if (access((uri + *it).c_str(), F_OK) != -1) {
+				if (access((uri + *it).c_str(), R_OK) == -1) {
+					this->error(403);
+					return (false);
+				}
 				uri += *it;
 				isDir = false;
 				break;
@@ -325,12 +293,53 @@ void	HttpResponse::tryDeleteFile() {
 	}
 }
 
+void	HttpResponse::setInfos() {
+	vector<string>	index;
+	vector<Location> locations = this->getServer()->getLocation();
+	for (vector<Location>::iterator it = locations.begin(); it != locations.end(); it++) {
+		if (this->getRequest()->getUri().compare(0, it->getLocPath().length(), it->getLocPath()) == 0) {
+			this->_locPath = it->getLocPath();
+			this->_root = it->getRoot();
+			this->_maxBodySize = it->getMaxBodySize();
+			this->_allowedMethod = it->getAllowedMethod();
+			this->_directoryListing = it->getDirectoryListing();
+			this->_errorPage = it->getErrorPages();
+			this->_returnURI = it->getReturnURI();
+			this->_uploadPath = it->getUploadPath();
+			this->_isLocation = true;
+			index = split_trim(it->getIndex(), ",");
+			for (strVecIt it = this->_indexes.begin(); it != this->_indexes.end(); it++) {
+				if (*it != "")
+					this->_indexes.push_back(*it);
+			}
+			return ;
+		}
+	}
+	this->_root = this->getServer()->getRoot();
+	this->_maxBodySize = this->getServer()->getMaxBodySize();
+	this->_allowedMethod = this->getServer()->getAllowedMethod();
+	this->_directoryListing = this->getServer()->getDirectoryListing();
+	this->_errorPage = this->getServer()->getErrorPages();
+	this->_returnURI = this->getServer()->getReturnURI();
+	this->_uploadPath = this->getServer()->getUploadPath();
+	this->_isLocation = false;
+	this->_indexes = this->getServer()->getIndexes();
+}
+
+bool	HttpResponse::methodeAllowed(enum HttpMethod methode) {
+	for (methodeIt it = this->_allowedMethod.begin(); it != this->_allowedMethod.end(); it++)
+		if (*it == methode)
+			return (true);
+	return (false);
+}
+
 void	HttpResponse::sendResponse() {
 	ifstream		file;
 	string			ext;
 	string			uri;
 	bool			isDir;
 
+	setInfos();
 	if (this->getRequest()->tooLarge()) {
 		this->error(413);
 		return ;
@@ -339,23 +348,21 @@ void	HttpResponse::sendResponse() {
 		this->error(400);
 		return ;
 	}
-	// not sure if this is at the right place...
-	if (this->getRequest()->getMethod() == DELETE) {
+	if (this->getRequest()->getMethod() == DELETE && this->methodeAllowed(DELETE)) {
 		tryDeleteFile();
 		return ;
 	}
 	if (!this->expandUri(uri, isDir))
 		return ;
-	if (!this->getServer()->methodeAllowed(this->getRequest()->getMethod())) {
+	if (!this->methodeAllowed(this->getRequest()->getMethod())) {
 		this->error(405);
 		return ;
 	}
 	ext = ext.substr(ext.find_last_of(".") + 1);
 	if (ext.find("/") == string::npos)
 		this->_mime = Mime::ext(ext);
-	cout << isDir << endl;
 	if (isDir) {
-		if (this->getServer()->getDirectoryListing())
+		if (this->_directoryListing)
 			this->directoryListing(uri);
 		else
 			this->error(404);
