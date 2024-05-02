@@ -191,7 +191,24 @@ void	HttpResponse::error(int num) {
 	this->_mime = Mime::ext("html");
 	this->createHeader();
 	this->sendHeader();
-	this->sendErrorPage(num);
+	map<int, string> errorPages = this->getServer()->getErrorPages();
+	if (errorPages[num] != "") {
+		string uri = this->getServer()->getRoot() + errorPages[num];
+		ifstream file;
+		file.open(uri.c_str(), ios::binary);
+		if (file.is_open()) {
+			file.seekg(0, ios::end);
+			this->_contentLength = file.tellg();
+			file.seekg(0, ios::beg);
+			if (file.fail()) {
+				this->error(500);
+				return ;
+			}
+			this->sendContent(file);
+		} else
+			this->sendErrorPage(num);
+	} else
+		this->sendErrorPage(num);
 }
 
 void	HttpResponse::sendDirectoryPage(string path) {

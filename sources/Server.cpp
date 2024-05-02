@@ -44,8 +44,12 @@ Server::Server( Webserv *webserv, ConfigServer const & conf ) :
 	_returnURI( conf.getReturnURI() ),
 	_uploadPath( conf.getUploadPath() )
 	{
-		this->_indexes.push_back("indesx.html");
-		init() ;
+		vector<string> indexes = split_trim(this->_index, ",");
+		for (strVecIt it = indexes.begin(); it != indexes.end(); it++) {
+			if (*it != "")
+				this->_indexes.push_back(*it);
+		}
+		this->init() ;
 	}
 
 Server::Server(Server const &cpy) {
@@ -56,15 +60,20 @@ Server::~Server() {}
 
 Server &Server::operator=(const Server &rhs) {
 	this->_webserv = rhs._webserv;
+	this->_fd = rhs._fd;
 	this->_port = rhs._port;
 	this->_host = rhs._host;
 	this->_name = rhs._name;
-	this->_fd = rhs._fd;
-	this->_addr = rhs._addr;
 	this->_directoryListing = rhs._directoryListing;
 	this->_root = rhs._root;
 	this->_indexes = rhs._indexes;
+	this->_maxBodySize = rhs._maxBodySize;
 	this->_allowedMethod = rhs._allowedMethod;
+	this->_locationBlock = rhs._locationBlock;
+	this->_errorPages = rhs._errorPages;
+	this->_returnURI = rhs._returnURI;
+	this->_uploadPath = rhs._uploadPath;
+	this->_addr = rhs._addr;
 	return (*this);
 }
 
@@ -151,7 +160,7 @@ bool	Server::methodeAllowed(enum HttpMethod methode) {
 	return (false);
 }
 
-map<int,string> const &	Server::getErrorPages( void ) const { return _returnURI ; }
+map<int,string> const &	Server::getErrorPages( void ) const { return _errorPages ;}
 map<int,string> const &	Server::getReturnURI( void ) const { return _returnURI ; }
 string const &			Server::getUploadPath( void ) const { return _uploadPath ; }
 

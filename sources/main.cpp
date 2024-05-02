@@ -30,36 +30,43 @@ void	handler(int signum) {
 // 	return (env()->return_val);
 // }
 
+int exec_webserv(string input) {
+	try {
+		Config	conf(input) ;
+		size_t	nbServer = conf.getNbServer() ;
+		vector<ConfigServer>	serv ;
+		for ( size_t i = 0; i < nbServer; i++ ) {
+			ConfigServer	servConf( conf.getServerBlocks()[i], i ) ;
+			serv.push_back( servConf ) ;
+		}
+		checkDuplicatePorts( serv ) ;
+		// for ( size_t i = 0; i < nbServer; i++ ) {
+		// 	cout << serv[i] ;
+		// }
+		signal(SIGINT, handler);
+		env()->ctrl_c = false;
+		env()->return_val = 0;
+		env()->webserv = new Webserv( serv );
+		delete (env()->webserv);
+		return (env()->return_val);
+	}
+	catch ( const runtime_error & e ) {
+		std::cout << e.what() << std::endl ;
+		return (-1);
+	}
+}
+
 int	main( int ac, char **av ) {
 
 	if ( ac == 2 ) {
-		try {
-			string	input = av[1] ;
-			Config	conf(input) ;
-			size_t	nbServer = conf.getNbServer() ;
-			vector<ConfigServer>	serv ;
-			for ( size_t i = 0; i < nbServer; i++ ) {
-				ConfigServer	servConf( conf.getServerBlocks()[i], i ) ;
-				serv.push_back( servConf ) ;
-			}
-			checkDuplicatePorts( serv ) ;
-			// for ( size_t i = 0; i < nbServer; i++ ) {
-			// 	cout << serv[i] ;
-			// }
-			signal(SIGINT, handler);
-			env()->ctrl_c = false;
-			env()->return_val = 0;
-			env()->webserv = new Webserv( serv );
-			delete (env()->webserv);
-			return (env()->return_val);
-		}
-		catch ( const runtime_error & e ) {
-			std::cout << e.what() << std::endl ;
-		}
+		exec_webserv(av[1]);
 	}
-	else
+	else if (ac == 1) {
+		exec_webserv("./config/_default.conf");
+	}
+	else {
 		cout << EXAMPLE ;
-
+	}
 	return 0;
 }
 
