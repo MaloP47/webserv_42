@@ -43,6 +43,7 @@ class HttpRequest {
 		size_t			_headerLength;
 		size_t			_requestLength;
 		bool			_goodRequest;
+		bool			_tooLarge;
 		enum HttpMethod	_method;
 		string			_uri;
 		vector<string>	_acceptedMimes;
@@ -74,6 +75,7 @@ class HttpRequest {
 		HttpRequest	&operator=(const HttpRequest &rhs);
 
 		bool			isGood() const;
+		bool			tooLarge() const;
 		bool			keepAlive() const;
 		bool			appendRequest(const char *data, int bytes);
 		string			getUri() const;

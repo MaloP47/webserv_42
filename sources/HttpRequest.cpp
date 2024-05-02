@@ -16,7 +16,7 @@
 HttpRequest::HttpRequest() {}
 
 HttpRequest::HttpRequest(Client *client):
-	_client(client), _headerLength(0), _requestLength(0), _goodRequest(true), _method(OTHER), _contentLength(0){
+	_client(client), _headerLength(0), _requestLength(0), _goodRequest(true), _tooLarge(false), _method(OTHER), _contentLength(0){
 }
 
 HttpRequest::HttpRequest(const HttpRequest &cpy) {
@@ -30,6 +30,7 @@ HttpRequest	&HttpRequest::operator=(const HttpRequest &rhs) {
 	this->_rawRequest = rhs._rawRequest;
 	this->_method = rhs._method;
 	this->_goodRequest = rhs._goodRequest;
+	this->_tooLarge = rhs._tooLarge;
 	this->_uri = rhs._uri;
 	this->_acceptedMimes = rhs._acceptedMimes;
 	this->_rawBytes = rhs._rawBytes;
@@ -63,6 +64,17 @@ bool	HttpRequest::appendRequest(const char *data, int bytes) {
 		data++;
 	}
 	this->_requestLength += bytes;
+	if (this->_headerLength != 0) {
+		if (static_cast<size_t>(this->getServer()->getMaxBodySize() * 1024) < this->_requestLength - this->_headerLength) {
+			this->_tooLarge = true;
+			vector<string> line = split_trim(this->_rawRequest.substr(0, this->_headerLength), "\r\n");
+			if (line.size() < 1)
+				return (true);
+			this->_keepAliveConnection = false;
+			this->parseRequestLine(line[0]);	
+			return (true);
+		}
+	}
 	if (isFullRequest()) {
 		this->parse();
 		return (true);
@@ -124,7 +136,7 @@ void	HttpRequest::decodeUrlEncoded() {
 void	HttpRequest::decodeFormData() {
 	size_t			pos;
 	string			header;
-	string			filename;
+	string			filename = "";
 	vector<char>	file;
 
 	if ((pos = findInCharVec("\r\n\r\n", this->_rawBytes)) != string::npos) {
@@ -133,15 +145,14 @@ void	HttpRequest::decodeFormData() {
 		split = split_trim(header, "filename=\"");
 		if (split.size() == 2) {
 			split = split_trim(split[1], "\"\r\n");
-			if (split.size() == 2)
-				filename = split[0];
+			if (split.size() == 2 && split[0].length() != 0)
+				filename = this->getServer()->getRoot() + this->getServer()->getUploadPath() + split[0];
 		}
 		this->_rawBytes.erase(this->_rawBytes.begin(), this->_rawBytes.begin() + pos + 4);
 		if ((pos = findInCharVec("\r\n--" + this->_boundary, this->_rawBytes)) != string::npos) {
 			file.insert(file.begin(), this->_rawBytes.begin(), this->_rawBytes.begin() + pos);
 			this->_uploadedFiles.push_back(Upload(filename, file));
 			this->_rawBytes.erase(this->_rawBytes.begin(), this->_rawBytes.begin() + pos);
-
 		}
 	}
 	if (findInCharVec("--" + this->_boundary + "\r\n", this->_rawBytes) != string::npos)
@@ -260,6 +271,10 @@ void	HttpRequest::setMethod(string str) {
 
 bool	HttpRequest::isGood() const {
 	return (this->_goodRequest);
+}
+
+bool	HttpRequest::tooLarge() const {
+	return (this->_tooLarge);
 }
 
 enum HttpMethod	HttpRequest::getMethod() const {
