@@ -292,6 +292,10 @@ void	HttpResponse::sendResponse() {
 	string			uri;
 	bool			isDir;
 
+	if (this->getRequest()->tooLarge()) {
+		this->error(413);
+		return ;
+	}
 	if (!this->getRequest()->isGood()) {
 		this->error(400);
 		return ;
