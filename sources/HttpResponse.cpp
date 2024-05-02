@@ -240,7 +240,46 @@ vector<string>	HttpResponse::getIndexes() const {
 bool	HttpResponse::expandUri(string &uri, bool &isDir) {
 	struct stat		s;
 	vector<string>	indexes;
+	string			index;
 
+	vector<Location> locations = this->getServer()->getLocation();
+	for (vector<Location>::iterator it = locations.begin(); it != locations.end(); it++) {
+		if (this->getRequest()->getUri().compare(0, it->getLocPath().length(), it->getLocPath()) == 0) {
+			uri = this->getRequest()->getUri();
+			uri.erase(0, it->getLocPath().length());
+			uri = it->getRoot() + uri;
+			index = it->getIndex();
+			vector<string> indexes = split_trim(index, ",");
+			for (strVecIt it = indexes.begin(); it != indexes.end(); it++) {
+				if (*it != "")
+					indexes.push_back(*it);
+			}
+			if (stat(uri.c_str(), &s) == 0) {
+				if (s.st_mode & S_IFDIR) {
+					isDir = true;
+					if (uri[uri.length() - 1] != '/') {
+						this->movedPermanently(this->getRequest()->getUri() + "/");
+						return (false);
+					}
+				}
+				else
+					isDir = false;
+			} else {
+				this->error(404);
+				return (false);
+			}
+			if (isDir) {
+				for (vector<string>::iterator index_it = indexes.begin(); index_it != indexes.end(); index_it++) {
+					if (*index_it != "" && access((uri + *index_it).c_str(), F_OK) != -1) {
+						uri += *index_it;
+						isDir = false;
+						break;
+					}
+				}
+			}
+			return (true);
+		}
+	}
 	uri = this->getServer()->getRoot() + this->getRequest()->getUri();
 	indexes = this->getIndexes();
 	if (stat(uri.c_str(), &s) == 0) {
@@ -300,6 +339,7 @@ void	HttpResponse::sendResponse() {
 		this->error(400);
 		return ;
 	}
+	// not sure if this is at the right place...
 	if (this->getRequest()->getMethod() == DELETE) {
 		tryDeleteFile();
 		return ;
@@ -313,6 +353,7 @@ void	HttpResponse::sendResponse() {
 	ext = ext.substr(ext.find_last_of(".") + 1);
 	if (ext.find("/") == string::npos)
 		this->_mime = Mime::ext(ext);
+	cout << isDir << endl;
 	if (isDir) {
 		if (this->getServer()->getDirectoryListing())
 			this->directoryListing(uri);
