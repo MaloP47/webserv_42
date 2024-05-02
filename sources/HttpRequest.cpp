@@ -136,7 +136,7 @@ void	HttpRequest::decodeUrlEncoded() {
 void	HttpRequest::decodeFormData() {
 	size_t			pos;
 	string			header;
-	string			filename;
+	string			filename = "";
 	vector<char>	file;
 
 	if ((pos = findInCharVec("\r\n\r\n", this->_rawBytes)) != string::npos) {
@@ -145,7 +145,7 @@ void	HttpRequest::decodeFormData() {
 		split = split_trim(header, "filename=\"");
 		if (split.size() == 2) {
 			split = split_trim(split[1], "\"\r\n");
-			if (split.size() == 2)
+			if (split.size() == 2 && split[0].length() != 0)
 				filename = this->getServer()->getRoot() + this->getServer()->getUploadPath() + split[0];
 		}
 		this->_rawBytes.erase(this->_rawBytes.begin(), this->_rawBytes.begin() + pos + 4);
@@ -153,7 +153,6 @@ void	HttpRequest::decodeFormData() {
 			file.insert(file.begin(), this->_rawBytes.begin(), this->_rawBytes.begin() + pos);
 			this->_uploadedFiles.push_back(Upload(filename, file));
 			this->_rawBytes.erase(this->_rawBytes.begin(), this->_rawBytes.begin() + pos);
-
 		}
 	}
 	if (findInCharVec("--" + this->_boundary + "\r\n", this->_rawBytes) != string::npos)

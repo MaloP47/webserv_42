@@ -37,6 +37,8 @@ void	Upload::createFile() {
 	string			name;
 	string			ext;
 	
+	if (this->_filename == "")
+		return ;
 	if (this->_filename.find_last_of(".") != string::npos) {
 		name = this->_filename.substr(0, this->_filename.find_last_of("."));
 		ext = this->_filename.substr(this->_filename.find_last_of("."));
