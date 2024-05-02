@@ -17,7 +17,6 @@
 # include "Webserv.hpp"
 # include "ConfigServer.hpp"
 # include "Location.hpp"
-#include <vector>
 
 class Webserv;
 class ConfigServer;
