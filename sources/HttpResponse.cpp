@@ -325,17 +325,22 @@ void	HttpResponse::errorCGI(string str, int tmpfd)
 	return ;
 }
 
+//get the path to the thing to execute
 void	HttpResponse::executeCGI(char **env)
 {
-	char buffer[4096];
-    int tmpfd = open("/tmp/.tmpfile", O_RDWR | O_CREAT | O_TRUNC, 0666);
+    int tmpfd;
+	int pid;
+	ifstream file;
+	char const * filePath = "/tmp/.tmpfile"; // ?
+	
+	tmpfd = open(filePath, O_RDWR | O_CREAT | O_TRUNC, 0666);
     if (tmpfd == -1)
     {
         errorCGI("open()", tmpfd);
 		this->setClientError();
         return ;
 	}
-    int pid = fork();
+    pid = fork();
     if (pid == -1)
     {
         errorCGI("fork()", tmpfd);
@@ -356,15 +361,21 @@ void	HttpResponse::executeCGI(char **env)
         {
             errorCGI("execve()", tmpfd);
 			this->setClientError();
-            exit(-1); //exit child process only
+            exit(-1);
         }
     }
     else
     {
         waitpid(0, NULL, 0);
-        read(tmpfd, buffer, sizeof(buffer)); //could fail
-        // respond->_body += buffer;
-        close(tmpfd);
+		close(tmpfd);
+        file.open(filePath);
+		if (!file.is_open())
+		{
+			errorCGI("open()", tmpfd);
+			this->setClientError();
+			return ;
+		}
+		this->sendContent(file); // to check
         cout << "CGI executed!" << endl;
     }
 	return ;
