@@ -55,6 +55,8 @@ class HttpResponse {
 		void			directoryListing(string path);
 		void			setKeepAliveConnectionHeader();
 		void			sendDirectoryPage(string path);
+		void			errorCGI(string, int tmpfd);
+		void			executeCGI(char **env);
 		HttpRequest		*getRequest() const;
 		vector<string>	getIndexes() const;
 	public:
