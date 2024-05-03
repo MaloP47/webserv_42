@@ -52,7 +52,7 @@ class Server {
 	public:
 		Server();
 		Server(Webserv *webserv, int port, string host, string name);
-		Server( Webserv *webserv, ConfigServer const & conf ) ;
+		Server( Webserv *webserv, vector<ConfigServer> const & conf, int i ) ;
 		Server(const Server &cpy);
 		~Server();
 
@@ -63,6 +63,7 @@ class Server {
 		int							getLogLevel() const;
 		int							getMaxBodySize() const;
 		bool						getDirectoryListing() const;
+		void						setFd(int fd);
 		string						getName() const;
 		string						getHost() const;
 		string						getRoot() const;

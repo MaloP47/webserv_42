@@ -215,7 +215,7 @@ void	checkDuplicatePorts( vector<ConfigServer> const & servers ) {
 		if ( !ports.insert( it->getPort() ).second ) {
 			stringstream	ss;
 			ss << it->getServerIndex() ;
-			throw runtime_error( "Duplicate port in server block: " + ss.str() ) ; 
+//			throw runtime_error( "Duplicate port in server block: " + ss.str() ) ; 
 		}
 	}
 }

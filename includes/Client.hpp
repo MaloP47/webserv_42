@@ -6,7 +6,7 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/08 08:50:25 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/16 11:09:15 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/05/03 14:05:28 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ typedef mapStrStr::iterator			mapStrStrIt;
 
 class Client {
 	private:
-		Server			*_server;
+		vector<Server *>		_servers;
 		HttpRequest		*_request;
 		HttpResponse	*_response;
 		mapStrStr		_env;
@@ -38,7 +38,7 @@ class Client {
 
 	public:
 		Client();
-		Client(Server *server, int fd);
+		Client(vector<Server *> servers, int fd);
 		Client(const Client &cpy);
 		~Client();
 
@@ -55,7 +55,8 @@ class Client {
 		void			deleteResponse();
 		void			addEnv(string name, string value);
 		string			getRawRequest() const;
-		Server			*getServer() const;
+		Server			*getServer(int index) const;
+		vector<Server *>	getServers() const;
 		mapStrStr		getEnv() const;
 		HttpRequest		*getRequest() const;
 		HttpResponse	*getResponse() const;

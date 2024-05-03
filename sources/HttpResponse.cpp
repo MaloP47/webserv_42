@@ -6,7 +6,7 @@
 /*   By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/08 17:29:38 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/14 18:16:44 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/05/03 13:56:07 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -388,7 +388,7 @@ void	HttpResponse::sendResponse() {
 }
 
 Server	*HttpResponse::getServer() const {
-	return (this->_client->getServer());
+	return (this->_client->getServer(this->_client->getRequest()->getServerIndex()));
 }
 
 HttpRequest	*HttpResponse::getRequest() const {

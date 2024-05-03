@@ -28,26 +28,30 @@ Server::Server(Webserv *webserv, int port, string host, string name) :
 	this->init();
 }
 
-Server::Server( Webserv *webserv, ConfigServer const & conf ) :
+Server::Server( Webserv *webserv, vector<ConfigServer> const & conf, int i ) :
 	_webserv( webserv ),
 	_fd( -1 ),
-	_port( conf.getPort() ),
-	_host( conf.getHost() ),
-	_name( conf.getName() ),
-	_directoryListing( conf.getDirectoryListing() ),
-	_root( conf.getRoot() ),
-	_index( conf.getIndex() ),
-	_maxBodySize( conf.getMaxBodySize() ),
-	_allowedMethod( conf.getAllowedMethod() ),
-	_locationBlock( conf.getLocationBlock() ),
-	_errorPages( conf.getErrorPages() ),
-	_returnURI( conf.getReturnURI() ),
-	_uploadPath( conf.getUploadPath() )
+	_port( conf[i].getPort() ),
+	_host( conf[i].getHost() ),
+	_name( conf[i].getName() ),
+	_directoryListing( conf[i].getDirectoryListing() ),
+	_root( conf[i].getRoot() ),
+	_index( conf[i].getIndex() ),
+	_maxBodySize( conf[i].getMaxBodySize() ),
+	_allowedMethod( conf[i].getAllowedMethod() ),
+	_locationBlock( conf[i].getLocationBlock() ),
+	_errorPages( conf[i].getErrorPages() ),
+	_returnURI( conf[i].getReturnURI() ),
+	_uploadPath( conf[i].getUploadPath() )
 	{
 		vector<string> indexes = split_trim(this->_index, ",");
 		for (strVecIt it = indexes.begin(); it != indexes.end(); it++) {
 			if (*it != "")
 				this->_indexes.push_back(*it);
+		}
+		for (int j = 0; j < i; j++) {
+			if (conf[i].getPort() == conf[j].getPort())
+				return ;
 		}
 		this->init() ;
 	}
@@ -127,6 +131,10 @@ int	Server::getPort() const {
 
 int	Server::getFd() const {
 	return (this->_fd);
+}
+
+void	Server::setFd(int fd) {
+	this->_fd = fd;
 }
 
 int	Server::getLogLevel() const {
