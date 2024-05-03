@@ -6,7 +6,7 @@
 /*   By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/08 11:01:52 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/15 17:43:13 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/05/03 14:28:03 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,14 @@
 HttpRequest::HttpRequest() {}
 
 HttpRequest::HttpRequest(Client *client):
-	_client(client), _headerLength(0), _requestLength(0), _goodRequest(true), _tooLarge(false), _method(OTHER), _contentLength(0){
+	_client(client),
+	_headerLength(0),
+	_requestLength(0),
+	_goodRequest(true),
+	_tooLarge(false),
+	_method(OTHER),
+	_serverIndex(0),
+	_contentLength(0){
 }
 
 HttpRequest::HttpRequest(const HttpRequest &cpy) {
@@ -35,6 +42,8 @@ HttpRequest	&HttpRequest::operator=(const HttpRequest &rhs) {
 	this->_acceptedMimes = rhs._acceptedMimes;
 	this->_rawBytes = rhs._rawBytes;
 	this->_contentLength = rhs._contentLength;
+	this->_serverIndex = rhs._serverIndex;
+	this->_host = rhs._host;
 	return (*this);
 }
 
@@ -104,6 +113,8 @@ void	HttpRequest::parse() {
 			this->parseConnection(*it);
 		else if (findLower(*it, "content-type:"))
 			this->parseContentType(*it);
+		else if (findLower(*it, "host:"))
+			this->parseHost(*it);
 	}
 	if (this->_contentType == "multipart/form-data")
 		this->decodeFormData();
@@ -211,6 +222,26 @@ void	HttpRequest::parseAcceptedMimes(string line) {
 	this->_acceptedMimes = split_trim(line, ",");
 }
 
+void	HttpRequest::parseHost(string line) {
+	line.erase(0, 6);	
+	this->_host = line;
+	int i = 0;
+	vector<Server *> serv = this->_client->getServers();
+	for (vector<Server *>::iterator it = serv.begin(); it != serv.end(); it++) {
+		cout << this->_host << "<----====== 1" << endl;
+
+		stringstream	hostPort;
+		hostPort << (*it)->getName() << ":" << this->getServer()->getPort();
+		cout << hostPort.str() << "<----====== 2" << endl;
+		if ((*it)->getHost() == this->_host || hostPort.str() == this->_host) {
+			this->_serverIndex = i;
+			cout << this->_host << " finded" << endl;
+			break ;
+		}
+		i++;
+	}
+}
+
 void	HttpRequest::parseRequestLine(string line) {
 	vector<string>	split;
 
@@ -252,12 +283,20 @@ void	HttpRequest::getUriAndEnv(string str) {
 	this->_uri = decodeUri(split[0]);
 }
 
+string	HttpRequest::getHost() const {
+	return (this->_host);
+}
+
 Client	*HttpRequest::getClient() const {
 	return (this->_client);
 }
 
 Server	*HttpRequest::getServer() const {
-	return (this->getClient()->getServer());
+	return (this->getClient()->getServer(this->_serverIndex));
+}
+
+int	HttpRequest::getServerIndex() const {
+	return (this->_serverIndex);
 }
 
 void	HttpRequest::setMethod(string str) {

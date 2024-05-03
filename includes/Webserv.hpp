@@ -25,12 +25,13 @@ typedef vector<Server>::iterator	serverIt;
 
 class Webserv{
 	private:
-		int					_logLevel;
-		int					_epoll_fd;
-		bool				_run;
-		string				_command;
-		vector<Server>		_servers;
-		map<int, Client>	_clients;
+		int							_logLevel;
+		int							_epoll_fd;
+		bool						_run;
+		string						_command;
+		vector<Server>				_servers;
+		map<int, Client>			_clients;
+		map<int, vector<Server *> >	_serversFd;
 
 		int		start();
 		int		initEpoll();
