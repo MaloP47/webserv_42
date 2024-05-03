@@ -82,7 +82,7 @@ class	ConfigServer {
 		vector<Location>	_locationBlock ;
 
 		void		extractLocation( string & block ) ;
-		string 		extractStringVariable( string & block, string const & var ) ;
+		string		extractStringVariable( string & block, string const & var ) ;
 		void		checkPort( string & block ) ;
 		void		checkMBS( string & block ) ;
 		void		checkAutoIndex( string & block ) ;
