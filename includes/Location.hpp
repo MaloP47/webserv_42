@@ -6,7 +6,7 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/27 11:41:57 by mpeulet           #+#    #+#             */
-/*   Updated: 2024/04/30 11:21:29 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/05/03 13:24:46 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@ class	Location {
 
 	public:
 
-		Location( string const & locBloc, int index ) ;
+		Location( string const & locBloc, int index, long long servMbs ) ;
 		~Location( void ) ;
 		Location( Location const & cpy ) ;
 		Location &	operator=( Location const & rhs ) ;
@@ -64,7 +64,7 @@ class	Location {
 
 		void	extractLocPath( string & locBloc ) ;
 		string	extractStringVariable( string & tmp, string const & var ) ;
-		void	checkMBS( string & loc ) ;
+		void	checkMBS( string & loc, long long servMBS ) ;
 		void	checkAutoIndex( string & loc ) ;
 		void	checkMethod( string & loc ) ;
 		void	extractMap( string & loc, string const & key, map<int,string> & map ) ;

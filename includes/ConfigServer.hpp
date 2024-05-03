@@ -6,7 +6,7 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/23 13:37:40 by mpeulet           #+#    #+#             */
-/*   Updated: 2024/04/30 15:33:41 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/05/03 13:26:57 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,7 +89,7 @@ class	ConfigServer {
 		void		checkName( string & block, int index ) ;
 		void		checkMethod( string & block ) ;
 		void		extractMap( string & block, string const & var, map<int,string> & Map ) ;
-		void		initLocation( void ) ;
+		void		initLocation( long long servMBS ) ;
 
 		ConfigServer( void ) ;
 
