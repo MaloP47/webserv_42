@@ -99,16 +99,6 @@ int	Webserv::initEpoll() {
 		perror("epoll_ctl");
 		return (ret(ERR_EPOLL_CTL));
 	}
-	// temp just to check if this map is properly initialised
-	for (map<int, vector<Server *> >::iterator it = this->_serversFd.begin(); it != this->_serversFd.end(); it++) {
-		cout << it->first << endl;
-		int i = 0;
-		for (vector<Server *>::iterator sIt = it->second.begin(); sIt != it->second.end(); sIt++) {
-			cout << i << "  " <<  *(*sIt) << endl;
-			i++;
-		}
-	}
-	// end temp
 	return (SUCCESS);
 }
 

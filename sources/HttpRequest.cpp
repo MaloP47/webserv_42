@@ -228,14 +228,10 @@ void	HttpRequest::parseHost(string line) {
 	int i = 0;
 	vector<Server *> serv = this->_client->getServers();
 	for (vector<Server *>::iterator it = serv.begin(); it != serv.end(); it++) {
-		cout << this->_host << "<----====== 1" << endl;
-
 		stringstream	hostPort;
 		hostPort << (*it)->getName() << ":" << this->getServer()->getPort();
-		cout << hostPort.str() << "<----====== 2" << endl;
 		if ((*it)->getHost() == this->_host || hostPort.str() == this->_host) {
 			this->_serverIndex = i;
-			cout << this->_host << " finded" << endl;
 			break ;
 		}
 		i++;
