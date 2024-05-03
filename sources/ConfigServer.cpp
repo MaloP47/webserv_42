@@ -6,7 +6,7 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/23 13:37:58 by mpeulet           #+#    #+#             */
-/*   Updated: 2024/04/30 16:45:21 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/05/03 13:27:50 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,8 @@ ConfigServer::ConfigServer( string const & serverBlock, int indexOfServerBlock )
 
 	string 	block = serverBlock ;
 	extractLocation( block ) ;
-	initLocation() ;
+	checkMBS( block ) ;
+	initLocation( getMaxBodySize() ) ;
 	// PROBABLY DO THE SAME FOR CGI
 	// CREATE VECTOR FOR LOCATION
 	_root = extractStringVariable( block, "root" ) ;
@@ -28,7 +29,6 @@ ConfigServer::ConfigServer( string const & serverBlock, int indexOfServerBlock )
 	_host = extractStringVariable( block, "host" ) ;
 	if ( _host.empty() )
 		_host = "127.0.0.1" ;
-	checkMBS( block ) ;
 	checkAutoIndex( block ) ;
 	checkName( block, indexOfServerBlock ) ;
 	_uploadPath = extractStringVariable( block, "upload_path" ) ;
@@ -198,11 +198,11 @@ void	ConfigServer::extractLocation( string & tmp ) {
 	}
 }
 
-void		ConfigServer::initLocation( void ) {
+void		ConfigServer::initLocation( long long servMBS ) {
 	size_t	locSize = _location.size() ;
 	if ( locSize ) {
 		for ( size_t i = 0; i < locSize; ++i ) {
-			Location lc( _location[i], i) ;
+			Location lc( _location[i], i, servMBS ) ;
 			_locationBlock.push_back( lc ) ;
 		}
 	}	

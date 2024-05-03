@@ -6,13 +6,13 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/27 11:42:58 by mpeulet           #+#    #+#             */
-/*   Updated: 2024/04/30 15:20:23 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/05/03 13:24:52 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Location.hpp"
 
-Location::Location( string const & locBlock, int index ) : _locIndex( index ) {
+Location::Location( string const & locBlock, int index, long long servMbs ) : _locIndex( index ) {
 
 	string	loc = locBlock ;
 	extractLocPath( loc ) ;
@@ -24,7 +24,7 @@ Location::Location( string const & locBlock, int index ) : _locIndex( index ) {
 	_root = extractStringVariable( loc, "root" ) ;
 	if ( _root.empty() ) // Maybe not be necessary but might need to pass Server _root ;
 		throw runtime_error( "Missing root, mandatory field for each location." ) ;
-	checkMBS( loc ) ;
+	checkMBS( loc, servMbs ) ;
 	checkAutoIndex( loc ) ;
 	// Might need to pass Server _uploadPath if unspecified
 	_uploadPath = extractStringVariable( loc, "upload_path" ) ;
@@ -83,12 +83,12 @@ string	Location::extractStringVariable( string & tmp, string const & var ) {
 	return ret ;
 }
 
-void	Location::checkMBS( string & block ) {
+void	Location::checkMBS( string & block, long long servMBS ) {
 	char	*endptr ;
 	string	tmp = extractStringVariable( block, "client_max_body_size" ) ;
 	if ( tmp.empty() ) {
 		// Might need to pass Server _maxBodySize if unspecified
-		_maxBodySize = MAXCLIENTBS ;
+		_maxBodySize = servMBS;
 		return ;
 	}
 	_maxBodySize = strtoll( tmp.c_str(), &endptr, 10 ) ;
