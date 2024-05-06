@@ -138,7 +138,7 @@ int	Webserv::start() {
 			event = events[i].events;
 			if ((event & EPOLLERR) || (event & EPOLLHUP)) {
 				cerr << "epoll_event events error" << (event & EPOLLERR) << " " << (event & EPOLLHUP) << endl;
-				close(events[i].data.fd);
+			//	close(events[i].data.fd); // I think this was the line which was bugged
 			}
 			else if (events[i].data.fd == 0)
 				this->processStdIn();

@@ -339,7 +339,17 @@ void	HttpResponse::sendResponse() {
 	string			uri;
 	bool			isDir;
 
-	setInfos();
+	this->setInfos();
+	if (this->_returnURI.size() > 0) {
+		int		err = this->_returnURI.begin()->first;
+		string	uri = this->_returnURI.begin()->second;
+		if (err == 301) 
+			this->movedPermanently(uri);
+		else {
+			this->error(this->_returnURI.begin()->first);
+			return ;
+		}
+	}
 	if (this->getRequest()->tooLarge()) {
 		this->error(413);
 		return ;
