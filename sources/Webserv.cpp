@@ -13,6 +13,7 @@
 #include "webserv.h"
 #include "Webserv.hpp"
 #include <sys/epoll.h>
+#include <unistd.h>
 #include <vector>
 
 Webserv::Webserv() {}
@@ -33,9 +34,11 @@ Webserv::Webserv(const Webserv &cpy) {
 }
 
 Webserv::~Webserv() {	
-	for (int i = 3; i < 1024; i++)  {
-		close(i);
-	}
+	for (clientIt it = this->_clients.begin(); it != this->_clients.end(); it++)
+		close(it->second.getFd());
+	for (serverIt it = this->_servers.begin(); it != this->_servers.end(); it++)
+		close(it->getFd());
+	close(this->_epoll_fd);
 }
 
 Webserv	&Webserv::operator=(const Webserv &rhs) {
@@ -182,7 +185,6 @@ int	Webserv::acceptConnection(int fd) {
 		}
 		return (ret(ERR_ACCEPT));
 	}
-	cout << "ok" << endl;
 	if (fcntl(connected_fd, F_SETFL, O_NONBLOCK) < 0) {
 		cerr << timeStamp() << CYAN << " Fcntl " << THIN ITALIC;
 		perror("");

@@ -11,6 +11,8 @@
 /* ************************************************************************** */
 
 #include "webserv.h"
+#include <dirent.h>
+#include <unistd.h>
 
 DirectoryListing::DirectoryListing() {}
 
@@ -163,5 +165,6 @@ string	DirectoryListing::html(string path, string root, string requestPath) {
 	for (dirMapIt it = file.begin(); it != file.end(); it++)
 		html += htmlFile(it->second, path, requestPath);
 	html += "</tbody></table></div></div></div></body></html>";
+	closedir(dir);
 	return (html);
 }
