@@ -6,7 +6,7 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/05 15:43:55 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/30 16:38:07 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/05/06 12:09:28 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,6 @@ class Webserv{
 		Webserv &operator=(const Webserv &rhs);
 
 	public:
-		Webserv(string config);
 		Webserv( vector<ConfigServer> const & conf ) ;
 		~Webserv();
 
