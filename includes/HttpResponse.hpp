@@ -54,7 +54,6 @@ class HttpResponse {
 		void			createHeader();
 		void			setDateHeader();
 		void			setStatusLine();
-		void			tryDeleteFile();
 		void			sendFinalChunk();
 		void			setClientError();
 		void			setServerHeader();
@@ -63,6 +62,7 @@ class HttpResponse {
 		void			setContentTypeHeader();
 		void			sendErrorPage(int num);
 		void			setContentLengthHeader();
+		void			tryDeleteFile(string uri);
 		void			sendContent(ifstream &file);
 		void			movedPermanently(string uri);
 		void			directoryListing(string path);

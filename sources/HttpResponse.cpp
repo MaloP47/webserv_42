@@ -276,14 +276,14 @@ bool	HttpResponse::expandUri(string &uri, bool &isDir) {
 	return (true);
 }
 
-void	HttpResponse::tryDeleteFile() {
-	string	uri;
+void	HttpResponse::tryDeleteFile(string uri) {
+	string	root;
 
-	if (this->getRequest()->getUri()[0] == '/')
-		uri = this->getServer()->getRoot() + this->getRequest()->getUri();
-	else
-		uri = this->getServer()->getRoot() + "/" + this->getRequest()->getUri();
-	if (!childPath(getFullPath(this->getServer()->getRoot()), getFullPath(uri)))
+	if (this->_isLocation) {
+		root = this->_root;
+	} else
+		root = this->getServer()->getRoot();
+	if (!childPath(getFullPath(root), getFullPath(uri)))
 		this->error(403);
 	else {
 		if (remove(uri.c_str()) == 0)
@@ -348,14 +348,14 @@ void	HttpResponse::sendResponse() {
 		this->error(400);
 		return ;
 	}
-	if (this->getRequest()->getMethod() == DELETE && this->methodeAllowed(DELETE)) {
-		tryDeleteFile();
-		return ;
-	}
 	if (!this->expandUri(uri, isDir))
 		return ;
 	if (!this->methodeAllowed(this->getRequest()->getMethod())) {
 		this->error(405);
+		return ;
+	}
+	if (this->getRequest()->getMethod() == DELETE) {
+		tryDeleteFile(uri);
 		return ;
 	}
 	ext = ext.substr(ext.find_last_of(".") + 1);
@@ -368,6 +368,10 @@ void	HttpResponse::sendResponse() {
 			this->error(404);
 		return ;
 	} else {
+		if (access(uri.c_str(), F_OK) != -1) {
+			if (access(uri.c_str(), R_OK) == -1)
+				this->error(403);
+		}
 		file.open(uri.c_str(), ios::binary);
 	}
 	if (!file.is_open()) {
