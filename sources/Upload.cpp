@@ -6,7 +6,7 @@
 /*   By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/15 16:57:08 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/15 17:43:43 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/05/06 15:55:11 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,14 +58,18 @@ void	Upload::createFile() {
 	fileExist.close();
 	file.open(fullName.str().c_str(), ios::out | ios::binary);
 	if (!file) {
-		perror("open");
+		cerr << timeStamp() << CYAN << " Open " << THIN ITALIC;
+		perror("");
+		cerr << END_STYLE;
 		return ;
 	}
 	for (charVecIt it = this->_rawData.begin(); it != this->_rawData.end(); it++)
 		file.write(&(*it), sizeof(char));
 	file.close();
 	if (!file.good()) {
-		perror("write");
+		cerr << timeStamp() << CYAN << " Write " << THIN ITALIC;
+		perror("");
+		cerr << END_STYLE;
 		return ;
 	}
 }

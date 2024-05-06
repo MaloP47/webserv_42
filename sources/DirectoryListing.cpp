@@ -6,7 +6,7 @@
 /*   By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/12 14:40:06 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/14 18:37:01 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/05/06 15:54:28 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -145,7 +145,9 @@ string	DirectoryListing::html(string path, string root, string requestPath) {
 			<th style=\"text-align:right\">Last modified</th></tr></thead><tbody\
 			style=\"font-size:0.9em;\">";
 	if ((dir = opendir(path.c_str())) == NULL) {
-		perror("Cannot open directory");
+		cerr << timeStamp() << CYAN << " Open dir " << THIN ITALIC;
+		perror("");
+		cerr << END_STYLE;
 		return (NULL);
 	}
 	while ((dp = readdir(dir)) != NULL) {

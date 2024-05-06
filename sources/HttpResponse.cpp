@@ -6,7 +6,7 @@
 /*   By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/08 17:29:38 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/05/06 11:58:03 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/05/06 15:55:47 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -142,7 +142,9 @@ void	HttpResponse::sendContent(ifstream &file) {
 		while (sended != this->_contentLength && !this->getClientError()) {
 			if (!file.read(data, min(this->_contentLength - sended,
 							static_cast<size_t>(1024)))) {
-				perror("read");
+				cerr << timeStamp() << CYAN << " Read " << THIN ITALIC;
+				perror("");
+				cerr << END_STYLE;
 				this->setClientError();
 				ret(ERR_READ);
 				return ;
@@ -158,7 +160,9 @@ void	HttpResponse::sendContent(ifstream &file) {
 
 void	HttpResponse::checkSend(int bytes) {
 	if (bytes <= 0) {
-		perror("send");
+		cerr << timeStamp() << CYAN << " Send " << THIN ITALIC;
+		perror("");
+		cerr << END_STYLE;
 		this->setClientError();
 		ret(ERR_SEND);
 	}
