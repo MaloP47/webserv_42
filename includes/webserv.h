@@ -6,7 +6,7 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/05 15:15:28 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/05/06 10:50:56 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/05/06 14:36:14 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -105,5 +105,7 @@ vector<string>	split_trim_conf(string str, string needle);
 bool			isFile( const string & path );
 bool			areAllPathsBinaries( const vector<string> & paths );
 bool			isAllDigits( string const & str ) ;
+bool			startsWithDot( const string & str );
+bool			allStartWithDot( const vector<string> & strings ) ;
 
 #endif

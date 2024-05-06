@@ -6,7 +6,7 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 15:20:01 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/05/06 09:36:29 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/05/06 14:50:54 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,21 +39,21 @@ int exec_webserv(string input) {
 			ConfigServer	servConf( conf.getServerBlocks()[i], i ) ;
 			serv.push_back( servConf ) ;
 		}
-		// checkDuplicatePorts( serv ) ;
-		// for ( size_t i = 0; i < nbServer; i++ ) {
-		// 	cout << serv[i] ;
-		// }
-		signal(SIGINT, handler);
-		env()->ctrl_c = false;
-		env()->return_val = 0;
-		env()->webserv = new Webserv( serv );
-		delete (env()->webserv);
-		return (env()->return_val);
+		for ( size_t i = 0; i < nbServer; i++ ) {
+			cout << serv[i] ;
+		}
+		// signal(SIGINT, handler);
+		// env()->ctrl_c = false;
+		// env()->return_val = 0;
+		// env()->webserv = new Webserv( serv );
+		// delete (env()->webserv);
+		// return (env()->return_val);
 	}
 	catch ( const runtime_error & e ) {
 		std::cout << e.what() << std::endl ;
 		return (-1);
 	}
+	return 0;
 }
 
 int	main( int ac, char **av ) {

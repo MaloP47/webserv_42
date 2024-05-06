@@ -6,7 +6,7 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/23 13:37:58 by mpeulet           #+#    #+#             */
-/*   Updated: 2024/05/06 10:51:38 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/05/06 14:48:56 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,9 @@ ConfigServer::ConfigServer( string const & serverBlock, int indexOfServerBlock )
 	_index = extractStringVariable( block, "index" ) ;
 	extractMap( block, "error_page", _errorPage ) ;
 	extractMap( block, "return", _returnURI ) ;
+	checkCGIBin( block ) ;
+	if ( _binPath.size() )
+		checkCGIExtension( block ) ;
 	if ( block != "}" )
 		throw runtime_error( "Config file contains unknown instructions :" + block ) ;
 }
@@ -58,6 +61,8 @@ ConfigServer &	ConfigServer::operator=( ConfigServer const & rhs ) {
 		_uploadPath = rhs._uploadPath ;
 		_location = rhs._location ;
 		_locationBlock = rhs._locationBlock ;
+		_binPath = rhs._binPath ;
+		_cgiExtension = rhs._cgiExtension ;
 	}
 	return *this ;
 }
@@ -211,7 +216,17 @@ void	ConfigServer::checkCGIBin( string & block ) {
 	if ( tmp.empty() )
 		return ;
 	_binPath = split_trim_conf( tmp, "," ) ;
-	
+	if ( !areAllPathsBinaries( _binPath ) )
+		throw runtime_error( "All paths in cgi_bin must be binaries.\nBlock :" + _serverBlock ) ;
+}
+
+void	ConfigServer::checkCGIExtension( string & block ) {
+	string	tmp = extractStringVariable( block, "cgi_extension" ) ;
+	if ( tmp.empty() )
+		return ;
+	_cgiExtension = split_trim_conf( tmp, "," ) ;
+	if ( !allStartWithDot( _cgiExtension ) )
+		throw runtime_error( "All extensions in cgi_extension must start with a dot.\nBlock :" + _serverBlock ) ;
 }
 
 void	ConfigServer::setPort( int port ) { _port = port ; }
@@ -250,7 +265,7 @@ vector<string> const &			ConfigServer::getCgiExtension( void ) const { return _c
 
 ostream &	operator<<( ostream & o, ConfigServer const & rhs ) {
 	o << "//////////////////////SERVER////////////////////////" << endl ;
-	o << "[ " << "Server block " << rhs.getServerIndex() << " ]" << endl ; 
+	o << "[ " << "Server block " << rhs.getServerIndex() + 1 << " ]" << endl ; 
 	o << "Server: " << rhs.getName() << std::endl ;
 	o << "Port: " << rhs.getPort() << std::endl ;
 	o << "Root: " << rhs.getRoot() << std::endl ;
@@ -283,6 +298,7 @@ ostream &	operator<<( ostream & o, ConfigServer const & rhs ) {
 			o << ", " ;
 	}
 	o << std::endl ;
+	o << "UploadPath: " << rhs.getUploadPath() << std::endl ;
 	o << "ReturnURI: " ;
 	for ( map<int,string>::const_iterator it = rhs.getReturnURI().begin() ; it != rhs.getReturnURI().end() ; it++ ) {
 		o << it->first << " -> " << it->second;
@@ -290,27 +306,27 @@ ostream &	operator<<( ostream & o, ConfigServer const & rhs ) {
 			o << ", " ;
 	}
 	o << std::endl ;
-	o << "UploadPath: " << rhs.getUploadPath() << std::endl ;
+	o << "BinPath: ";
+    for (vector<string>::const_iterator it = rhs.getBinPath().begin(); it != rhs.getBinPath().end(); ++it) {
+        o << *it;
+        if (it + 1 != rhs.getBinPath().end())
+            o << ", ";
+    }
+    o << std::endl;
+
+    o << "CgiExtension: ";
+    for (vector<string>::const_iterator it = rhs.getCgiExtension().begin(); it != rhs.getCgiExtension().end(); ++it) {
+        o << *it;
+        if (it + 1 != rhs.getCgiExtension().end())
+            o << ", ";
+    }
+	o << std::endl ;
 	o << "LocationBlock: " << rhs.getLocationBlock().size() << std::endl ;
 	for ( size_t i = 0 ; i < rhs.getLocationBlock().size() ; i++ ) {
 		o << rhs.getLocationBlock()[i] ;
 		if ( i + 1 < rhs.getLocationBlock().size() )
 			o << std::endl ;
 	}
-	o << "BinPath: " ;
-	for ( size_t i = 0 ; i < rhs.getBinPath().size() ; i++ ) {
-		o << rhs.getBinPath()[i] ;
-		if ( i + 1 < rhs.getBinPath().size() )
-			o << ", " ;
-	}
-	o << std::endl ;
-	o << "CgiExtension: " ;
-	for ( size_t i = 0 ; i < rhs.getCgiExtension().size() ; i++ ) {
-		o << rhs.getCgiExtension()[i] ;
-		if ( i + 1 < rhs.getCgiExtension().size() )
-			o << ", " ;
-	}
-	o << std::endl ;
 	o << "///////////////////////////////////////////////////" << endl ;
 	return o;
 }
