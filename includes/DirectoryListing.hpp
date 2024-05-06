@@ -27,7 +27,7 @@ class DirectoryListing {
 
 		DirectoryListing	&operator=(const DirectoryListing &rhs);
 	public:
-		static string	html(string path, string root);
+		static string	html(string path, string root, string requestPath);
 };
 
 #endif

@@ -23,25 +23,37 @@ class HttpRequest;
 
 class HttpResponse {
 	private:
-		Client	*_client;
-		string	_statusLine;
-		int		_statusCode;
-		size_t	_contentLength;
-		string	_mime;
-		string	_header;
+		Client					*_client;
+		string					_statusLine;
+		int						_statusCode;
+		size_t					_contentLength;
+		string					_mime;
+		string					_header;
+
+		vector<string>			_indexes;
+		string					_locPath;
+		string					_root;
+		long long				_maxBodySize;
+		vector<enum HttpMethod>	_allowedMethod;
+		bool					_directoryListing;
+		map<int,string>			_errorPage;
+		map<int,string>			_returnURI;
+		string					_uploadPath;
+		bool					_isLocation;
 
 		int				getClientFd() const;
 		int				sendData(const void *data, int len);
 		bool			keepAlive() const;
 		bool			getClientError() const;
 		bool			expandUri(string &uri, bool &isDir);
+		bool			methodeAllowed(enum HttpMethod methode);
+		void			setInfos();
 		void			sendHeader();
 		void			sendChunkEnd();
 		void			error(int num);
 		void			createHeader();
 		void			setDateHeader();
 		void			setStatusLine();
-		void			tryDeleteFile();
 		void			sendFinalChunk();
 		void			setClientError();
 		void			setServerHeader();
@@ -50,6 +62,7 @@ class HttpResponse {
 		void			setContentTypeHeader();
 		void			sendErrorPage(int num);
 		void			setContentLengthHeader();
+		void			tryDeleteFile(string uri);
 		void			sendContent(ifstream &file);
 		void			movedPermanently(string uri);
 		void			directoryListing(string path);

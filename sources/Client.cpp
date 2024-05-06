@@ -6,17 +6,18 @@
 /*   By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/08 09:04:04 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/15 14:44:06 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/05/03 14:05:24 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "webserv.h"
+#include <vector>
 #include "Client.hpp"
 
-Client::Client(): _server(NULL), _request(NULL), _response(NULL), _error(false) {}
+Client::Client(): _servers(vector<Server *>(0)), _request(NULL), _response(NULL), _error(false) {}
 
-Client::Client(Server *server, int fd):
-	_server(server), _request(NULL), _response(NULL), _fd(fd), _error(false) {
+Client::Client(vector<Server *> servers, int fd):
+	_servers(servers), _request(NULL), _response(NULL), _fd(fd), _error(false) {
 	this->_creationDate = time(0);
 }
 
@@ -32,7 +33,7 @@ Client::~Client() {
 }
 
 Client	&Client::operator=(const Client &rhs) {
-	this->_server = rhs._server;
+	this->_servers = rhs._servers;
 	this->_request = rhs._request;
 	this->_response = rhs._response;
 	this->_fd = rhs._fd;
@@ -48,8 +49,12 @@ bool	Client::appendRequest(const char *data, int bytes) {
 	return (this->_request->appendRequest(data, bytes));
 }
 
-Server	*Client::getServer() const {
-	return (this->_server);
+Server	*Client::getServer(int index) const {
+	return (this->_servers[index]);
+}
+
+vector<Server *>	Client::getServers() const {
+	return (this->_servers);
 }
 
 HttpRequest	*Client::getRequest() const {
@@ -115,12 +120,14 @@ mapStrStr	Client::getEnv() const {
 }
 
 ostream	&operator<<(ostream &o, const Client &client) {
-	if (client.getServer()->getLogLevel() == 0)
-		return (o);
+	if (client.getRequest())
+		if (client.getServer(client.getRequest()->getServerIndex())->getLogLevel() == 0)
+			return (o);
 	o << timeStamp();
 	o << RED BOLD " Client (fd: " << client.getFd() << ") " END_STYLE;
-	if (client.getServer())
-		o << *client.getServer() << endl;
+	if (client.getRequest())
+		if (client.getServer(client.getRequest()->getServerIndex()))
+			o << *client.getServer(client.getRequest()->getServerIndex()) << endl;
 	if (client.getRequest())
 		o << *client.getRequest();
 	if (client.getResponse())

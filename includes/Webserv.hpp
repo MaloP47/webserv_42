@@ -6,7 +6,7 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/05 15:43:55 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/18 18:40:23 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/05/06 12:09:28 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,6 @@
 # define WEBSERV_HPP
 
 # include "webserv.h"
-# include "AServerAttributes.hpp"
 # include "Server.hpp"
 # include "Client.hpp"
 
@@ -26,12 +25,13 @@ typedef vector<Server>::iterator	serverIt;
 
 class Webserv{
 	private:
-		int					_logLevel;
-		int					_epoll_fd;
-		bool				_run;
-		string				_command;
-		vector<Server>		_servers;
-		map<int, Client>	_clients;
+		int							_logLevel;
+		int							_epoll_fd;
+		bool						_run;
+		string						_command;
+		vector<Server>				_servers;
+		map<int, Client>			_clients;
+		map<int, vector<Server *> >	_serversFd;
 
 		int		start();
 		int		initEpoll();
@@ -52,7 +52,7 @@ class Webserv{
 		Webserv &operator=(const Webserv &rhs);
 
 	public:
-		Webserv(string config);
+		Webserv( vector<ConfigServer> const & conf ) ;
 		~Webserv();
 
 		int		getLogLevel() const;

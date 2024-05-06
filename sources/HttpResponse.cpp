@@ -6,7 +6,7 @@
 /*   By: maburnet <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/08 17:29:38 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/05/06 17:56:05 by maburnet         ###   ########.fr       */
+/*   Updated: 2024/05/06 18:24:21 by maburnet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -191,12 +191,29 @@ void	HttpResponse::error(int num) {
 	this->_mime = Mime::ext("html");
 	this->createHeader();
 	this->sendHeader();
-	this->sendErrorPage(num);
+	map<int, string> errorPages = this->getServer()->getErrorPages();
+	if (errorPages[num] != "") {
+		string uri = this->getServer()->getRoot() + errorPages[num];
+		ifstream file;
+		file.open(uri.c_str(), ios::binary);
+		if (file.is_open()) {
+			file.seekg(0, ios::end);
+			this->_contentLength = file.tellg();
+			file.seekg(0, ios::beg);
+			if (file.fail()) {
+				this->error(500);
+				return ;
+			}
+			this->sendContent(file);
+		} else
+			this->sendErrorPage(num);
+	} else
+		this->sendErrorPage(num);
 }
 
 void	HttpResponse::sendDirectoryPage(string path) {
 	int		bytes;
-	string	page = DirectoryListing::html(path, this->getServer()->getRoot());
+	string	page = DirectoryListing::html(path, this->getServer()->getRoot(), this->getRequest()->getUri());
 
 	if (this->keepAlive() && !this->getClientError())
 		this->sendChunkSize(page.length());
@@ -222,10 +239,13 @@ vector<string>	HttpResponse::getIndexes() const {
 
 bool	HttpResponse::expandUri(string &uri, bool &isDir) {
 	struct stat		s;
-	vector<string>	indexes;
 
-	uri = this->getServer()->getRoot() + this->getRequest()->getUri();
-	indexes = this->getIndexes();
+	if (this->_isLocation) {
+		uri = this->getRequest()->getUri();
+		uri.erase(0, this->_locPath.length());
+		uri = this->_root + uri;
+	} else
+		uri = this->getServer()->getRoot() + this->getRequest()->getUri();
 	if (stat(uri.c_str(), &s) == 0) {
 		if (s.st_mode & S_IFDIR) {
 			isDir = true;
@@ -241,8 +261,12 @@ bool	HttpResponse::expandUri(string &uri, bool &isDir) {
 		return (false);
 	}
 	if (isDir) {
-		for (vector<string>::iterator it = indexes.begin(); it != indexes.end(); it++) {
+		for (vector<string>::iterator it = this->_indexes.begin(); it != this->_indexes.end(); it++) {
 			if (access((uri + *it).c_str(), F_OK) != -1) {
+				if (access((uri + *it).c_str(), R_OK) == -1) {
+					this->error(403);
+					return (false);
+				}
 				uri += *it;
 				isDir = false;
 				break;
@@ -252,14 +276,14 @@ bool	HttpResponse::expandUri(string &uri, bool &isDir) {
 	return (true);
 }
 
-void	HttpResponse::tryDeleteFile() {
-	string	uri;
+void	HttpResponse::tryDeleteFile(string uri) {
+	string	root;
 
-	if (this->getRequest()->getUri()[0] == '/')
-		uri = this->getServer()->getRoot() + this->getRequest()->getUri();
-	else
-		uri = this->getServer()->getRoot() + "/" + this->getRequest()->getUri();
-	if (!childPath(getFullPath(this->getServer()->getRoot()), getFullPath(uri)))
+	if (this->_isLocation) {
+		root = this->_root;
+	} else
+		root = this->getServer()->getRoot();
+	if (!childPath(getFullPath(root), getFullPath(uri)))
 		this->error(403);
 	else {
 		if (remove(uri.c_str()) == 0)
@@ -267,6 +291,46 @@ void	HttpResponse::tryDeleteFile() {
 		else
 			this->error(204);
 	}
+}
+
+void	HttpResponse::setInfos() {
+	vector<string>	index;
+	vector<Location> locations = this->getServer()->getLocation();
+	for (vector<Location>::iterator it = locations.begin(); it != locations.end(); it++) {
+		if (this->getRequest()->getUri().compare(0, it->getLocPath().length(), it->getLocPath()) == 0) {
+			this->_locPath = it->getLocPath();
+			this->_root = it->getRoot();
+			this->_maxBodySize = it->getMaxBodySize();
+			this->_allowedMethod = it->getAllowedMethod();
+			this->_directoryListing = it->getDirectoryListing();
+			this->_errorPage = it->getErrorPages();
+			this->_returnURI = it->getReturnURI();
+			this->_uploadPath = it->getUploadPath();
+			this->_isLocation = true;
+			index = split_trim(it->getIndex(), ",");
+			for (strVecIt it = this->_indexes.begin(); it != this->_indexes.end(); it++) {
+				if (*it != "")
+					this->_indexes.push_back(*it);
+			}
+			return ;
+		}
+	}
+	this->_root = this->getServer()->getRoot();
+	this->_maxBodySize = this->getServer()->getMaxBodySize();
+	this->_allowedMethod = this->getServer()->getAllowedMethod();
+	this->_directoryListing = this->getServer()->getDirectoryListing();
+	this->_errorPage = this->getServer()->getErrorPages();
+	this->_returnURI = this->getServer()->getReturnURI();
+	this->_uploadPath = this->getServer()->getUploadPath();
+	this->_isLocation = false;
+	this->_indexes = this->getServer()->getIndexes();
+}
+
+bool	HttpResponse::methodeAllowed(enum HttpMethod methode) {
+	for (methodeIt it = this->_allowedMethod.begin(); it != this->_allowedMethod.end(); it++)
+		if (*it == methode)
+			return (true);
+	return (false);
 }
 
 void	HttpResponse::sendResponse() {
@@ -279,26 +343,30 @@ void	HttpResponse::sendResponse() {
 		this->error(400);
 		return ;
 	}
-	if (this->getRequest()->getMethod() == DELETE) {
-		tryDeleteFile();
-		return ;
-	}
 	if (!this->expandUri(uri, isDir))
 		return ;
-	if (!this->getServer()->methodeAllowed(this->getRequest()->getMethod())) {
+	if (!this->methodeAllowed(this->getRequest()->getMethod())) {
 		this->error(405);
+		return ;
+	}
+	if (this->getRequest()->getMethod() == DELETE) {
+		tryDeleteFile(uri);
 		return ;
 	}
 	ext = ext.substr(ext.find_last_of(".") + 1);
 	if (ext.find("/") == string::npos)
 		this->_mime = Mime::ext(ext);
 	if (isDir) {
-		if (this->getServer()->getDirectoryListing())
+		if (this->_directoryListing)
 			this->directoryListing(uri);
 		else
 			this->error(404);
 		return ;
 	} else {
+		if (access(uri.c_str(), F_OK) != -1) {
+			if (access(uri.c_str(), R_OK) == -1)
+				this->error(403);
+		}
 		file.open(uri.c_str(), ios::binary);
 	}
 	if (!file.is_open()) {
@@ -385,7 +453,7 @@ void	HttpResponse::executeCGI(char **env)
 }
 
 Server	*HttpResponse::getServer() const {
-	return (this->_client->getServer());
+	return (this->_client->getServer(this->_client->getRequest()->getServerIndex()));
 }
 
 HttpRequest	*HttpResponse::getRequest() const {

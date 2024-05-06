@@ -6,7 +6,7 @@
 /*   By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/08 11:01:52 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/15 17:43:13 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/05/06 12:05:13 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,14 @@
 HttpRequest::HttpRequest() {}
 
 HttpRequest::HttpRequest(Client *client):
-	_client(client), _headerLength(0), _requestLength(0), _goodRequest(true), _method(OTHER), _contentLength(0){
+	_client(client),
+	_headerLength(0),
+	_requestLength(0),
+	_goodRequest(true),
+	_tooLarge(false),
+	_method(OTHER),
+	_serverIndex(0),
+	_contentLength(0){
 }
 
 HttpRequest::HttpRequest(const HttpRequest &cpy) {
@@ -30,10 +37,13 @@ HttpRequest	&HttpRequest::operator=(const HttpRequest &rhs) {
 	this->_rawRequest = rhs._rawRequest;
 	this->_method = rhs._method;
 	this->_goodRequest = rhs._goodRequest;
+	this->_tooLarge = rhs._tooLarge;
 	this->_uri = rhs._uri;
 	this->_acceptedMimes = rhs._acceptedMimes;
 	this->_rawBytes = rhs._rawBytes;
 	this->_contentLength = rhs._contentLength;
+	this->_serverIndex = rhs._serverIndex;
+	this->_host = rhs._host;
 	return (*this);
 }
 
@@ -63,9 +73,27 @@ bool	HttpRequest::appendRequest(const char *data, int bytes) {
 		data++;
 	}
 	this->_requestLength += bytes;
+	if (this->_headerLength != 0) {
+		if (this->_contentLength > static_cast<size_t>(this->getServer()->getMaxBodySize()) * 1024) {
+			this->_tooLarge = true;
+		}
+		if (static_cast<size_t>(this->getServer()->getMaxBodySize() * 1024) < this->_requestLength - this->_headerLength) {
+			this->_tooLarge = true;
+			vector<string> line = split_trim(this->_rawRequest.substr(0, this->_headerLength), "\r\n");
+			if (line.size() < 1)
+				return (true);
+			this->_keepAliveConnection = false;
+			this->parseRequestLine(line[0]);	
+			return (true);
+		}
+	}
 	if (isFullRequest()) {
 		this->parse();
 		return (true);
+	}
+	if (this->_tooLarge) {
+		this->parse();
+		return(true);
 	}
 	return (false);
 }
@@ -92,6 +120,8 @@ void	HttpRequest::parse() {
 			this->parseConnection(*it);
 		else if (findLower(*it, "content-type:"))
 			this->parseContentType(*it);
+		else if (findLower(*it, "host:"))
+			this->parseHost(*it);
 	}
 	if (this->_contentType == "multipart/form-data")
 		this->decodeFormData();
@@ -124,7 +154,7 @@ void	HttpRequest::decodeUrlEncoded() {
 void	HttpRequest::decodeFormData() {
 	size_t			pos;
 	string			header;
-	string			filename;
+	string			filename = "";
 	vector<char>	file;
 
 	if ((pos = findInCharVec("\r\n\r\n", this->_rawBytes)) != string::npos) {
@@ -133,15 +163,14 @@ void	HttpRequest::decodeFormData() {
 		split = split_trim(header, "filename=\"");
 		if (split.size() == 2) {
 			split = split_trim(split[1], "\"\r\n");
-			if (split.size() == 2)
-				filename = split[0];
+			if (split.size() == 2 && split[0].length() != 0)
+				filename = this->getServer()->getRoot() + this->getServer()->getUploadPath() + split[0];
 		}
 		this->_rawBytes.erase(this->_rawBytes.begin(), this->_rawBytes.begin() + pos + 4);
 		if ((pos = findInCharVec("\r\n--" + this->_boundary, this->_rawBytes)) != string::npos) {
 			file.insert(file.begin(), this->_rawBytes.begin(), this->_rawBytes.begin() + pos);
 			this->_uploadedFiles.push_back(Upload(filename, file));
 			this->_rawBytes.erase(this->_rawBytes.begin(), this->_rawBytes.begin() + pos);
-
 		}
 	}
 	if (findInCharVec("--" + this->_boundary + "\r\n", this->_rawBytes) != string::npos)
@@ -200,6 +229,22 @@ void	HttpRequest::parseAcceptedMimes(string line) {
 	this->_acceptedMimes = split_trim(line, ",");
 }
 
+void	HttpRequest::parseHost(string line) {
+	line.erase(0, 6);	
+	this->_host = line;
+	int i = 0;
+	vector<Server *> serv = this->_client->getServers();
+	for (vector<Server *>::iterator it = serv.begin(); it != serv.end(); it++) {
+		stringstream	hostPort;
+		hostPort << (*it)->getName() << ":" << this->getServer()->getPort();
+		if ((*it)->getHost() == this->_host || hostPort.str() == this->_host) {
+			this->_serverIndex = i;
+			break ;
+		}
+		i++;
+	}
+}
+
 void	HttpRequest::parseRequestLine(string line) {
 	vector<string>	split;
 
@@ -241,12 +286,20 @@ void	HttpRequest::getUriAndEnv(string str) {
 	this->_uri = decodeUri(split[0]);
 }
 
+string	HttpRequest::getHost() const {
+	return (this->_host);
+}
+
 Client	*HttpRequest::getClient() const {
 	return (this->_client);
 }
 
 Server	*HttpRequest::getServer() const {
-	return (this->getClient()->getServer());
+	return (this->getClient()->getServer(this->_serverIndex));
+}
+
+int	HttpRequest::getServerIndex() const {
+	return (this->_serverIndex);
 }
 
 void	HttpRequest::setMethod(string str) {
@@ -260,6 +313,10 @@ void	HttpRequest::setMethod(string str) {
 
 bool	HttpRequest::isGood() const {
 	return (this->_goodRequest);
+}
+
+bool	HttpRequest::tooLarge() const {
+	return (this->_tooLarge);
 }
 
 enum HttpMethod	HttpRequest::getMethod() const {

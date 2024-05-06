@@ -115,7 +115,7 @@ string	StatusCode::page(int num) {
 	string	html;
 
 	html = "<!doctype html><html><head><title>" + StatusCode::name(num).erase(0, 4)
-		+ "=</title><link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/\
+		+ "</title><link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/\
 		bootstrap@5.3.3/dist/css/bootstrap.min.css\"><link rel=\"preconnect\"\
 		href=\"https://fonts.googleapis.com\"><link rel=\"preconnect\"\
 		href=\"https://fonts.gstatic.com\" crossorigin><link href=\

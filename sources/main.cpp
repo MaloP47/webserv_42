@@ -6,7 +6,11 @@
 /*   By: maburnet <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 15:20:01 by gbrunet           #+#    #+#             */
+<<<<<<< HEAD
 /*   Updated: 2024/05/06 17:46:33 by maburnet         ###   ########.fr       */
+=======
+/*   Updated: 2024/05/06 14:50:54 by mpeulet          ###   ########.fr       */
+>>>>>>> main
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,53 +19,45 @@
 #include "ConfigServer.hpp"
 #include "Location.hpp"
 
-// void	handler(int signum) {
-// 	static_cast<void>(signum);
-// 	cout << DEL_LINE CYAN "exit" END_STYLE << endl;
-// 	env()->ctrl_c = true;
-// }
+void	handler(int signum) {
+	static_cast<void>(signum);
+	cout << DEL_LINE CYAN "exit" END_STYLE << endl;
+	env()->ctrl_c = true;
+}
 
-// int	main(void) {
-// 	signal(SIGINT, handler);
-// 	env()->ctrl_c = false;
-// 	env()->return_val = 0;
-// 	env()->webserv = new Webserv("path of the config file");
-// 	delete (env()->webserv);
-// 	return (env()->return_val);
-// }
-
-int	main( int ac, char **av ) {
-
-	if ( ac == 2 ) {
-		try {
-			string	input = av[1] ;
-			Config	conf(input) ;
-			size_t	nbServer = conf.getNbServer() ;
-			vector<ConfigServer>	serv ;
-			for ( size_t i = 0; i < nbServer; i++ ) {
-				ConfigServer	servConf( conf.getServerBlocks()[i], i ) ;
-				serv.push_back( servConf ) ;
-			}
-			for ( size_t i = 0; i < nbServer; i++ ) {
-				cout << serv[i] ;
-			}
+int exec_webserv(string input) {
+	try {
+		Config	conf(input) ;
+		size_t	nbServer = conf.getNbServer() ;
+		vector<ConfigServer>	serv ;
+		for ( size_t i = 0; i < nbServer; i++ ) {
+			ConfigServer	servConf( conf.getServerBlocks()[i], i ) ;
+			serv.push_back( servConf ) ;
 		}
-		catch ( const runtime_error & e ) {
-			std::cout << e.what() << std::endl ;
-		}
+		signal(SIGINT, handler);
+		env()->ctrl_c = false;
+		env()->return_val = 0;
+		env()->webserv = new Webserv( serv );
+		delete (env()->webserv);
+		return (env()->return_val);
 	}
-	else
-		cout << EXAMPLE ;
-
+	catch ( const runtime_error & e ) {
+		std::cout << e.what() << std::endl ;
+		return (-1);
+	}
 	return 0;
 }
 
-// int	main( void ) {
-// 	try {
-// 		ConfigServer	cs("rotvar/www;", 1) ;
-// 		// cout << cs ;
-// 	}
-// 	catch ( const runtime_error & e ) {
-// 		std::cout << e.what() << std::endl ;
-// 	}
-// }
+int	main( int ac, char **av ) {
+	signal(SIGPIPE, SIG_IGN);
+	if ( ac == 2 ) {
+		exec_webserv(av[1]);
+	}
+	else if (ac == 1) {
+		exec_webserv("./config/_default.conf");
+	}
+	else {
+		cout << EXAMPLE ;
+	}
+	return 0;
+}

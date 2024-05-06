@@ -6,20 +6,20 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/23 13:37:58 by mpeulet           #+#    #+#             */
-/*   Updated: 2024/04/30 13:58:38 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/05/06 14:48:56 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ConfigServer.hpp"
 
-ConfigServer::ConfigServer( string const & serverBlock, int indexOfServerBlock ) : 
- 		 _indexServer( indexOfServerBlock ) {
+ConfigServer::ConfigServer( string const & serverBlock, int indexOfServerBlock ) :
+		_serverBlock( serverBlock ), 
+ 		_indexServer( indexOfServerBlock ) {
 
 	string 	block = serverBlock ;
 	extractLocation( block ) ;
-	initLocation() ;
-	// PROBABLY DO THE SAME FOR CGI
-	// CREATE VECTOR FOR LOCATION
+	checkMBS( block ) ;
+	initLocation( getMaxBodySize() ) ;
 	_root = extractStringVariable( block, "root" ) ;
 	if ( _root.empty() )
 		throw runtime_error( "Missing root, mandatory field." ) ;
@@ -27,7 +27,6 @@ ConfigServer::ConfigServer( string const & serverBlock, int indexOfServerBlock )
 	_host = extractStringVariable( block, "host" ) ;
 	if ( _host.empty() )
 		_host = "127.0.0.1" ;
-	checkMBS( block ) ;
 	checkAutoIndex( block ) ;
 	checkName( block, indexOfServerBlock ) ;
 	_uploadPath = extractStringVariable( block, "upload_path" ) ;
@@ -35,6 +34,9 @@ ConfigServer::ConfigServer( string const & serverBlock, int indexOfServerBlock )
 	_index = extractStringVariable( block, "index" ) ;
 	extractMap( block, "error_page", _errorPage ) ;
 	extractMap( block, "return", _returnURI ) ;
+	checkCGIBin( block ) ;
+	if ( _binPath.size() )
+		checkCGIExtension( block ) ;
 	if ( block != "}" )
 		throw runtime_error( "Config file contains unknown instructions :" + block ) ;
 }
@@ -59,6 +61,8 @@ ConfigServer &	ConfigServer::operator=( ConfigServer const & rhs ) {
 		_uploadPath = rhs._uploadPath ;
 		_location = rhs._location ;
 		_locationBlock = rhs._locationBlock ;
+		_binPath = rhs._binPath ;
+		_cgiExtension = rhs._cgiExtension ;
 	}
 	return *this ;
 }
@@ -85,10 +89,10 @@ void	ConfigServer::checkPort( string & block ) {
 	string	tmp = extractStringVariable( block, "listen" ) ;
 	if ( tmp.empty() )
 		throw runtime_error( "Missing port, mandatory field." ) ;
-	if ( tmp.size() < 5 || tmp.size() > 5 || !isAllDigits( tmp ) )
+	if ( tmp.size() < 4 || tmp.size() > 5 || !isAllDigits( tmp ) )
 		throw runtime_error( "Wrong port format." ) ;
 	_port = atoi( tmp.c_str() ) ;
-	if ( _port < 49152 || _port > 65535 )
+	if ( _port < 8079 || _port > 65535 )
 		throw runtime_error( "By convention port must be between 49152 et 65535" ) ;
 }
 
@@ -146,6 +150,8 @@ void	ConfigServer::checkMethod( string & block ) {
 	if ( pos != string::npos ) {
 		_allowedMethod.push_back( POST ) ;
 		tmp.erase( pos, 4 ) ;
+		if ( _uploadPath.empty() )
+			throw runtime_error( "Upload path is mandatory if POST method is allowed." ) ;
 	}
 	pos = tmp.find( "DELETE" ) ;
 	if ( pos != string::npos ) {
@@ -195,16 +201,33 @@ void	ConfigServer::extractLocation( string & tmp ) {
 	}
 }
 
-void		ConfigServer::initLocation( void ) {
+void		ConfigServer::initLocation( long long servMBS ) {
 	size_t	locSize = _location.size() ;
 	if ( locSize ) {
 		for ( size_t i = 0; i < locSize; ++i ) {
-			Location lc( _location[i], i) ;
+			Location lc( _location[i], i, servMBS ) ;
 			_locationBlock.push_back( lc ) ;
 		}
 	}	
 }
 
+void	ConfigServer::checkCGIBin( string & block ) {
+	string	tmp = extractStringVariable( block, "cgi_bin" ) ;
+	if ( tmp.empty() )
+		return ;
+	_binPath = split_trim_conf( tmp, "," ) ;
+	if ( !areAllPathsBinaries( _binPath ) )
+		throw runtime_error( "All paths in cgi_bin must be binaries.\nBlock :" + _serverBlock ) ;
+}
+
+void	ConfigServer::checkCGIExtension( string & block ) {
+	string	tmp = extractStringVariable( block, "cgi_extension" ) ;
+	if ( tmp.empty() )
+		return ;
+	_cgiExtension = split_trim_conf( tmp, "," ) ;
+	if ( !allStartWithDot( _cgiExtension ) )
+		throw runtime_error( "All extensions in cgi_extension must start with a dot.\nBlock :" + _serverBlock ) ;
+}
 
 void	ConfigServer::setPort( int port ) { _port = port ; }
 void	ConfigServer::setRoot( string const & root ) { _root = root ; }
@@ -219,8 +242,11 @@ void	ConfigServer::setReturnURI( map<int,string> const & uri ) { _returnURI = ur
 void	ConfigServer::setUploadPath( string const & path ) { _uploadPath = path ; }
 void	ConfigServer::setLocation( vector<string> loc ) { _location = loc ; }
 void	ConfigServer::setLocationBlock( vector<Location> const & locationBlock ) { _locationBlock = locationBlock ; }
+void	ConfigServer::setBinPath( vector<string> const & binPath ) { _binPath = binPath ; }
+void	ConfigServer::setCgiExtension( vector<string> const & cgiExtension ) { _cgiExtension = cgiExtension ; }
 
 int								ConfigServer::getServerIndex( void ) const { return _indexServer ; }
+string const &					ConfigServer::getServerBlock( void ) const { return _serverBlock ; }
 int								ConfigServer::getPort( void ) const { return _port ; }
 string const &					ConfigServer::getRoot( void ) const { return _root ; }
 string const &					ConfigServer::getHost( void ) const { return _host ; }
@@ -234,10 +260,12 @@ map<int,string> const &			ConfigServer::getReturnURI( void ) const { return _ret
 string const &					ConfigServer::getUploadPath( void ) const { return _uploadPath ; }
 vector<string> const &			ConfigServer::getLocation( void ) const { return _location ; } ;
 vector<Location> const &		ConfigServer::getLocationBlock( void ) const { return _locationBlock ; }
+vector<string> const &			ConfigServer::getBinPath( void ) const { return _binPath ; }
+vector<string> const &			ConfigServer::getCgiExtension( void ) const { return _cgiExtension ; }
 
 ostream &	operator<<( ostream & o, ConfigServer const & rhs ) {
 	o << "//////////////////////SERVER////////////////////////" << endl ;
-	o << "[ " << "Server block " << rhs.getServerIndex() << " ]" << endl ; 
+	o << "[ " << "Server block " << rhs.getServerIndex() + 1 << " ]" << endl ; 
 	o << "Server: " << rhs.getName() << std::endl ;
 	o << "Port: " << rhs.getPort() << std::endl ;
 	o << "Root: " << rhs.getRoot() << std::endl ;
@@ -270,6 +298,7 @@ ostream &	operator<<( ostream & o, ConfigServer const & rhs ) {
 			o << ", " ;
 	}
 	o << std::endl ;
+	o << "UploadPath: " << rhs.getUploadPath() << std::endl ;
 	o << "ReturnURI: " ;
 	for ( map<int,string>::const_iterator it = rhs.getReturnURI().begin() ; it != rhs.getReturnURI().end() ; it++ ) {
 		o << it->first << " -> " << it->second;
@@ -277,7 +306,21 @@ ostream &	operator<<( ostream & o, ConfigServer const & rhs ) {
 			o << ", " ;
 	}
 	o << std::endl ;
-	o << "UploadPath: " << rhs.getUploadPath() << std::endl ;
+	o << "BinPath: ";
+    for (vector<string>::const_iterator it = rhs.getBinPath().begin(); it != rhs.getBinPath().end(); ++it) {
+        o << *it;
+        if (it + 1 != rhs.getBinPath().end())
+            o << ", ";
+    }
+    o << std::endl;
+
+    o << "CgiExtension: ";
+    for (vector<string>::const_iterator it = rhs.getCgiExtension().begin(); it != rhs.getCgiExtension().end(); ++it) {
+        o << *it;
+        if (it + 1 != rhs.getCgiExtension().end())
+            o << ", ";
+    }
+	o << std::endl ;
 	o << "LocationBlock: " << rhs.getLocationBlock().size() << std::endl ;
 	for ( size_t i = 0 ; i < rhs.getLocationBlock().size() ; i++ ) {
 		o << rhs.getLocationBlock()[i] ;

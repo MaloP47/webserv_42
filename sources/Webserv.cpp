@@ -3,27 +3,26 @@
 /*                                                        :::      ::::::::   */
 /*   Webserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+        */
+/*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/05 15:49:31 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/15 17:33:23 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/05/06 12:09:14 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "webserv.h"
 #include "Webserv.hpp"
+#include <sys/epoll.h>
+#include <vector>
 
 Webserv::Webserv() {}
 
-Webserv::Webserv(string config): _logLevel(1) {
-	(void) config;
-	// something here to parse the config file;
-	// for now, i'm adding manually 2 servers for testing purpose
-	Server one(this, 8080, "127.0.0.1", "server_one");
-	this->addServer(one);
-	Server two(this, 8081, "127.0.0.1", "server_two");
-	this->addServer(two);
-
+Webserv::Webserv( vector<ConfigServer> const & conf ) :
+	_logLevel(1) {
+	for ( size_t i = 0; i < conf.size(); i++ ) {
+		Server serv(this, conf, i) ;
+		this->addServer(serv) ;
+	}
 	if (this->initEpoll() != SUCCESS)
 		return ;
 	this->start();
@@ -58,14 +57,25 @@ int	Webserv::initEpoll() {
 		return (ret(ERR_EPOLL_CREATE));
 	}
 	for(serverIt it = this->_servers.begin(); it != this->_servers.end(); it++) {
-		cout << *it << endl;
 		memset(&event, 0, sizeof(struct epoll_event));
-		event.events = EPOLLIN;
-		event.data.fd = it->getFd();
-		if (epoll_ctl(this->_epoll_fd, EPOLL_CTL_ADD, it->getFd(), &event) < 0) {
-			perror("epoll_ctl");
-			return (ret(ERR_EPOLL_CTL));
+		if (it->getFd() != -1) {
+			event.events = EPOLLIN;
+			event.data.fd = it->getFd();
+			if (epoll_ctl(this->_epoll_fd, EPOLL_CTL_ADD, it->getFd(), &event) < 0) {
+				perror("epoll_ctl");
+				return (ret(ERR_EPOLL_CTL));
+			}
+			this->_serversFd[it->getFd()].push_back(&(*it));
+		} else {
+			for (serverIt sIt = this->_servers.begin(); sIt != it; sIt++) {
+				if (sIt->getPort() == it->getPort()) {
+					it->setFd(sIt->getFd());
+					this->_serversFd[it->getFd()].push_back(&(*it));
+					break;
+				}
+			}
 		}
+		cout << *it << endl;
 	}
 	cout << endl;
 	memset(&event, 0, sizeof(struct epoll_event));
@@ -113,8 +123,8 @@ int	Webserv::start() {
 		for (int i = 0; i < nfds; i++) {
 			event = events[i].events;
 			if ((event & EPOLLERR) || (event & EPOLLHUP)) {
-				cerr << "epoll_event events error" << endl;
-				close(events[i].data.fd);
+				cerr << "epoll_event events error" << (event & EPOLLERR) << " " << (event & EPOLLHUP) << endl;
+			//	close(events[i].data.fd); // I think this was the line which was bugged
 			}
 			else if (events[i].data.fd == 0)
 				this->processStdIn();
@@ -166,7 +176,7 @@ int	Webserv::acceptConnection(int fd) {
 		perror("epoll_ctl");
 		return (ret(ERR_EPOLL_CTL));
 	}
-	this->_clients[connected_fd] = Client(this->getServer(fd), connected_fd);
+	this->_clients[connected_fd] = Client(this->_serversFd[fd], connected_fd);
 	return (SUCCESS);
 }
 
@@ -185,8 +195,6 @@ void	Webserv::processRequest(int fd) {
 	Client	&client = this->_clients[fd];
 	string	header;
 
-	if (!client.getServer())
-		return ;
 	received = recv(fd, buf, BUFFER_SIZE, 0);
 	if (received <= 0) {
 		this->deleteClient(fd);

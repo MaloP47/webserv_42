@@ -6,7 +6,7 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/05 15:15:28 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/28 12:50:13 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/05/06 14:36:14 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,7 @@
 # include <csignal>
 # include <dirent.h>
 # include <exception>
+# include <set>
 using namespace std;
 
 # include "Mime.hpp"
@@ -54,7 +55,6 @@ enum HttpMethod {
 
 // # include "Location.hpp"
 # include "Webserv.hpp"
-# include "AServerAttributes.hpp"
 # include "Config.hpp"
 # include "ConfigServer.hpp"
 
@@ -65,7 +65,7 @@ typedef struct s_env {
 }	t_env;
 
 # define MAX_EVENTS 1024
-# define BUFFER_SIZE 128
+# define BUFFER_SIZE 8096
 
 # define CLIENT_TIMEOUT 10
 # define EPOLL_TIMEOUT 5000
@@ -102,6 +102,10 @@ string			strFromCharVec(size_t len, vector<char> &vec);
 size_t			findInCharVec(string str, vector<char> &vec);
 vector<string>	split_trim(string str, string needle);
 vector<string>	split_trim_conf(string str, string needle);
+bool			isFile( const string & path );
+bool			areAllPathsBinaries( const vector<string> & paths );
 bool			isAllDigits( string const & str ) ;
+bool			startsWithDot( const string & str );
+bool			allStartWithDot( const vector<string> & strings ) ;
 
 #endif

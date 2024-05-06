@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "Upload.hpp"
+#include <sstream>
 
 Upload::Upload() {}
 
@@ -29,9 +30,33 @@ Upload	&Upload::operator=(const Upload &rhs) {
 }
 
 void	Upload::createFile() {
-	ofstream	file;
-
-	file.open(this->_filename.c_str(), ios::out | ios::binary);
+	ofstream		file;
+	ifstream		fileExist;
+	int				i = 1;
+	stringstream	fullName;
+	string			name;
+	string			ext;
+	
+	if (this->_filename == "")
+		return ;
+	if (this->_filename.find_last_of(".") != string::npos) {
+		name = this->_filename.substr(0, this->_filename.find_last_of("."));
+		ext = this->_filename.substr(this->_filename.find_last_of("."));
+	}
+	else {
+		name = this->_filename;
+		ext = "";	
+	}
+	fullName << name << "_" << i << ext;
+	fileExist.open(fullName.str().c_str());
+	if (fileExist.good()) {
+		fileExist.close();
+		fullName.str("");
+		i++;
+		fullName << name << "_" << i << ext;
+	}
+	fileExist.close();
+	file.open(fullName.str().c_str(), ios::out | ios::binary);
 	if (!file) {
 		perror("open");
 		return ;

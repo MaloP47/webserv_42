@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/04/08 15:13:19 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/23 18:33:10 by mpeulet          ###   ########.fr       */
+/*   Created: 2024/05/06 10:50:22 by mpeulet           #+#    #+#             */
+/*   Updated: 2024/05/06 14:36:02 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -206,4 +206,34 @@ bool	isAllDigits( string const & str ) {
             return false;
     }
     return true;
+}
+
+bool	isFile( const string & path ) {
+    struct stat	buf;
+    if ( stat( path.c_str(), &buf ) != 0 )
+        return false; 
+    return S_ISREG( buf.st_mode ) ;
+}
+
+bool	areAllPathsBinaries( const vector<string> & paths ) {
+    for ( vector<string>::const_iterator it = paths.begin(); it != paths.end(); ++it ) {
+        if ( !isFile(* it ))  {
+            return false;
+        }
+    }
+    return true ;
+}
+
+bool	startsWithDot( const string & str ) {
+    if ( str.empty() ) 
+		return false ; 
+    return str[0] == '.' ;
+}
+
+bool allStartWithDot( const vector<string> & strings ) {
+    for ( vector<string>::const_iterator it = strings.begin(); it != strings.end(); ++it ) {
+        if ( !startsWithDot( *it ) )
+            return false ;
+    }
+    return true ;
 }
