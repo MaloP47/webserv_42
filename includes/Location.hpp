@@ -6,7 +6,7 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/27 11:41:57 by mpeulet           #+#    #+#             */
-/*   Updated: 2024/05/03 13:24:46 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/05/06 11:18:32 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,8 @@ class	Location {
 		void	setErrorPages( map<int,string> const & err ) ;
 		void	setReturnURI( map<int,string> const & uri ) ;
 		void	setUploadPath( string const & path ) ;
+		void	setCGIBin( vector<string> const & binPath ) ;
+		void	setCGIExtension( vector<string> const & cgiExtension ) ;
 
 		string const &					getLocPath( void ) const ;
 		int								getLocIndex( void ) const ;
@@ -46,6 +48,8 @@ class	Location {
 		map<int,string> const &			getErrorPages( void ) const ;
 		map<int,string> const &			getReturnURI( void ) const ;
 		string const &					getUploadPath( void ) const ;
+		vector<string> const &			getCGIBin( void ) const ;
+		vector<string> const &			getCGIExtension( void ) const ;
 
 	private:
 
@@ -61,6 +65,9 @@ class	Location {
 		map<int,string>			_returnURI ;
 		string					_uploadPath ;
 
+		/* CGI */
+		vector<string>			_binPath ;
+		vector<string>			_cgiExtension ;
 
 		void	extractLocPath( string & locBloc ) ;
 		string	extractStringVariable( string & tmp, string const & var ) ;
@@ -68,6 +75,8 @@ class	Location {
 		void	checkAutoIndex( string & loc ) ;
 		void	checkMethod( string & loc ) ;
 		void	extractMap( string & loc, string const & key, map<int,string> & map ) ;
+		void	checkCGIBin( string & block ) ;
+		void	checkCGIExtension( string & block ) ;
 
 		Location( void ) ;
 			
