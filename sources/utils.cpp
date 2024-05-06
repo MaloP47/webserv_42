@@ -6,7 +6,7 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/08 15:13:19 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/30 15:45:10 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/05/06 09:39:59 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -206,16 +206,4 @@ bool	isAllDigits( string const & str ) {
             return false;
     }
     return true;
-}
-
-void	checkDuplicatePorts( vector<ConfigServer> const & servers ) {
-	set<int>	ports;
-
-	for ( vector<ConfigServer>::const_iterator it = servers.begin(); it != servers.end(); it++ ) {
-		if ( !ports.insert( it->getPort() ).second ) {
-			stringstream	ss;
-			ss << it->getServerIndex() ;
-//			throw runtime_error( "Duplicate port in server block: " + ss.str() ) ; 
-		}
-	}
 }
