@@ -6,7 +6,7 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/05 15:15:28 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/30 16:26:42 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/05/06 10:18:47 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -103,6 +103,5 @@ size_t			findInCharVec(string str, vector<char> &vec);
 vector<string>	split_trim(string str, string needle);
 vector<string>	split_trim_conf(string str, string needle);
 bool			isAllDigits( string const & str ) ;
-void			checkDuplicatePorts( vector<ConfigServer> const & servers ) ;
 
 #endif
