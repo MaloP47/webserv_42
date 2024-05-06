@@ -6,7 +6,7 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/23 13:37:58 by mpeulet           #+#    #+#             */
-/*   Updated: 2024/05/06 10:07:57 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/05/06 10:51:38 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,6 @@ ConfigServer::ConfigServer( string const & serverBlock, int indexOfServerBlock )
 	extractLocation( block ) ;
 	checkMBS( block ) ;
 	initLocation( getMaxBodySize() ) ;
-	// CREATE VECTOR FOR LOCATION
 	_root = extractStringVariable( block, "root" ) ;
 	if ( _root.empty() )
 		throw runtime_error( "Missing root, mandatory field." ) ;
