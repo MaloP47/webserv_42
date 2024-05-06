@@ -6,7 +6,7 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/08 15:13:19 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/30 15:45:10 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/05/06 10:17:26 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -208,6 +208,22 @@ bool	isAllDigits( string const & str ) {
     return true;
 }
 
+bool	isFile( const string & path ) {
+    struct stat	buf;
+    if ( stat( path.c_str(), &buf ) != 0 )
+        return false; 
+    return S_ISREG( buf.st_mode ) ;
+}
+
+bool	areAllPathsBinaries( const vector<string> & paths ) {
+    for ( vector<string>::const_iterator it = paths.begin(); it != paths.end(); ++it ) {
+        if ( !isFile(* it ))  {
+            return false;
+        }
+    }
+    return true ;
+}
+
 void	checkDuplicatePorts( vector<ConfigServer> const & servers ) {
 	set<int>	ports;
 
@@ -219,3 +235,5 @@ void	checkDuplicatePorts( vector<ConfigServer> const & servers ) {
 		}
 	}
 }
+
+

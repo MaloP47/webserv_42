@@ -6,7 +6,7 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/05 15:15:28 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/30 16:26:42 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/05/06 10:17:59 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,7 +102,8 @@ string			strFromCharVec(size_t len, vector<char> &vec);
 size_t			findInCharVec(string str, vector<char> &vec);
 vector<string>	split_trim(string str, string needle);
 vector<string>	split_trim_conf(string str, string needle);
+bool			isFile( const string & path );
+bool			areAllPathsBinaries( const vector<string> & paths );
 bool			isAllDigits( string const & str ) ;
-void			checkDuplicatePorts( vector<ConfigServer> const & servers ) ;
 
 #endif

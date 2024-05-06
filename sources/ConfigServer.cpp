@@ -6,7 +6,7 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/23 13:37:58 by mpeulet           #+#    #+#             */
-/*   Updated: 2024/05/03 13:27:50 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/05/06 10:07:57 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,6 @@ ConfigServer::ConfigServer( string const & serverBlock, int indexOfServerBlock )
 	extractLocation( block ) ;
 	checkMBS( block ) ;
 	initLocation( getMaxBodySize() ) ;
-	// PROBABLY DO THE SAME FOR CGI
 	// CREATE VECTOR FOR LOCATION
 	_root = extractStringVariable( block, "root" ) ;
 	if ( _root.empty() )
@@ -208,6 +207,13 @@ void		ConfigServer::initLocation( long long servMBS ) {
 	}	
 }
 
+void	ConfigServer::checkCGIBin( string & block ) {
+	string	tmp = extractStringVariable( block, "cgi_bin" ) ;
+	if ( tmp.empty() )
+		return ;
+	_binPath = split_trim_conf( tmp, "," ) ;
+	
+}
 
 void	ConfigServer::setPort( int port ) { _port = port ; }
 void	ConfigServer::setRoot( string const & root ) { _root = root ; }
@@ -222,6 +228,8 @@ void	ConfigServer::setReturnURI( map<int,string> const & uri ) { _returnURI = ur
 void	ConfigServer::setUploadPath( string const & path ) { _uploadPath = path ; }
 void	ConfigServer::setLocation( vector<string> loc ) { _location = loc ; }
 void	ConfigServer::setLocationBlock( vector<Location> const & locationBlock ) { _locationBlock = locationBlock ; }
+void	ConfigServer::setBinPath( vector<string> const & binPath ) { _binPath = binPath ; }
+void	ConfigServer::setCgiExtension( vector<string> const & cgiExtension ) { _cgiExtension = cgiExtension ; }
 
 int								ConfigServer::getServerIndex( void ) const { return _indexServer ; }
 string const &					ConfigServer::getServerBlock( void ) const { return _serverBlock ; }
@@ -238,6 +246,8 @@ map<int,string> const &			ConfigServer::getReturnURI( void ) const { return _ret
 string const &					ConfigServer::getUploadPath( void ) const { return _uploadPath ; }
 vector<string> const &			ConfigServer::getLocation( void ) const { return _location ; } ;
 vector<Location> const &		ConfigServer::getLocationBlock( void ) const { return _locationBlock ; }
+vector<string> const &			ConfigServer::getBinPath( void ) const { return _binPath ; }
+vector<string> const &			ConfigServer::getCgiExtension( void ) const { return _cgiExtension ; }
 
 ostream &	operator<<( ostream & o, ConfigServer const & rhs ) {
 	o << "//////////////////////SERVER////////////////////////" << endl ;
@@ -288,6 +298,20 @@ ostream &	operator<<( ostream & o, ConfigServer const & rhs ) {
 		if ( i + 1 < rhs.getLocationBlock().size() )
 			o << std::endl ;
 	}
+	o << "BinPath: " ;
+	for ( size_t i = 0 ; i < rhs.getBinPath().size() ; i++ ) {
+		o << rhs.getBinPath()[i] ;
+		if ( i + 1 < rhs.getBinPath().size() )
+			o << ", " ;
+	}
+	o << std::endl ;
+	o << "CgiExtension: " ;
+	for ( size_t i = 0 ; i < rhs.getCgiExtension().size() ; i++ ) {
+		o << rhs.getCgiExtension()[i] ;
+		if ( i + 1 < rhs.getCgiExtension().size() )
+			o << ", " ;
+	}
+	o << std::endl ;
 	o << "///////////////////////////////////////////////////" << endl ;
 	return o;
 }
