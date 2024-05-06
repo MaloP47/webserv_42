@@ -32,7 +32,11 @@ Webserv::Webserv(const Webserv &cpy) {
 	*this = cpy;
 }
 
-Webserv::~Webserv() {}
+Webserv::~Webserv() {	
+	for (int i = 3; i < 1024; i++)  {
+		close(i);
+	}
+}
 
 Webserv	&Webserv::operator=(const Webserv &rhs) {
 	this->_servers = rhs._servers;
@@ -53,7 +57,9 @@ int	Webserv::initEpoll() {
 
 	this->_epoll_fd = epoll_create(MAX_EVENTS);
 	if (this->_epoll_fd < 0) {
-		perror("epoll_create");
+		cerr << timeStamp() << CYAN << " Epoll_create " << THIN ITALIC;
+		perror("");
+		cerr << END_STYLE;
 		return (ret(ERR_EPOLL_CREATE));
 	}
 	for(serverIt it = this->_servers.begin(); it != this->_servers.end(); it++) {
@@ -62,7 +68,9 @@ int	Webserv::initEpoll() {
 			event.events = EPOLLIN;
 			event.data.fd = it->getFd();
 			if (epoll_ctl(this->_epoll_fd, EPOLL_CTL_ADD, it->getFd(), &event) < 0) {
-				perror("epoll_ctl");
+				cerr << timeStamp() << CYAN << " Epoll_ctl " << THIN ITALIC;
+				perror("");
+				cerr << END_STYLE;
 				return (ret(ERR_EPOLL_CTL));
 			}
 			this->_serversFd[it->getFd()].push_back(&(*it));
@@ -82,7 +90,9 @@ int	Webserv::initEpoll() {
 	event.events = EPOLLIN;
 	event.data.fd = 0;
 	if (epoll_ctl(this->_epoll_fd, EPOLL_CTL_ADD, 0, &event) < 0) {
-		perror("epoll_ctl");
+		cerr << timeStamp() << CYAN << " Epoll_ctl " << THIN ITALIC;
+		perror("");
+		cerr << END_STYLE;
 		return (ret(ERR_EPOLL_CTL));
 	}
 	return (SUCCESS);
@@ -117,14 +127,17 @@ int	Webserv::start() {
 		this->closeUnusedSockets();
 		nfds = epoll_wait(this->_epoll_fd, events, MAX_EVENTS, EPOLL_TIMEOUT);
 		if (nfds < 0 && !env()->ctrl_c) {
-			perror("epoll_wait");
+			cerr << timeStamp() << CYAN << " Epoll_wait " << THIN ITALIC;
+			perror("");
+			cerr << END_STYLE;
 			return (ret(ERR_EPOLL_WAIT));
 		}
 		for (int i = 0; i < nfds; i++) {
 			event = events[i].events;
 			if ((event & EPOLLERR) || (event & EPOLLHUP)) {
-				cerr << "epoll_event events error" << (event & EPOLLERR) << " " << (event & EPOLLHUP) << endl;
-			//	close(events[i].data.fd); // I think this was the line which was bugged
+				cerr << timeStamp() << " " CYAN << "Epoll " << THIN ITALIC;
+				cerr << "events error" << END_STYLE << endl;
+				close(events[i].data.fd);
 			}
 			else if (events[i].data.fd == 0)
 				this->processStdIn();
@@ -159,21 +172,30 @@ int	Webserv::acceptConnection(int fd) {
 
 	connected_fd = accept(fd, &in_addr, &in_addr_len);
 	if (connected_fd < 0) {
-		if (errno == EAGAIN || errno == EWOULDBLOCK)
-			cerr << "Connection already processed" << endl;
-		else
-			perror("accept");
+		if (errno == EAGAIN || errno == EWOULDBLOCK) {
+			cerr << timeStamp() << CYAN << " Connect " << THIN ITALIC;
+			cerr << "connection already processed" END_STYLE;
+		} else {
+			cerr << timeStamp() << CYAN << " Accept " << THIN ITALIC;
+			perror("");
+			cerr << END_STYLE;
+		}
 		return (ret(ERR_ACCEPT));
 	}
+	cout << "ok" << endl;
 	if (fcntl(connected_fd, F_SETFL, O_NONBLOCK) < 0) {
-		perror("fcntl");
+		cerr << timeStamp() << CYAN << " Fcntl " << THIN ITALIC;
+		perror("");
+		cerr << END_STYLE;
 		return (ret(ERR_FCNTL));
 	}
 	memset(&event, 0, sizeof(struct epoll_event));
 	event.events = EPOLLIN;
 	event.data.fd = connected_fd;
 	if (epoll_ctl(this->_epoll_fd, EPOLL_CTL_ADD, connected_fd, &event) < 0) {
-		perror("epoll_ctl");
+		cerr << timeStamp() << CYAN << " Epoll_ctl " << THIN ITALIC;
+		perror("");
+		cerr << END_STYLE;
 		return (ret(ERR_EPOLL_CTL));
 	}
 	this->_clients[connected_fd] = Client(this->_serversFd[fd], connected_fd);
@@ -183,7 +205,9 @@ int	Webserv::acceptConnection(int fd) {
 void	Webserv::deleteClient(int fd) {
 	epoll_ctl(this->_epoll_fd, EPOLL_CTL_DEL, fd, NULL);
 	if (close(fd) < 0) {
-		perror("close");
+		cerr << timeStamp() << CYAN << " Close " << THIN ITALIC;
+		perror("");
+		cerr << END_STYLE;
 		ret(ERR_CLOSE);
 	}
 	this->_clients.erase(fd);
