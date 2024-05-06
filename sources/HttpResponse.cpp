@@ -6,7 +6,7 @@
 /*   By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/08 17:29:38 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/05/03 13:56:07 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/05/06 11:58:03 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -339,6 +339,10 @@ void	HttpResponse::sendResponse() {
 	string			uri;
 	bool			isDir;
 
+	if (this->getRequest()->tooLarge()) {
+		this->error(413);
+		return ;
+	}
 	this->setInfos();
 	if (this->_returnURI.size() > 0) {
 		int		err = this->_returnURI.begin()->first;
@@ -349,10 +353,6 @@ void	HttpResponse::sendResponse() {
 			this->error(this->_returnURI.begin()->first);
 			return ;
 		}
-	}
-	if (this->getRequest()->tooLarge()) {
-		this->error(413);
-		return ;
 	}
 	if (!this->getRequest()->isGood()) {
 		this->error(400);

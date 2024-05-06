@@ -6,7 +6,7 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 15:20:01 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/05/06 09:36:29 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/05/06 12:08:42 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,15 +21,6 @@ void	handler(int signum) {
 	env()->ctrl_c = true;
 }
 
-// int	main(void) {
-// 	signal(SIGINT, handler);
-// 	env()->ctrl_c = false;
-// 	env()->return_val = 0;
-// 	env()->webserv = new Webserv("path of the config file");
-// 	delete (env()->webserv);
-// 	return (env()->return_val);
-// }
-
 int exec_webserv(string input) {
 	try {
 		Config	conf(input) ;
@@ -39,10 +30,6 @@ int exec_webserv(string input) {
 			ConfigServer	servConf( conf.getServerBlocks()[i], i ) ;
 			serv.push_back( servConf ) ;
 		}
-		// checkDuplicatePorts( serv ) ;
-		// for ( size_t i = 0; i < nbServer; i++ ) {
-		// 	cout << serv[i] ;
-		// }
 		signal(SIGINT, handler);
 		env()->ctrl_c = false;
 		env()->return_val = 0;
@@ -57,7 +44,7 @@ int exec_webserv(string input) {
 }
 
 int	main( int ac, char **av ) {
-
+	signal(SIGPIPE, SIG_IGN);
 	if ( ac == 2 ) {
 		exec_webserv(av[1]);
 	}
@@ -69,13 +56,3 @@ int	main( int ac, char **av ) {
 	}
 	return 0;
 }
-
-// int	main( void ) {
-// 	try {
-// 		ConfigServer	cs("rotvar/www;", 1) ;
-// 		// cout << cs ;
-// 	}
-// 	catch ( const runtime_error & e ) {
-// 		std::cout << e.what() << std::endl ;
-// 	}
-// }

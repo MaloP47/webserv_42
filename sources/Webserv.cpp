@@ -6,7 +6,7 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/05 15:49:31 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/05/03 14:10:38 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/05/06 12:09:14 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,20 +16,6 @@
 #include <vector>
 
 Webserv::Webserv() {}
-
-Webserv::Webserv(string config): _logLevel(1) {
-	(void) config;
-	// something here to parse the config file;
-	// for now, i'm adding manually 2 servers for testing purpose
-//	Server one(this, 8080, "127.0.0.1", "server_one");
-//	this->addServer(one);
-//	Server two(this, 8081, "127.0.0.1", "server_two");
-//	this->addServer(two);
-
-	if (this->initEpoll() != SUCCESS)
-		return ;
-	this->start();
-}
 
 Webserv::Webserv( vector<ConfigServer> const & conf ) :
 	_logLevel(1) {
@@ -209,8 +195,6 @@ void	Webserv::processRequest(int fd) {
 	Client	&client = this->_clients[fd];
 	string	header;
 
-//	if (!client.getServer(client.getRequest()->getServerIndex()))
-//		return ;
 	received = recv(fd, buf, BUFFER_SIZE, 0);
 	if (received <= 0) {
 		this->deleteClient(fd);

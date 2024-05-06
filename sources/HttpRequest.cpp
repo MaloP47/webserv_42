@@ -6,7 +6,7 @@
 /*   By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/08 11:01:52 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/05/03 14:28:03 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/05/06 12:05:13 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,6 +74,9 @@ bool	HttpRequest::appendRequest(const char *data, int bytes) {
 	}
 	this->_requestLength += bytes;
 	if (this->_headerLength != 0) {
+		if (this->_contentLength > static_cast<size_t>(this->getServer()->getMaxBodySize()) * 1024) {
+			this->_tooLarge = true;
+		}
 		if (static_cast<size_t>(this->getServer()->getMaxBodySize() * 1024) < this->_requestLength - this->_headerLength) {
 			this->_tooLarge = true;
 			vector<string> line = split_trim(this->_rawRequest.substr(0, this->_headerLength), "\r\n");
@@ -87,6 +90,10 @@ bool	HttpRequest::appendRequest(const char *data, int bytes) {
 	if (isFullRequest()) {
 		this->parse();
 		return (true);
+	}
+	if (this->_tooLarge) {
+		this->parse();
+		return(true);
 	}
 	return (false);
 }
