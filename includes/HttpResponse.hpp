@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpResponse.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+        */
+/*   By: maburnet <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/08 17:27:41 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/14 17:46:41 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/05/06 18:31:06 by maburnet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,6 +68,9 @@ class HttpResponse {
 		void			directoryListing(string path);
 		void			setKeepAliveConnectionHeader();
 		void			sendDirectoryPage(string path);
+		void			errorCGI(string str, int tmpfd);
+		void			executeCGI(char **env);
+
 		HttpRequest		*getRequest() const;
 		vector<string>	getIndexes() const;
 	public:
@@ -77,7 +80,7 @@ class HttpResponse {
 		~HttpResponse();
 
 		HttpResponse &operator=(const HttpResponse &rhs);
-		
+
 		int				getStatusCode() const;
 		void			sendResponse();
 		string			getMime() const;

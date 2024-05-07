@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Webserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
+/*   By: maburnet <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/05 15:49:31 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/05/06 12:09:14 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/05/06 18:37:10 by maburnet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -226,7 +226,7 @@ void	Webserv::processRequest(int fd) {
 		this->deleteClient(fd);
 		return ;
 	}
-	buf[received] = 0;	
+	buf[received] = 0;
 	if (client.appendRequest(buf, received) && !client.error()) {
 		client.sendResponse();
 		cout << client;

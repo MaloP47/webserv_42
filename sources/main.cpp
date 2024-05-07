@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
+/*   By: maburnet <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 15:20:01 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/05/06 14:50:54 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/05/06 19:01:25 by maburnet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,7 @@ int exec_webserv(string input) {
 	return 0;
 }
 
-int	main( int ac, char **av ) {
+int	main( int ac, char **av) {
 	signal(SIGPIPE, SIG_IGN);
 	if ( ac == 2 ) {
 		exec_webserv(av[1]);
