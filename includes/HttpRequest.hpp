@@ -6,7 +6,7 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/08 10:57:23 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/05/03 13:53:14 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/05/07 14:53:37 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,6 +46,7 @@ class HttpRequest {
 		bool			_tooLarge;
 		enum HttpMethod	_method;
 		string			_uri;
+		string			_userAgent;
 		string			_host;
 		int				_serverIndex;
 		vector<string>	_acceptedMimes;
@@ -55,12 +56,14 @@ class HttpRequest {
 		string			_contentType;
 		string			_boundary;
 		string			_textPost;
+		string			_query;
 
 		bool	isFullRequest();
 		void	parse();
 		void	setMethod(string str);
 		void	parseHost(string line);
 		void	getUriAndEnv(string str);
+		void	parseUserAgent(string line);
 		void	parseConnection(string line);
 		void	parseRequestLine(string line);
 		void	parseAcceptedMimes(string line);
@@ -84,7 +87,12 @@ class HttpRequest {
 		bool			appendRequest(const char *data, int bytes);
 		string			getUri() const;
 		string			getHost() const;
+		string			getQuery() const;
+		string			getUserAgent() const;
+		string			getContentType() const;
 		string			getRawRequest() const;
+		string			getContentLength() const;
+		string			getAcceptedMime() const;
 		Server			*getServer() const;
 		Client			*getClient() const;
 		enum HttpMethod	getMethod() const;

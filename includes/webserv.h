@@ -6,7 +6,7 @@
 /*   By: maburnet <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/05 15:15:28 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/05/06 18:28:08 by maburnet         ###   ########.fr       */
+/*   Updated: 2024/05/07 16:02:31 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,7 @@
 # include <unistd.h>
 # include <map>
 # include <cstddef>
+# include <cstdio>
 # include <limits>
 # include <fstream>
 # include <sstream>
@@ -96,9 +97,11 @@ void			ltrim(string &str);
 void			rtrim(string &str);
 t_env			*env();
 string			timeStamp();
+string			rdmString(int nbChar);
 string			getFullPath(string path);
 string			decodeUri(const string uri);
 string			decodeEnv(const string uri);
+string			stringMethod(enum HttpMethod method);
 string			strFromCharVec(size_t len, vector<char> &vec);
 size_t			findInCharVec(string str, vector<char> &vec);
 vector<string>	split_trim(string str, string needle);

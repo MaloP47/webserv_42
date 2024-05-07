@@ -6,7 +6,7 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/06 10:50:22 by mpeulet           #+#    #+#             */
-/*   Updated: 2024/05/06 14:36:02 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/05/07 14:09:24 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,28 +54,28 @@ vector<string> split_trim(string str, string needle) {
 }
 
 vector<string> split_trim_conf(string str, string needle) {
-    vector<string>	split ;
-    size_t 			start = 0 ;
- 	size_t			end = 0 ;
+	vector<string>	split ;
+	size_t			start = 0 ;
+	size_t			end = 0 ;
 	string			subs ;
 	string			remaining ;
 
-    while ((end = str.find(needle, start)) != string::npos) {
-        subs = str.substr(start, end - start);
-        ltrim(subs);
-        rtrim(subs);
-        if (!subs.empty()) {
-            split.push_back(subs);
-        }
-        start = end + needle.length();
-    }
-    remaining = str.substr(start);
-    ltrim(remaining);
-    rtrim(remaining);
-    if (!remaining.empty()) {
-        split.push_back(remaining);
-    }
-    return split;
+	while ((end = str.find(needle, start)) != string::npos) {
+		subs = str.substr(start, end - start);
+		ltrim(subs);
+		rtrim(subs);
+		if (!subs.empty()) {
+			split.push_back(subs);
+		}
+		start = end + needle.length();
+	}
+	remaining = str.substr(start);
+	ltrim(remaining);
+	rtrim(remaining);
+	if (!remaining.empty()) {
+		split.push_back(remaining);
+	}
+	return split;
 }
 
 static bool	compareCharLower(char a, char b) {
@@ -84,7 +84,7 @@ static bool	compareCharLower(char a, char b) {
 
 bool	findLower(string str, string needle) {
 	string::iterator it = search(str.begin(), str.end(),
-			needle.begin(), needle.end(), compareCharLower);
+		needle.begin(), needle.end(), compareCharLower);
 	return (it != str.end());
 }
 
@@ -118,7 +118,6 @@ string	decodeEnv(const string uri) {
 
 t_env *env() {
 	static t_env e;
-
 	return (&e);
 }
 
@@ -156,10 +155,10 @@ string	strFromCharVec(size_t len, vector<char> &vec) {
 }
 
 string	timeStamp() {
-	char				date[128];
-	time_t				rawtime;
-	struct tm			*info;
-	size_t				length;
+	char		date[128];
+	time_t		rawtime;
+	struct tm	*info;
+	size_t		length;
 
 	time(&rawtime);
 	info = gmtime(&rawtime);
@@ -200,39 +199,65 @@ bool	childPath(string parent, string child) {
 	return (true);
 }
 bool	isAllDigits( string const & str ) {
-    for (size_t i = 0; i < str.length(); i++) {
-        if ( !isdigit( static_cast<unsigned char>( str[i] ) ) ) 
-            return false;
-    }
-    return true;
+	for (size_t i = 0; i < str.length(); i++) {
+		if ( !isdigit( static_cast<unsigned char>( str[i] ) ) ) 
+			return false;
+	}
+	return true;
 }
 
 bool	isFile( const string & path ) {
-    struct stat	buf;
-    if ( stat( path.c_str(), &buf ) != 0 )
-        return false; 
-    return S_ISREG( buf.st_mode ) ;
+	struct stat	buf;
+	if ( stat( path.c_str(), &buf ) != 0 )
+		return false; 
+	return S_ISREG( buf.st_mode ) ;
 }
 
 bool	areAllPathsBinaries( const vector<string> & paths ) {
-    for ( vector<string>::const_iterator it = paths.begin(); it != paths.end(); ++it ) {
-        if ( !isFile(* it ))  {
-            return false;
-        }
-    }
-    return true ;
+	for ( vector<string>::const_iterator it = paths.begin(); it != paths.end(); ++it ) {
+		if ( !isFile(* it ))  {
+			return false;
+		}
+	}
+	return true ;
 }
 
 bool	startsWithDot( const string & str ) {
-    if ( str.empty() ) 
+	if ( str.empty() ) 
 		return false ; 
-    return str[0] == '.' ;
+	return str[0] == '.' ;
 }
 
 bool allStartWithDot( const vector<string> & strings ) {
-    for ( vector<string>::const_iterator it = strings.begin(); it != strings.end(); ++it ) {
-        if ( !startsWithDot( *it ) )
-            return false ;
-    }
-    return true ;
+	for ( vector<string>::const_iterator it = strings.begin(); it != strings.end(); ++it ) {
+		if ( !startsWithDot( *it ) )
+			return false ;
+	}
+	return true ;
+}
+
+string	rdmString(int nbChar) {
+	string	randStr = "";
+
+	for (int i = 0; i < nbChar; i++) {
+		int nb = rand() % 62;
+		randStr += static_cast<char>(nb);
+		if (nb < 10)
+			randStr[i] += '0';
+		else if (nb < 36)
+			randStr[i] += 'A' - 10;
+		else
+			randStr[i] += 'a' - 36;
+	}
+	return (randStr);
+}
+
+string	stringMethod(enum HttpMethod method) {
+	if (method == GET)
+		return ("GET");
+	else if (method == POST)
+		return ("POST");
+	else if (method == DELETE)
+		return ("DELETE");
+	return ("OTHER");
 }

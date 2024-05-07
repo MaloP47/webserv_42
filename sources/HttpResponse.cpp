@@ -6,17 +6,24 @@
 /*   By: maburnet <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/08 17:29:38 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/05/06 19:05:13 by maburnet         ###   ########.fr       */
+/*   Updated: 2024/05/07 16:03:24 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "Client.hpp"
 #include "webserv.h"
+#include <cstddef>
+#include <cstdio>
+#include <ostream>
+#include <sstream>
+#include <string>
+#include <unistd.h>
 #include "HttpResponse.hpp"
 
 HttpResponse::HttpResponse(): _client(NULL) {}
 
 HttpResponse::HttpResponse(Client *client):
-	_client(client), _statusCode(0), _contentLength(0) {
+	_client(client), _statusCode(0), _contentLength(0), _cgiIndex(-1) {
 }
 
 HttpResponse::HttpResponse(const HttpResponse &cpy) {
@@ -29,6 +36,23 @@ HttpResponse &HttpResponse::operator=(const HttpResponse &rhs) {
 	this->_client = rhs._client;
 	this->_statusCode = rhs._statusCode;
 	this->_contentLength = rhs._contentLength;
+	this->_statusLine = rhs._statusLine;
+	this->_mime = rhs._mime;
+	this->_header = rhs._header;
+	this->_cgiIndex = rhs._cgiIndex;
+	this->_pathInfo = rhs._pathInfo;
+	this->_indexes = rhs._indexes;
+	this->_locPath = rhs._locPath;
+	this->_root = rhs._root;
+	this->_maxBodySize = rhs._maxBodySize;
+	this->_allowedMethod = rhs._allowedMethod;
+	this->_directoryListing = rhs._directoryListing;
+	this->_errorPage = rhs._errorPage;
+	this->_returnURI = rhs._returnURI;
+	this->_uploadPath = rhs._uploadPath;
+	this->_cgiBin = rhs._cgiBin;
+	this->_cgiExt = rhs._cgiExt;
+	this->_isLocation = rhs._isLocation;
 	return (*this);
 }
 
@@ -244,6 +268,7 @@ vector<string>	HttpResponse::getIndexes() const {
 bool	HttpResponse::expandUri(string &uri, bool &isDir) {
 	struct stat		s;
 
+	isDir = false;
 	if (this->_isLocation) {
 		uri = this->getRequest()->getUri();
 		uri.erase(0, this->_locPath.length());
@@ -260,9 +285,6 @@ bool	HttpResponse::expandUri(string &uri, bool &isDir) {
 		}
 		else
 			isDir = false;
-	} else {
-		this->error(404);
-		return (false);
 	}
 	if (isDir) {
 		for (vector<string>::iterator it = this->_indexes.begin(); it != this->_indexes.end(); it++) {
@@ -310,6 +332,8 @@ void	HttpResponse::setInfos() {
 			this->_errorPage = it->getErrorPages();
 			this->_returnURI = it->getReturnURI();
 			this->_uploadPath = it->getUploadPath();
+			this->_cgiBin = it->getCGIBin();
+			this->_cgiExt = it->getCGIExtension();
 			this->_isLocation = true;
 			index = split_trim(it->getIndex(), ",");
 			for (strVecIt it = this->_indexes.begin(); it != this->_indexes.end(); it++) {
@@ -326,6 +350,8 @@ void	HttpResponse::setInfos() {
 	this->_errorPage = this->getServer()->getErrorPages();
 	this->_returnURI = this->getServer()->getReturnURI();
 	this->_uploadPath = this->getServer()->getUploadPath();
+	this->_cgiBin = this->getServer()->getBinPath();
+	this->_cgiExt = this->getServer()->getCgiExtension();
 	this->_isLocation = false;
 	this->_indexes = this->getServer()->getIndexes();
 }
@@ -339,9 +365,10 @@ bool	HttpResponse::methodeAllowed(enum HttpMethod methode) {
 
 void	HttpResponse::sendResponse() {
 	ifstream		file;
-	string			ext;
 	string			uri;
+	string			ext;
 	bool			isDir;
+	int				i = -1;
 
 	if (this->getRequest()->tooLarge()) {
 		this->error(413);
@@ -372,9 +399,6 @@ void	HttpResponse::sendResponse() {
 		tryDeleteFile(uri);
 		return ;
 	}
-	ext = ext.substr(ext.find_last_of(".") + 1);
-	if (ext.find("/") == string::npos)
-		this->_mime = Mime::ext(ext);
 	if (isDir) {
 		if (this->_directoryListing)
 			this->directoryListing(uri);
@@ -385,6 +409,30 @@ void	HttpResponse::sendResponse() {
 		if (access(uri.c_str(), F_OK) != -1) {
 			if (access(uri.c_str(), R_OK) == -1)
 				this->error(403);
+		}
+		ext = uri.substr(uri.find_last_of(".") + 1);
+		if (ext.find("/") == string::npos)
+			this->_mime = Mime::ext(ext);
+		else {
+			string tmp = ext;
+			ext = ext.substr(0, ext.find_first_of("/"));
+			this->_mime = Mime::ext(ext);
+			this->_pathInfo = tmp.substr(tmp.find_first_of("/") + 1);
+		}
+		for (vector<string>::iterator it = this->_cgiExt.begin(); it != this->_cgiExt.end(); it++) {
+			i++;
+			if(("." + ext) == *it) {
+				this->_cgiIndex = i;
+				break;
+			}
+		}
+		if (this->_cgiIndex >= 0) {
+			if (this->executeCGI(uri)) {
+				uri = this->_cgiTmpFile;
+			} else {
+				this->error(500);
+				return ;
+			}
 		}
 		file.open(uri.c_str(), ios::binary);
 	}
@@ -403,8 +451,9 @@ void	HttpResponse::sendResponse() {
 	this->createHeader();
 	this->sendHeader();
 	this->sendContent(file);
+	if (this->_cgiTmpFile != "")
+		remove(this->_cgiTmpFile.c_str());
 }
-
 
 void	HttpResponse::errorCGI(string str, int tmpfd)
 {
@@ -413,63 +462,94 @@ void	HttpResponse::errorCGI(string str, int tmpfd)
 	return ;
 }
 
-//get the path to the thing to execute
-void	HttpResponse::executeCGI(char **env)
-{
-    int tmpfd;
-	int pid;
-	ifstream file;
-	char const * filePath = "/tmp/.tmpfile"; // ?
+char	**HttpResponse::createEnv() {
+	mapStrStr		env;
+	char			**cenv;
+	int				i;
+	stringstream	port;
+	stringstream	host;
 
-	tmpfd = open(filePath, O_RDWR | O_CREAT | O_TRUNC, 0666);
-    if (tmpfd == -1)
-    {
-        errorCGI("open()", tmpfd);
-		this->setClientError();
-        return ;
+	this->_client->addEnv("SERVER_SOFTWARE", "Webserv/1.0");
+	this->_client->addEnv("SERVER_NAME", this->getServer()->getName());
+	this->_client->addEnv("GATEWAY_INTERFACE", "CGI/1.1");
+	this->_client->addEnv("SERVER_PROTOCOL", "HTTP/1.1");
+	port << this->getServer()->getPort();
+	this->_client->addEnv("SERVER_PORT", port.str());
+	this->_client->addEnv("REQUEST_METHOD", stringMethod(this->getRequest()->getMethod()));
+	this->_client->addEnv("PATH_INFO", this->_pathInfo);
+	this->_client->addEnv("PATH_TRANSLATED", this->_pathInfo);
+	string scriptName = this->getRequest()->getUri();
+	scriptName = scriptName.substr(0, scriptName.find_last_of(".") + this->_cgiExt[this->_cgiIndex].length());
+	this->_client->addEnv("SCRIPT_NAME", scriptName);
+	this->_client->addEnv("QUERY_STRING", this->getRequest()->getQuery());
+	this->_client->addEnv("REMOTE_HOST", this->getServer()->getName());
+	host << this->getServer()->getHost();
+	this->_client->addEnv("REMOTE_ADDR", host.str());
+	this->_client->addEnv("CONTENT_TYPE", this->_client->getRequest()->getContentType());
+	this->_client->addEnv("CONTENT_LENGTH", this->_client->getRequest()->getContentLength());
+	this->_client->addEnv("HTTP_ACCEPT", this->_client->getRequest()->getAcceptedMime());
+	this->_client->addEnv("HTTP_USER_AGENT", this->_client->getRequest()->getUserAgent());
+	this->_client->addEnv("HTTP_COOKIE", ""); // TO DO TO DO TO DO TO DO TO DO TO DO TO DO
+	env = this->_client->getEnv();
+	cenv = new char*[env.size() + 1];
+	i = 0;
+	for (mapStrStr::iterator it = env.begin(); it != env.end(); it++) {
+		string	var = it->first + "=" + it->second;
+		cenv[i] = new char[var.size() + 1];
+		strcpy(cenv[i], var.c_str());
+		i++;
 	}
-    pid = fork();
-    if (pid == -1)
-    {
-        errorCGI("fork()", tmpfd);
+	cenv[i] = NULL;
+	return (cenv);
+}
+
+bool	HttpResponse::executeCGI(string uri)
+{
+	int			tmpfd;
+	int			pid;
+	ifstream	file;
+	string		fileName = "/tmp/" + rdmString(64);
+	tmpfd = open(fileName.c_str(), O_RDWR | O_CREAT | O_TRUNC, 0666);
+	if (tmpfd == -1) {
+		errorCGI("open()", tmpfd);
 		this->setClientError();
-        return ;
-    }
-    else if (pid == 0)
-    {
-        //Child process
-        if (dup2(tmpfd, STDOUT_FILENO) == -1)
-        {
-            errorCGI("dup2()", tmpfd);
-			this->setClientError();
-            return ;
-        }
-        close(tmpfd);
-		char *tmp[2]; //temporary to compile
-		strcpy(tmp[0], "ls");
-		tmp[1] = NULL;
-        if (execve(tmp[0], tmp, env) == -1) //add thing to execute
-        {
-            errorCGI("execve()", tmpfd);
-			this->setClientError();
-            exit(-1);
-        }
-    }
-    else
-    {
-        waitpid(0, NULL, 0);
-		close(tmpfd);
-        file.open(filePath);
-		if (!file.is_open())
+		return (false);
+	}
+	pid = fork();
+	if (pid == -1) {
+		errorCGI("fork()", tmpfd);
+		this->setClientError();
+		return (false);
+	} else if (pid == 0) {
+		char **env = createEnv();
+		string script = uri.substr(0, uri.find_last_of(".") + this->_cgiExt[this->_cgiIndex].length());
+		char **av;
+		av = new char*[3];
+		av[0] = new char[this->_cgiBin[this->_cgiIndex].size() + 1];
+		strcpy(av[0], this->_cgiBin[this->_cgiIndex].c_str());
+		av[1] = new char[script.size() + 1];
+		av[2] = NULL;
+		strcpy(av[1], script.c_str());
+		if (dup2(tmpfd, STDOUT_FILENO) == -1)
 		{
-			errorCGI("open()", tmpfd);
+			errorCGI("dup2()", tmpfd);
 			this->setClientError();
-			return ;
+			return (false);
 		}
-		this->sendContent(file); // to check
-        cout << "CGI executed!" << endl;
-    }
-	return ;
+		close(tmpfd);
+		if (execve(this->_cgiBin[this->_cgiIndex].c_str(), av, env))
+		{
+			errorCGI("execve()", tmpfd);
+			this->setClientError();
+			exit(-1);
+		}
+		exit (0);
+	} else {
+		close(tmpfd);
+		waitpid(0, NULL, 0);
+	}
+	this->_cgiTmpFile = fileName;
+	return (true);
 }
 
 Server	*HttpResponse::getServer() const {

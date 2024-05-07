@@ -28,13 +28,13 @@ typedef mapStrStr::iterator			mapStrStrIt;
 
 class Client {
 	private:
-		vector<Server *>		_servers;
-		HttpRequest		*_request;
-		HttpResponse	*_response;
-		mapStrStr		_env;
-		int				_fd;
-		time_t			_creationDate;
-		bool			_error;
+		vector<Server *>	_servers;
+		HttpRequest			*_request;
+		HttpResponse		*_response;
+		mapStrStr			_env;
+		int					_fd;
+		time_t				_creationDate;
+		bool				_error;
 
 	public:
 		Client();

@@ -6,7 +6,7 @@
 /*   By: maburnet <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 15:20:01 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/05/06 19:01:25 by maburnet         ###   ########.fr       */
+/*   Updated: 2024/05/07 15:41:17 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #include "Webserv.hpp"
 #include "ConfigServer.hpp"
 #include "Location.hpp"
+#include <unistd.h>
 
 void	handler(int signum) {
 	static_cast<void>(signum);
@@ -45,6 +46,7 @@ int exec_webserv(string input) {
 }
 
 int	main( int ac, char **av) {
+	srand(time(NULL) * getpid() * getpid());
 	signal(SIGPIPE, SIG_IGN);
 	if ( ac == 2 ) {
 		exec_webserv(av[1]);
