@@ -6,7 +6,7 @@
 /*   By: maburnet <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/08 17:27:41 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/05/06 18:31:06 by maburnet         ###   ########.fr       */
+/*   Updated: 2024/05/07 15:57:23 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,8 @@ class HttpResponse {
 		string					_mime;
 		string					_header;
 		int						_cgiIndex;
+		string					_pathInfo;
+		string					_cgiTmpFile;
 
 		vector<string>			_indexes;
 		string					_locPath;
@@ -50,6 +52,7 @@ class HttpResponse {
 		bool			getClientError() const;
 		bool			expandUri(string &uri, bool &isDir);
 		bool			methodeAllowed(enum HttpMethod methode);
+		bool			executeCGI(string uri);
 		void			setInfos();
 		void			sendHeader();
 		void			sendChunkEnd();
@@ -72,7 +75,7 @@ class HttpResponse {
 		void			setKeepAliveConnectionHeader();
 		void			sendDirectoryPage(string path);
 		void			errorCGI(string str, int tmpfd);
-		void			executeCGI();
+		char			**createEnv();
 //		void			executeCGI(char **env);
 
 		HttpRequest		*getRequest() const;

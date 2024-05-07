@@ -6,12 +6,14 @@
 /*   By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/08 11:01:52 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/05/06 12:05:13 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/05/07 14:57:49 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "HttpRequest.hpp"
 #include "webserv.h"
+#include <sstream>
+#include <vector>
 
 HttpRequest::HttpRequest() {}
 
@@ -44,6 +46,7 @@ HttpRequest	&HttpRequest::operator=(const HttpRequest &rhs) {
 	this->_contentLength = rhs._contentLength;
 	this->_serverIndex = rhs._serverIndex;
 	this->_host = rhs._host;
+	this->_query = rhs._query;
 	return (*this);
 }
 
@@ -118,6 +121,8 @@ void	HttpRequest::parse() {
 			this->parseAcceptedMimes(*it);
 		else if (findLower(*it, "connection:"))
 			this->parseConnection(*it);
+		else if (findLower(*it, "user-agent:"))
+			this->parseUserAgent(*it);
 		else if (findLower(*it, "content-type:"))
 			this->parseContentType(*it);
 		else if (findLower(*it, "host:"))
@@ -182,6 +187,12 @@ void	HttpRequest::decodeFormData() {
 			for (uploadIt it = this->_uploadedFiles.begin(); it != this->_uploadedFiles.end(); it++)
 				it->createFile();
 	}
+}
+void	HttpRequest::parseUserAgent(string line) {
+	vector<string>	split;
+
+	line.erase(0, 12);
+	this->_userAgent = line;
 }
 
 void	HttpRequest::parseContentType(string line) {
@@ -273,6 +284,7 @@ void	HttpRequest::getUriAndEnv(string str) {
 
 	split = split_trim(str, "?");
 	if (split.size() == 2) {
+		this->_query = split[1];
 		vars = split_trim(split[1], "&");
 		for (strVecIt it = vars.begin(); it != vars.end(); it++) {
 			tempEnv = split_trim(*it, "=");
@@ -327,18 +339,38 @@ string	HttpRequest::getUri() const {
 	return (this->_uri);
 }
 
-bool	HttpRequest::keepAlive() const {
-	return (this->_keepAliveConnection);
+string	HttpRequest::getQuery() const {
+	return (this->_query);
 }
 
-static string	stringMethod(enum HttpMethod method) {
-	if (method == GET)
-		return ("GET");
-	else if (method == POST)
-		return ("POST");
-	else if (method == DELETE)
-		return ("DELETE");
-	return ("OTHER");
+string	HttpRequest::getContentType() const {
+	return (this->_contentType);
+}
+
+string	HttpRequest::getUserAgent() const {
+	return (this->_userAgent);
+}
+
+string	HttpRequest::getAcceptedMime() const {
+	stringstream	mimes;
+
+	for (vector<string>::const_iterator it = this->_acceptedMimes.begin(); it != this->_acceptedMimes.end(); it++) {
+		mimes << *it;
+		if ((it + 1) != this->_acceptedMimes.end())
+			mimes << ", ";
+	}
+	return (mimes.str());
+}
+
+string	HttpRequest::getContentLength() const {
+	stringstream len;
+
+	len << this->_contentLength;
+	return (len.str());
+}
+
+bool	HttpRequest::keepAlive() const {
+	return (this->_keepAliveConnection);
 }
 
 ostream &operator<<(ostream &o, const HttpRequest &request) {

@@ -6,7 +6,7 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/06 10:50:22 by mpeulet           #+#    #+#             */
-/*   Updated: 2024/05/06 14:36:02 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/05/07 14:09:24 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -250,4 +250,14 @@ string	rdmString(int nbChar) {
 			randStr[i] += 'a' - 36;
 	}
 	return (randStr);
+}
+
+string	stringMethod(enum HttpMethod method) {
+	if (method == GET)
+		return ("GET");
+	else if (method == POST)
+		return ("POST");
+	else if (method == DELETE)
+		return ("DELETE");
+	return ("OTHER");
 }
