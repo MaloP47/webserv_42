@@ -6,7 +6,7 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/05 14:39:36 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/05/06 14:55:22 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/05/06 15:57:15 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,24 +90,34 @@ int	Server::init() {
 
 	this->_fd = socket(AF_INET, SOCK_STREAM, 0);
 	if (this->_fd < 0) {
-		perror("socket");
+		cerr << timeStamp() << CYAN << " Socket " << THIN ITALIC;
+		perror("");
+		cerr << END_STYLE;
 		return (ERR_SOCKET);
 	}
 	if (setsockopt(this->_fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int))) {
-		perror("setsockopt");
+		cerr << timeStamp() << CYAN << " Setsockopt " << THIN ITALIC;
+		perror("");
+		cerr << END_STYLE;
 		return (ERR_SOCK_OPT);
 	}
 	this->setAddr();
 	if (bind(this->_fd, (struct sockaddr *)&this->_addr, sizeof(struct sockaddr_in)) < 0) {
-		perror("bind");
+		cerr << timeStamp() << CYAN << " Bind " << THIN ITALIC;
+		perror("");
+		cerr << END_STYLE;
 		return (ERR_BIND);
 	}
 	if (fcntl(this->_fd, F_SETFL, O_NONBLOCK) < 0) {
-		perror("fcntl");
+		cerr << timeStamp() << CYAN << " Fcntl " << THIN ITALIC;
+		perror("");
+		cerr << END_STYLE;
 		return (ERR_FCNTL);
 	}
 	if (listen(this->_fd, MAX_EVENTS) < 0) {
-		perror("listen");
+		cerr << timeStamp() << CYAN << " Listen " << THIN ITALIC;
+		perror("");
+		cerr << END_STYLE;
 		return (ERR_LISTEN);
 	}
 

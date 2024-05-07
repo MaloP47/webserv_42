@@ -142,7 +142,9 @@ void	HttpResponse::sendContent(ifstream &file) {
 		while (sended != this->_contentLength && !this->getClientError()) {
 			if (!file.read(data, min(this->_contentLength - sended,
 							static_cast<size_t>(1024)))) {
-				perror("read");
+				cerr << timeStamp() << CYAN << " Read " << THIN ITALIC;
+				perror("");
+				cerr << END_STYLE;
 				this->setClientError();
 				ret(ERR_READ);
 				return ;
@@ -158,7 +160,9 @@ void	HttpResponse::sendContent(ifstream &file) {
 
 void	HttpResponse::checkSend(int bytes) {
 	if (bytes <= 0) {
-		perror("send");
+		cerr << timeStamp() << CYAN << " Send " << THIN ITALIC;
+		perror("");
+		cerr << END_STYLE;
 		this->setClientError();
 		ret(ERR_SEND);
 	}
