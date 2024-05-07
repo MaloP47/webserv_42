@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+        */
+/*   By: maburnet <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/08 17:29:38 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/05/06 15:55:47 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/05/06 19:05:13 by maburnet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,7 +96,7 @@ void	HttpResponse::sendHeader() {
 void	HttpResponse::sendChunkSize(int len) {
 	stringstream	str;
 	int				bytes;
-	
+
 	str << hex << uppercase << len << "\r\n";
 	bytes = send(this->getClientFd(), str.str().c_str(), str.str().length(), 0);
 	this->checkSend(bytes);
@@ -137,7 +137,7 @@ void	HttpResponse::sendContent(ifstream &file) {
 	char	data[1024];
 	size_t	sended = 0;
 	int		bytes;
-	
+
 	if (this->_contentLength > 0 && !this->getClientError()) {
 		while (sended != this->_contentLength && !this->getClientError()) {
 			if (!file.read(data, min(this->_contentLength - sended,
@@ -155,7 +155,7 @@ void	HttpResponse::sendContent(ifstream &file) {
 		}
 		if (this->keepAlive())
 			this->sendFinalChunk();
-	}	
+	}
 }
 
 void	HttpResponse::checkSend(int bytes) {
@@ -234,7 +234,7 @@ void	HttpResponse::directoryListing(string path) {
 	this->_mime = Mime::ext("html");
 	this->createHeader();
 	this->sendHeader();
-	this->sendDirectoryPage(path);	
+	this->sendDirectoryPage(path);
 }
 
 vector<string>	HttpResponse::getIndexes() const {
@@ -351,7 +351,7 @@ void	HttpResponse::sendResponse() {
 	if (this->_returnURI.size() > 0) {
 		int		err = this->_returnURI.begin()->first;
 		string	uri = this->_returnURI.begin()->second;
-		if (err == 301) 
+		if (err == 301)
 			this->movedPermanently(uri);
 		else {
 			this->error(this->_returnURI.begin()->first);
@@ -403,6 +403,73 @@ void	HttpResponse::sendResponse() {
 	this->createHeader();
 	this->sendHeader();
 	this->sendContent(file);
+}
+
+
+void	HttpResponse::errorCGI(string str, int tmpfd)
+{
+	cerr << "Error with " << str << " in executeCGI()" << endl;
+    close(tmpfd);
+	return ;
+}
+
+//get the path to the thing to execute
+void	HttpResponse::executeCGI(char **env)
+{
+    int tmpfd;
+	int pid;
+	ifstream file;
+	char const * filePath = "/tmp/.tmpfile"; // ?
+
+	tmpfd = open(filePath, O_RDWR | O_CREAT | O_TRUNC, 0666);
+    if (tmpfd == -1)
+    {
+        errorCGI("open()", tmpfd);
+		this->setClientError();
+        return ;
+	}
+    pid = fork();
+    if (pid == -1)
+    {
+        errorCGI("fork()", tmpfd);
+		this->setClientError();
+        return ;
+    }
+    else if (pid == 0)
+    {
+        //Child process
+        if (dup2(tmpfd, STDOUT_FILENO) == -1)
+        {
+            errorCGI("dup2()", tmpfd);
+			this->setClientError();
+            return ;
+        }
+        close(tmpfd);
+		char *tmp[2]; //temporary to compile
+		strcpy(tmp[0], "ls");
+		tmp[1] = NULL;
+        if (execve(tmp[0], tmp, env) == -1) //add thing to execute
+        {
+            errorCGI("execve()", tmpfd);
+			this->setClientError();
+            exit(-1);
+        }
+    }
+    else
+    {
+        waitpid(0, NULL, 0);
+		close(tmpfd);
+        file.open(filePath);
+		if (!file.is_open())
+		{
+			errorCGI("open()", tmpfd);
+			this->setClientError();
+			return ;
+		}
+		this->sendContent(file); // to check
+        cout << "CGI executed!" << endl;
+    }
+	return ;
 }
 
 Server	*HttpResponse::getServer() const {
