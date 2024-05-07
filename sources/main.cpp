@@ -55,5 +55,5 @@ int	main( int ac, char **av ) {
 	else {
 		cout << EXAMPLE ;
 	}
-	return 0;
+	return (env()->return_val);
 }
