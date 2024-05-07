@@ -42,7 +42,9 @@ Server::Server( Webserv *webserv, vector<ConfigServer> const & conf, int i ) :
 	_locationBlock( conf[i].getLocationBlock() ),
 	_errorPages( conf[i].getErrorPages() ),
 	_returnURI( conf[i].getReturnURI() ),
-	_uploadPath( conf[i].getUploadPath() )
+	_uploadPath( conf[i].getUploadPath() ),
+	_binPath( conf[i].getBinPath() ),
+	_cgiExtension( conf[i].getCgiExtension() )
 	{
 		vector<string> indexes = split_trim(this->_index, ",");
 		for (strVecIt it = indexes.begin(); it != indexes.end(); it++) {
@@ -78,6 +80,8 @@ Server &Server::operator=(const Server &rhs) {
 	this->_returnURI = rhs._returnURI;
 	this->_uploadPath = rhs._uploadPath;
 	this->_addr = rhs._addr;
+	this->_binPath = rhs._binPath;
+	this->_cgiExtension = rhs._cgiExtension;
 	return (*this);
 }
 
@@ -173,6 +177,14 @@ vector<Location> const &	Server::getLocation() const {
 
 vector<enum HttpMethod>	Server::getAllowedMethod() const {
 	return (this->_allowedMethod);
+}
+
+vector<string> const &	Server::getBinPath( void ) const {
+	return (this->_binPath);
+}
+
+vector<string> const &	Server::getCgiExtension( void ) const {
+	return (this->_cgiExtension);
 }
 
 bool	Server::methodeAllowed(enum HttpMethod methode) {

@@ -6,7 +6,7 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/05 14:13:35 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/04/30 16:31:09 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/05/06 14:55:02 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,8 @@ class Server {
 		map<int,string>			_errorPages ;
 		map<int,string>			_returnURI ;
 		string					_uploadPath ;
+		vector<string>			_binPath ;
+		vector<string>			_cgiExtension ;
 			
 		int		init();
 		void	setAddr();
@@ -74,6 +76,8 @@ class Server {
 		string const &				getUploadPath( void ) const ;
 		bool						methodeAllowed(enum HttpMethod methode);
 		vector<enum HttpMethod>		getAllowedMethod() const;
+		vector<string> const &		getBinPath( void ) const ;
+		vector<string> const &		getCgiExtension( void ) const ;
 
 };
 

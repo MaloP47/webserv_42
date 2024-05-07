@@ -6,7 +6,7 @@
 /*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/27 11:42:58 by mpeulet           #+#    #+#             */
-/*   Updated: 2024/05/03 13:24:52 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/05/06 14:50:14 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,22 +16,19 @@ Location::Location( string const & locBlock, int index, long long servMbs ) : _l
 
 	string	loc = locBlock ;
 	extractLocPath( loc ) ;
-	if ( _locPath == "/cgi" ) {
-		// manage CGI
-		cout << "Execute CGI" << endl ;
-		return ;
-	}
 	_root = extractStringVariable( loc, "root" ) ;
-	if ( _root.empty() ) // Maybe not be necessary but might need to pass Server _root ;
+	if ( _root.empty() )
 		throw runtime_error( "Missing root, mandatory field for each location." ) ;
 	checkMBS( loc, servMbs ) ;
 	checkAutoIndex( loc ) ;
-	// Might need to pass Server _uploadPath if unspecified
 	_uploadPath = extractStringVariable( loc, "upload_path" ) ;
 	checkMethod( loc ) ;
 	_index = extractStringVariable( loc, "index" ) ;
 	extractMap( loc, "error_page", _errorPage ) ;
 	extractMap( loc, "return", _returnURI ) ;
+	checkCGIBin( loc ) ;
+	if ( _binPath.size() )
+		checkCGIExtension( loc ) ;
 	if ( loc != "}" )
 		throw runtime_error( "Location block in config file contains unknown instructions : " + loc ) ;
 }
@@ -54,6 +51,8 @@ Location &	Location::operator=( Location const & rhs ) {
 		_errorPage = rhs._errorPage ;
 		_returnURI = rhs._returnURI ;
 		_uploadPath = rhs._uploadPath ;
+		_binPath = rhs._binPath ;
+		_cgiExtension = rhs._cgiExtension ;
 	}
 	return *this ;
 }
@@ -87,7 +86,6 @@ void	Location::checkMBS( string & block, long long servMBS ) {
 	char	*endptr ;
 	string	tmp = extractStringVariable( block, "client_max_body_size" ) ;
 	if ( tmp.empty() ) {
-		// Might need to pass Server _maxBodySize if unspecified
 		_maxBodySize = servMBS;
 		return ;
 	}
@@ -154,6 +152,25 @@ void	Location::checkAutoIndex( string & block ) {
 		_directoryListing = false ;
 }
 
+void	Location::checkCGIBin( string & block ) {
+	string	tmp = extractStringVariable( block, "cgi_bin" ) ;
+	if ( tmp.empty() )
+		return ;
+	_binPath = split_trim_conf( tmp, "," ) ;
+	if ( !areAllPathsBinaries( _binPath ) )
+		throw runtime_error( "All paths in cgi_bin must be binaries. Block :" + _locPath ) ;
+}
+
+void	Location::checkCGIExtension( string & block ) {
+	string	tmp = extractStringVariable( block, "cgi_extension" ) ;
+	if ( tmp.empty() )
+		return ;
+	_cgiExtension = split_trim_conf( tmp, "," ) ;
+	if ( !allStartWithDot( _cgiExtension ) )
+		throw runtime_error( "All extensions in cgi_extension must start with a dot.Block :"  + _locPath ) ;
+}
+
+
 void	Location::setLocPath( string const & lp ) { _locPath = lp ; }
 void	Location::setLocIndex( int index ) { _locIndex = index ; }
 void	Location::setRoot( string const & root ) { _root = root ; }
@@ -164,6 +181,8 @@ void	Location::setIndex( string const & index ) { _index = index ; }
 void	Location::setErrorPages( map<int,string> const & err ) { _errorPage = err ; }
 void	Location::setReturnURI( map<int,string> const & uri ) { _returnURI = uri ; }
 void	Location::setUploadPath( string const & path ) { _uploadPath = path ; }
+void	Location::setCGIBin( vector<string> const & binPath ) { _binPath = binPath ; }
+void	Location::setCGIExtension( vector<string> const & cgiExtension ) { _cgiExtension = cgiExtension ; }
 
 string const &					Location::getLocPath( void ) const { return _locPath ; }
 int								Location::getLocIndex( void ) const { return _locIndex ; }
@@ -175,10 +194,12 @@ string const &					Location::getIndex( void ) const { return _index ; }
 map<int,string> const &			Location::getErrorPages( void ) const { return _errorPage ; }
 map<int,string> const &			Location::getReturnURI( void ) const { return _returnURI ; }
 string const &					Location::getUploadPath( void ) const { return _uploadPath ; }
+vector<string> const &			Location::getCGIBin( void ) const { return _binPath ; }
+vector<string> const &			Location::getCGIExtension( void ) const { return _cgiExtension ; }
 
 ostream &	operator<<( ostream & o, Location const & rhs ) {
 	o << "--------------------LOCATION--------------------" << endl ;
-	o << "[ " << "Location block " << rhs.getLocIndex() << " ]" << endl ; 
+	o << "[ " << "Location block " << rhs.getLocIndex() + 1 << " ]" << endl ; 
 	o << "Location: " << rhs.getLocPath() << std::endl ;
 	o << "Root: " << rhs.getRoot() << std::endl ;
 	o << "MaxBodySize: " << rhs.getMaxBodySize() << std::endl ;
@@ -217,5 +238,19 @@ ostream &	operator<<( ostream & o, Location const & rhs ) {
 	}
 	o << std::endl ;
 	o << "UploadPath: " << rhs.getUploadPath() << std::endl ;
+	o << "BinPath: ";
+    for (vector<string>::const_iterator it = rhs.getCGIBin().begin(); it != rhs.getCGIBin().end(); ++it) {
+        o << *it;
+        if (it + 1 != rhs.getCGIBin().end())
+            o << ", ";
+    }
+    o << std::endl;
+    o << "CgiExtension: ";
+    for (vector<string>::const_iterator it = rhs.getCGIExtension().begin(); it != rhs.getCGIExtension().end(); ++it) {
+        o << *it;
+        if (it + 1 != rhs.getCGIExtension().end())
+            o << ", ";
+    }
+	o << std::endl ;
 	return o ;
 }
