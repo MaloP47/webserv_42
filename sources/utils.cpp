@@ -124,7 +124,6 @@ t_env *env() {
 
 int	ret(int return_val) {
 	env()->return_val = return_val;
-	env()->ctrl_c = true;
 	return (return_val);
 }
 
