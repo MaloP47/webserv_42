@@ -16,7 +16,7 @@
 HttpResponse::HttpResponse(): _client(NULL) {}
 
 HttpResponse::HttpResponse(Client *client):
-	_client(client), _statusCode(0), _contentLength(0) {
+	_client(client), _statusCode(0), _contentLength(0), _cgiIndex(-1) {
 }
 
 HttpResponse::HttpResponse(const HttpResponse &cpy) {
@@ -29,6 +29,22 @@ HttpResponse &HttpResponse::operator=(const HttpResponse &rhs) {
 	this->_client = rhs._client;
 	this->_statusCode = rhs._statusCode;
 	this->_contentLength = rhs._contentLength;
+	this->_statusLine = rhs._statusLine;
+	this->_mime = rhs._mime;
+	this->_header = rhs._header;
+	this->_cgiIndex = rhs._cgiIndex;
+	this->_indexes = rhs._indexes;
+	this->_locPath = rhs._locPath;
+	this->_root = rhs._root;
+	this->_maxBodySize = rhs._maxBodySize;
+	this->_allowedMethod = rhs._allowedMethod;
+	this->_directoryListing = rhs._directoryListing;
+	this->_errorPage = rhs._errorPage;
+	this->_returnURI = rhs._returnURI;
+	this->_uploadPath = rhs._uploadPath;
+	this->_cgiBin = rhs._cgiBin;
+	this->_cgiExt = rhs._cgiExt;
+	this->_isLocation = rhs._isLocation;
 	return (*this);
 }
 
@@ -310,6 +326,8 @@ void	HttpResponse::setInfos() {
 			this->_errorPage = it->getErrorPages();
 			this->_returnURI = it->getReturnURI();
 			this->_uploadPath = it->getUploadPath();
+			this->_cgiBin = it->getCGIBin();
+			this->_cgiExt = it->getCGIExtension();
 			this->_isLocation = true;
 			index = split_trim(it->getIndex(), ",");
 			for (strVecIt it = this->_indexes.begin(); it != this->_indexes.end(); it++) {
@@ -326,6 +344,8 @@ void	HttpResponse::setInfos() {
 	this->_errorPage = this->getServer()->getErrorPages();
 	this->_returnURI = this->getServer()->getReturnURI();
 	this->_uploadPath = this->getServer()->getUploadPath();
+	this->_cgiBin = this->getServer()->getBinPath();
+	this->_cgiExt = this->getServer()->getCgiExtension();
 	this->_isLocation = false;
 	this->_indexes = this->getServer()->getIndexes();
 }
@@ -339,9 +359,10 @@ bool	HttpResponse::methodeAllowed(enum HttpMethod methode) {
 
 void	HttpResponse::sendResponse() {
 	ifstream		file;
-	string			ext;
 	string			uri;
+	string			ext;
 	bool			isDir;
+	int				i = -1;
 
 	if (this->getRequest()->tooLarge()) {
 		this->error(413);
@@ -372,9 +393,6 @@ void	HttpResponse::sendResponse() {
 		tryDeleteFile(uri);
 		return ;
 	}
-	ext = ext.substr(ext.find_last_of(".") + 1);
-	if (ext.find("/") == string::npos)
-		this->_mime = Mime::ext(ext);
 	if (isDir) {
 		if (this->_directoryListing)
 			this->directoryListing(uri);
@@ -385,6 +403,21 @@ void	HttpResponse::sendResponse() {
 		if (access(uri.c_str(), F_OK) != -1) {
 			if (access(uri.c_str(), R_OK) == -1)
 				this->error(403);
+		}
+		ext = uri.substr(uri.find_last_of(".") + 1);
+		if (ext.find("/") == string::npos)
+			this->_mime = Mime::ext(ext);
+		for (vector<string>::iterator it = this->_cgiExt.begin(); it != this->_cgiExt.end(); it++) {
+			i++;
+			if(("." + ext) == *it) {
+				this->_cgiIndex = i;
+				break;
+			}
+		}
+		if (this->_cgiIndex >= 0) {
+			this->executeCGI();
+			this->error(500);						// TEMP
+			return ;
 		}
 		file.open(uri.c_str(), ios::binary);
 	}
@@ -414,21 +447,24 @@ void	HttpResponse::errorCGI(string str, int tmpfd)
 }
 
 //get the path to the thing to execute
-void	HttpResponse::executeCGI(char **env)
+//void	HttpResponse::executeCGI(char **env)
+void	HttpResponse::executeCGI()
 {
-    int tmpfd;
-	int pid;
-	ifstream file;
-	char const * filePath = "/tmp/.tmpfile"; // ?
+	int			tmpfd;
+//	int			pid;
+	ifstream	file;
+	string		fileName = "/tmp/" + rdmString(64);
 
-	tmpfd = open(filePath, O_RDWR | O_CREAT | O_TRUNC, 0666);
+	cout << fileName << endl;
+
+	tmpfd = open(fileName.c_str(), O_RDWR | O_CREAT | O_TRUNC, 0666);
     if (tmpfd == -1)
     {
         errorCGI("open()", tmpfd);
 		this->setClientError();
         return ;
 	}
-    pid = fork();
+/*    pid = fork();
     if (pid == -1)
     {
         errorCGI("fork()", tmpfd);
@@ -470,6 +506,7 @@ void	HttpResponse::executeCGI(char **env)
         cout << "CGI executed!" << endl;
     }
 	return ;
+	*/
 }
 
 Server	*HttpResponse::getServer() const {

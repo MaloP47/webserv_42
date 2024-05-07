@@ -29,6 +29,7 @@ class HttpResponse {
 		size_t					_contentLength;
 		string					_mime;
 		string					_header;
+		int						_cgiIndex;
 
 		vector<string>			_indexes;
 		string					_locPath;
@@ -39,6 +40,8 @@ class HttpResponse {
 		map<int,string>			_errorPage;
 		map<int,string>			_returnURI;
 		string					_uploadPath;
+		vector<string>			_cgiBin;
+		vector<string>			_cgiExt;
 		bool					_isLocation;
 
 		int				getClientFd() const;
@@ -69,7 +72,8 @@ class HttpResponse {
 		void			setKeepAliveConnectionHeader();
 		void			sendDirectoryPage(string path);
 		void			errorCGI(string str, int tmpfd);
-		void			executeCGI(char **env);
+		void			executeCGI();
+//		void			executeCGI(char **env);
 
 		HttpRequest		*getRequest() const;
 		vector<string>	getIndexes() const;

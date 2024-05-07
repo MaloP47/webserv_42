@@ -96,6 +96,7 @@ void			ltrim(string &str);
 void			rtrim(string &str);
 t_env			*env();
 string			timeStamp();
+string			rdmString(int nbChar);
 string			getFullPath(string path);
 string			decodeUri(const string uri);
 string			decodeEnv(const string uri);

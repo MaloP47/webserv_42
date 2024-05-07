@@ -14,6 +14,7 @@
 #include "Webserv.hpp"
 #include "ConfigServer.hpp"
 #include "Location.hpp"
+#include <unistd.h>
 
 void	handler(int signum) {
 	static_cast<void>(signum);
@@ -45,6 +46,7 @@ int exec_webserv(string input) {
 }
 
 int	main( int ac, char **av) {
+	srand(time(NULL) * getpid() * getpid());
 	signal(SIGPIPE, SIG_IGN);
 	if ( ac == 2 ) {
 		exec_webserv(av[1]);
