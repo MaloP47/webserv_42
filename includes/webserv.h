@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   webserv.h                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
+/*   By: maburnet <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/05 15:15:28 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/05/06 14:36:14 by mpeulet          ###   ########.fr       */
+/*   Updated: 2024/05/06 18:28:08 by maburnet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,7 @@
 # include <cstring>
 # include <unistd.h>
 # include <map>
+# include <cstddef>
 # include <limits>
 # include <fstream>
 # include <sstream>
