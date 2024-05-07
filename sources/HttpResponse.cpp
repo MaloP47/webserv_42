@@ -402,6 +402,8 @@ void	HttpResponse::sendResponse() {
 	this->_statusCode = 200;
 	this->createHeader();
 	this->sendHeader();
+	//
+	this->checkCGI();
 	this->sendContent(file);
 }
 
@@ -413,13 +415,44 @@ void	HttpResponse::errorCGI(string str, int tmpfd)
 	return ;
 }
 
+void	HttpResponse::checkCGI()
+{
+	vector<string> cgi = this->getServer()->getCgiExtension();
+	vector<string>::iterator it = cgi.begin();
+	string uri = this->getRequest()->getUri();
+	string root = this->getServer()->getRoot();
+
+
+	cout << "root: " << root << endl;
+	cout << "uri: " << uri << endl;
+	for (; it != cgi.end(); it++)
+	{
+		cout << "cgi: " << *it << endl;
+		if (uri.find(*it, 0) != string::npos)
+		{
+			cout << "cgi location found: " << *it << endl;
+			break ;
+		}
+
+	}
+	if (it == cgi.end())
+	{
+		this->setClientError();
+		// not supported cgi
+		return ;
+	}
+	this->executeCGI(root + uri.substr(1, uri.size()));
+	return ;
+}
+
 //get the path to the thing to execute
-void	HttpResponse::executeCGI(char **env)
+void	HttpResponse::executeCGI(string command)
 {
     int tmpfd;
 	int pid;
 	ifstream file;
 	char const * filePath = "/tmp/.tmpfile"; // ?
+
 
 	tmpfd = open(filePath, O_RDWR | O_CREAT | O_TRUNC, 0666);
     if (tmpfd == -1)
@@ -444,11 +477,13 @@ void	HttpResponse::executeCGI(char **env)
 			this->setClientError();
             return ;
         }
+		char *env = NULL;
         close(tmpfd);
 		char *tmp[2]; //temporary to compile
-		strcpy(tmp[0], "ls");
+		strcpy(tmp[0], command.c_str());
 		tmp[1] = NULL;
-        if (execve(tmp[0], tmp, env) == -1) //add thing to execute
+		cerr << "tmp[0]: " << tmp[0] << endl;
+        if (execve(tmp[0], tmp, &env) == -1) //add thing to execute
         {
             errorCGI("execve()", tmpfd);
 			this->setClientError();
@@ -459,13 +494,18 @@ void	HttpResponse::executeCGI(char **env)
     {
         waitpid(0, NULL, 0);
 		close(tmpfd);
+
+		char buffer[4096];
         file.open(filePath);
 		if (!file.is_open())
 		{
-			errorCGI("open()", tmpfd);
+
+			errorCGI(".open()", tmpfd);
 			this->setClientError();
 			return ;
 		}
+		file.read(buffer, sizeof(buffer));
+		cerr << "buffer: " << buffer << endl;
 		this->sendContent(file); // to check
         cout << "CGI executed!" << endl;
     }
