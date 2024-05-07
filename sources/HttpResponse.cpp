@@ -156,6 +156,7 @@ void	HttpResponse::sendContent(ifstream &file) {
 		if (this->keepAlive())
 			this->sendFinalChunk();
 	}
+	cerr << "@@@@@" << endl;
 }
 
 void	HttpResponse::checkSend(int bytes) {
@@ -471,19 +472,22 @@ void	HttpResponse::executeCGI(string command)
     else if (pid == 0)
     {
         //Child process
-        if (dup2(tmpfd, STDOUT_FILENO) == -1)
+		char *env = NULL;
+		char *tmp[2]; //temporary to compile
+		strcpy(tmp[0], command.c_str());
+		tmp[1] = NULL;
+		char dir[4096]; //
+		getcwd(dir, sizeof(dir)); //
+		cerr << "tmp[0]: " << tmp[0] << endl;
+       	cerr << "dir: " << dir << endl; //
+		if (dup2(tmpfd, STDOUT_FILENO) == -1)
         {
             errorCGI("dup2()", tmpfd);
 			this->setClientError();
             return ;
         }
-		char *env = NULL;
-        close(tmpfd);
-		char *tmp[2]; //temporary to compile
-		strcpy(tmp[0], command.c_str());
-		tmp[1] = NULL;
-		cerr << "tmp[0]: " << tmp[0] << endl;
-        if (execve(tmp[0], tmp, &env) == -1) //add thing to execute
+		close(tmpfd);
+		if (execve(tmp[0], tmp, &env) == -1) //add thing to execute
         {
             errorCGI("execve()", tmpfd);
 			this->setClientError();
@@ -495,7 +499,6 @@ void	HttpResponse::executeCGI(string command)
         waitpid(0, NULL, 0);
 		close(tmpfd);
 
-		char buffer[4096];
         file.open(filePath);
 		if (!file.is_open())
 		{
@@ -504,8 +507,9 @@ void	HttpResponse::executeCGI(string command)
 			this->setClientError();
 			return ;
 		}
-		file.read(buffer, sizeof(buffer));
-		cerr << "buffer: " << buffer << endl;
+		char buffer[4096]; // 
+		file.read(buffer, sizeof(buffer)); //
+		cerr << "buffer: " << buffer << endl; //
 		this->sendContent(file); // to check
         cout << "CGI executed!" << endl;
     }
