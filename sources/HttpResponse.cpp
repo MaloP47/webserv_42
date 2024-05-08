@@ -14,6 +14,7 @@
 #include "webserv.h"
 #include <cstddef>
 #include <cstdio>
+#include <cstring>
 #include <ostream>
 #include <sstream>
 #include <string>
@@ -53,6 +54,8 @@ HttpResponse &HttpResponse::operator=(const HttpResponse &rhs) {
 	this->_cgiBin = rhs._cgiBin;
 	this->_cgiExt = rhs._cgiExt;
 	this->_isLocation = rhs._isLocation;
+	this->_cgiTmpFile = rhs._cgiTmpFile;
+	this->_contentType = rhs._contentType;
 	return (*this);
 }
 
@@ -79,14 +82,16 @@ void	HttpResponse::setDateHeader() {
 }
 
 void	HttpResponse::setContentTypeHeader() {
-	this->_header += "Content-type: " + this->_mime + "\r\n";
+	if (this->_cgiTmpFile != "" && this->_contentType != "") {
+		this->_header += this->_contentType + "\r\n";
+	} else
+		this->_header += "Content-type: " + this->_mime + "\r\n";
 }
 
 void	HttpResponse::setKeepAliveConnectionHeader() {
 	this->_header += "Transfer-Encoding: chunked\r\n";
 	this->_header += "Connection: keep-alive\r\n";
 }
-
 void	HttpResponse::setContentLengthHeader() {
 	stringstream	str;
 
@@ -158,14 +163,16 @@ int	HttpResponse::sendData(const void *data, int len) {
 }
 
 void	HttpResponse::sendContent(ifstream &file) {
-	char	data[1024];
+	char	data[2048];
 	size_t	sended = 0;
 	int		bytes;
 
+	if (this->_cgiTmpFile != "" && this->_contentType != "")
+		file.read(data, this->_contentType.size() + 3);
 	if (this->_contentLength > 0 && !this->getClientError()) {
 		while (sended != this->_contentLength && !this->getClientError()) {
 			if (!file.read(data, min(this->_contentLength - sended,
-							static_cast<size_t>(1024)))) {
+							static_cast<size_t>(2048)))) {
 				cerr << timeStamp() << CYAN << " Read " << THIN ITALIC;
 				perror("");
 				cerr << END_STYLE;
@@ -188,7 +195,6 @@ void	HttpResponse::checkSend(int bytes) {
 		perror("");
 		cerr << END_STYLE;
 		this->setClientError();
-		ret(ERR_SEND);
 	}
 }
 
@@ -442,6 +448,8 @@ void	HttpResponse::sendResponse() {
 	}
 	file.seekg(0, ios::end);
 	this->_contentLength = file.tellg();
+	if (this->_cgiTmpFile != "" && this->_contentType != "")
+		this->_contentLength -= (this->_contentType.size() + 3);
 	file.seekg(0, ios::beg);
 	if (file.fail()) {
 		this->error(500);
@@ -455,20 +463,25 @@ void	HttpResponse::sendResponse() {
 		remove(this->_cgiTmpFile.c_str());
 }
 
-void	HttpResponse::errorCGI(string str, int tmpfd)
+void	HttpResponse::errorCGI(string str, int file_fd)
 {
-	cerr << "Error with " << str << " in executeCGI()" << endl;
-    close(tmpfd);
+	cerr << timeStamp() << CYAN << str << THIN ITALIC;
+	perror("");
+	cerr << END_STYLE;
+	this->setClientError();
+	ret(ERR_READ);
+    close(file_fd);
 	return ;
 }
 
-char	**HttpResponse::createEnv() {
+char	**HttpResponse::createEnv(string uri) {
 	mapStrStr		env;
 	char			**cenv;
 	int				i;
 	stringstream	port;
 	stringstream	host;
 
+	this->_client->addEnv("REDIRECT_STATUS", "200");
 	this->_client->addEnv("SERVER_SOFTWARE", "Webserv/1.0");
 	this->_client->addEnv("SERVER_NAME", this->getServer()->getName());
 	this->_client->addEnv("GATEWAY_INTERFACE", "CGI/1.1");
@@ -477,7 +490,7 @@ char	**HttpResponse::createEnv() {
 	this->_client->addEnv("SERVER_PORT", port.str());
 	this->_client->addEnv("REQUEST_METHOD", stringMethod(this->getRequest()->getMethod()));
 	this->_client->addEnv("PATH_INFO", this->_pathInfo);
-	this->_client->addEnv("PATH_TRANSLATED", this->_pathInfo);
+	this->_client->addEnv("PATH_TRANSLATED", uri);
 	string scriptName = this->getRequest()->getUri();
 	scriptName = scriptName.substr(0, scriptName.find_last_of(".") + this->_cgiExt[this->_cgiIndex].length());
 	this->_client->addEnv("SCRIPT_NAME", scriptName);
@@ -505,23 +518,23 @@ char	**HttpResponse::createEnv() {
 
 bool	HttpResponse::executeCGI(string uri)
 {
-	int			tmpfd;
+	int			file_fd;
 	int			pid;
 	ifstream	file;
 	string		fileName = "/tmp/" + rdmString(64);
-	tmpfd = open(fileName.c_str(), O_RDWR | O_CREAT | O_TRUNC, 0666);
-	if (tmpfd == -1) {
-		errorCGI("open()", tmpfd);
-		this->setClientError();
+
+	file_fd = open(fileName.c_str(), O_RDWR | O_CREAT | O_TRUNC, 0666);
+	this->_cgiTmpFile = fileName;
+	if (file_fd == -1) {
+		errorCGI(" Open ", file_fd);
 		return (false);
 	}
 	pid = fork();
 	if (pid == -1) {
-		errorCGI("fork()", tmpfd);
-		this->setClientError();
+		errorCGI(" Fork ", file_fd);
 		return (false);
 	} else if (pid == 0) {
-		char **env = createEnv();
+		char **env = createEnv(uri);
 		string script = uri.substr(0, uri.find_last_of(".") + this->_cgiExt[this->_cgiIndex].length());
 		char **av;
 		av = new char*[3];
@@ -530,26 +543,55 @@ bool	HttpResponse::executeCGI(string uri)
 		av[1] = new char[script.size() + 1];
 		av[2] = NULL;
 		strcpy(av[1], script.c_str());
-		if (dup2(tmpfd, STDOUT_FILENO) == -1)
+		if (dup2(file_fd, STDOUT_FILENO) == -1)
 		{
-			errorCGI("dup2()", tmpfd);
-			this->setClientError();
+			errorCGI(" Dup2 ", file_fd);
 			return (false);
 		}
-		close(tmpfd);
+		close(file_fd);
 		if (execve(this->_cgiBin[this->_cgiIndex].c_str(), av, env))
 		{
-			errorCGI("execve()", tmpfd);
-			this->setClientError();
+			errorCGI(" Execve ", file_fd);
 			exit(-1);
 		}
 		exit (0);
 	} else {
-		close(tmpfd);
+		close(file_fd);
 		waitpid(0, NULL, 0);
+		this->parseCGI();
 	}
-	this->_cgiTmpFile = fileName;
 	return (true);
+}
+
+void	HttpResponse::parseCGI() {
+	ifstream	file;
+	int			size;
+	int			read = 0;
+	char		data[2049];
+	string		content;
+	
+	file.open(this->_cgiTmpFile.c_str(), ios::binary);
+	if (!file.is_open()) {
+		this->error(500);
+		return ;
+	}
+	file.seekg(0, ios::end);
+	size = file.tellg();
+	file.seekg(0, ios::beg);
+	if (file.fail()) {
+		this->error(500);
+		return ;
+	}
+	if (size > 0 && !this->getClientError()) {
+		file.read(data, min(size - read, 2048));
+		data[file.gcount()] = 0;
+		content = string(data);
+		if (findLower(content, "content-type:")) {
+			content = content.substr(0, content.find_first_of("\n\n"));
+			this->_contentType = content;
+		}
+	}
+	file.close();
 }
 
 Server	*HttpResponse::getServer() const {
