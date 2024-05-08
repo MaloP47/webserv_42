@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "Client.hpp"
+#include "style.h"
 #include "webserv.h"
 #include <cstddef>
 #include <cstdio>
@@ -167,8 +168,9 @@ void	HttpResponse::sendContent(ifstream &file) {
 	size_t	sended = 0;
 	int		bytes;
 
-	if (this->_cgiTmpFile != "" && this->_contentType != "")
-		file.read(data, this->_contentType.size() + 3);
+	if (this->_cgiTmpFile != "" && this->_contentType != "") {
+		file.read(data, this->_contentType.size() + 4);
+	}
 	if (this->_contentLength > 0 && !this->getClientError()) {
 		while (sended != this->_contentLength && !this->getClientError()) {
 			if (!file.read(data, min(this->_contentLength - sended,
@@ -342,9 +344,13 @@ void	HttpResponse::setInfos() {
 			this->_cgiExt = it->getCGIExtension();
 			this->_isLocation = true;
 			index = split_trim(it->getIndex(), ",");
-			for (strVecIt it = this->_indexes.begin(); it != this->_indexes.end(); it++) {
-				if (*it != "")
-					this->_indexes.push_back(*it);
+			if (index.size() == 1) {
+				this->_indexes.push_back(it->getIndex());
+			} else {
+				for (strVecIt iti = this->_indexes.begin(); iti != this->_indexes.end(); iti++) {
+					if (*iti != "")
+						this->_indexes.push_back(*iti);
+				}
 			}
 			return ;
 		}
@@ -433,6 +439,14 @@ void	HttpResponse::sendResponse() {
 			}
 		}
 		if (this->_cgiIndex >= 0) {
+			if (access(uri.c_str(), F_OK == -1)) {
+				this->error(404);
+				return ;
+			}
+			if (access(uri.c_str(), R_OK == -1)) {
+				this->error(403);
+				return ;
+			}
 			if (this->executeCGI(uri)) {
 				uri = this->_cgiTmpFile;
 			} else {
@@ -449,7 +463,7 @@ void	HttpResponse::sendResponse() {
 	file.seekg(0, ios::end);
 	this->_contentLength = file.tellg();
 	if (this->_cgiTmpFile != "" && this->_contentType != "")
-		this->_contentLength -= (this->_contentType.size() + 3);
+		this->_contentLength -= (this->_contentType.size() + 4);
 	file.seekg(0, ios::beg);
 	if (file.fail()) {
 		this->error(500);
@@ -502,7 +516,7 @@ char	**HttpResponse::createEnv(string uri) {
 	this->_client->addEnv("CONTENT_LENGTH", this->_client->getRequest()->getContentLength());
 	this->_client->addEnv("HTTP_ACCEPT", this->_client->getRequest()->getAcceptedMime());
 	this->_client->addEnv("HTTP_USER_AGENT", this->_client->getRequest()->getUserAgent());
-	this->_client->addEnv("HTTP_COOKIE", ""); // TO DO TO DO TO DO TO DO TO DO TO DO TO DO
+	this->_client->addEnv("HTTP_COOKIE", this->_client->getRequest()->getCookie());
 	env = this->_client->getEnv();
 	cenv = new char*[env.size() + 1];
 	i = 0;
@@ -522,6 +536,8 @@ bool	HttpResponse::executeCGI(string uri)
 	int			pid;
 	ifstream	file;
 	string		fileName = "/tmp/" + rdmString(64);
+	int			pipe_fd[2];
+	string		content;
 
 	file_fd = open(fileName.c_str(), O_RDWR | O_CREAT | O_TRUNC, 0666);
 	this->_cgiTmpFile = fileName;
@@ -529,11 +545,18 @@ bool	HttpResponse::executeCGI(string uri)
 		errorCGI(" Open ", file_fd);
 		return (false);
 	}
+	if (pipe(pipe_fd) < 0) {
+		errorCGI(" Pipe ", file_fd);
+		return (false);
+	}	
 	pid = fork();
 	if (pid == -1) {
 		errorCGI(" Fork ", file_fd);
 		return (false);
 	} else if (pid == 0) {
+		close(pipe_fd[1]);
+		dup2(pipe_fd[0], 0);
+		close(pipe_fd[1]);
 		char **env = createEnv(uri);
 		string script = uri.substr(0, uri.find_last_of(".") + this->_cgiExt[this->_cgiIndex].length());
 		char **av;
@@ -541,14 +564,13 @@ bool	HttpResponse::executeCGI(string uri)
 		av[0] = new char[this->_cgiBin[this->_cgiIndex].size() + 1];
 		strcpy(av[0], this->_cgiBin[this->_cgiIndex].c_str());
 		av[1] = new char[script.size() + 1];
-		av[2] = NULL;
 		strcpy(av[1], script.c_str());
+		av[2] = NULL;
 		if (dup2(file_fd, STDOUT_FILENO) == -1)
 		{
 			errorCGI(" Dup2 ", file_fd);
 			return (false);
 		}
-		close(file_fd);
 		if (execve(this->_cgiBin[this->_cgiIndex].c_str(), av, env))
 		{
 			errorCGI(" Execve ", file_fd);
@@ -556,6 +578,14 @@ bool	HttpResponse::executeCGI(string uri)
 		}
 		exit (0);
 	} else {
+		close(pipe_fd[0]);
+		content = this->_client->getRequest()->getContent();
+		if (write(pipe_fd[1], content.c_str(), content.size()) < 0) {
+			errorCGI(" Write ", file_fd);
+			close(pipe_fd[1]);
+			return (false);
+		}
+		close(pipe_fd[1]);
 		close(file_fd);
 		waitpid(0, NULL, 0);
 		this->parseCGI();
@@ -586,8 +616,10 @@ void	HttpResponse::parseCGI() {
 		file.read(data, min(size - read, 2048));
 		data[file.gcount()] = 0;
 		content = string(data);
+		int i = -1;
+		while (content[++i] != 0)
 		if (findLower(content, "content-type:")) {
-			content = content.substr(0, content.find_first_of("\n\n"));
+			content = content.substr(0, content.find("\r\n\r\n"));
 			this->_contentType = content;
 		}
 	}
@@ -634,7 +666,7 @@ ostream &operator<<(ostream &o, const HttpResponse &response) {
 	if (response.getServer()->getLogLevel() == 0)
 		return (o);
 	o << timeStamp() << GREEN BOLD << " Response" END_STYLE " → " CYAN << response.getStatusCode();
-	o << YELLOW " " << response.getMime() << END_STYLE << endl;
+	o << END_STYLE<< endl;
 	if (response.getServer()->getLogLevel() == 2){
 		o << THIN ITALIC << response.getHeader() << END_STYLE << endl;
 	}
