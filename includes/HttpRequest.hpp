@@ -57,11 +57,13 @@ class HttpRequest {
 		string			_boundary;
 		string			_textPost;
 		string			_query;
+		string			_cookie;
 
 		bool	isFullRequest();
 		void	parse();
 		void	setMethod(string str);
 		void	parseHost(string line);
+		void	parseCookie(string str);
 		void	getUriAndEnv(string str);
 		void	parseUserAgent(string line);
 		void	parseConnection(string line);
@@ -88,6 +90,8 @@ class HttpRequest {
 		string			getUri() const;
 		string			getHost() const;
 		string			getQuery() const;
+		string			getCookie() const;
+		string			getContent() const;
 		string			getUserAgent() const;
 		string			getContentType() const;
 		string			getRawRequest() const;

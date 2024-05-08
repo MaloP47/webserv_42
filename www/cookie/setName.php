@@ -1,3 +1,8 @@
+<?php
+if (isset($_POST["name"])) {
+	setcookie('name', $_POST["name"], time() + 120, "/");
+}
+?>
 <!doctype html>
 <html>
 
@@ -13,9 +18,18 @@
 	<div class="container p-3">
 		<div class="rounded-3 p-5" style="background-color:#fcfcfc; border:solid 1px #cdcdcd">
 			<center>
-				<h2>PHP</h2>
-				</center>
-				<?php phpinfo(); ?>
+				<h2>Bonjour
+		<?php
+		if (isset($_POST['name'])) {
+			echo $_POST["name"];
+		} else if(isset($_COOKIE['name'])){
+			echo $_COOKIE['name'];
+		} else {
+			echo 'inconnu';
+		}
+		?>
+				</h2>
+			</center>
 		</div>
 	</div>
 </body>
