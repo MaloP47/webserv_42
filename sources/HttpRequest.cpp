@@ -44,6 +44,7 @@ HttpRequest	&HttpRequest::operator=(const HttpRequest &rhs) {
 	this->_acceptedMimes = rhs._acceptedMimes;
 	this->_rawBytes = rhs._rawBytes;
 	this->_contentLength = rhs._contentLength;
+	this->_content = rhs._content;
 	this->_serverIndex = rhs._serverIndex;
 	this->_host = rhs._host;
 	this->_query = rhs._query;
@@ -127,6 +128,8 @@ void	HttpRequest::parse() {
 			this->parseContentType(*it);
 		else if (findLower(*it, "host:"))
 			this->parseHost(*it);
+		else if (findLower(*it, "cookie:"))
+			this->parseCookie(*it);
 	}
 	if (this->_contentType == "multipart/form-data")
 		this->decodeFormData();
@@ -145,6 +148,7 @@ void	HttpRequest::decodeUrlEncoded() {
 
 	content = this->_rawRequest;
 	content.erase(0, this->_headerLength);
+	this->_content = content;
 	vars = split_trim(content, "&");
 	for (strVecIt it = vars.begin(); it != vars.end(); it++) {
 		tempEnv = split_trim(*it, "=");
@@ -188,6 +192,14 @@ void	HttpRequest::decodeFormData() {
 				it->createFile();
 	}
 }
+
+void	HttpRequest::parseCookie(string line) {
+	vector<string>	split;
+
+	line.erase(0, 7);
+	this->_cookie = line;
+}
+
 void	HttpRequest::parseUserAgent(string line) {
 	vector<string>	split;
 
@@ -335,6 +347,10 @@ enum HttpMethod	HttpRequest::getMethod() const {
 	return (this->_method);
 }
 
+string	HttpRequest::getContent() const {
+	return (this->_content);
+}
+
 string	HttpRequest::getUri() const {
 	return (this->_uri);
 }
@@ -345,6 +361,10 @@ string	HttpRequest::getQuery() const {
 
 string	HttpRequest::getContentType() const {
 	return (this->_contentType);
+}
+
+string	HttpRequest::getCookie() const {
+	return (this->_cookie);
 }
 
 string	HttpRequest::getUserAgent() const {
