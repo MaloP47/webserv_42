@@ -32,6 +32,7 @@ class HttpResponse {
 		int						_cgiIndex;
 		string					_pathInfo;
 		string					_cgiTmpFile;
+		string					_contentType;
 
 		vector<string>			_indexes;
 		string					_locPath;
@@ -75,7 +76,8 @@ class HttpResponse {
 		void			setKeepAliveConnectionHeader();
 		void			sendDirectoryPage(string path);
 		void			errorCGI(string str, int tmpfd);
-		char			**createEnv();
+		char			**createEnv(string uri);
+		void			parseCGI();
 //		void			executeCGI(char **env);
 
 		HttpRequest		*getRequest() const;

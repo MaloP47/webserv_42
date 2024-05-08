@@ -13,12 +13,12 @@
 #include "webserv.h"
 #include "Webserv.hpp"
 #include "ConfigServer.hpp"
-#include "Location.hpp"
 #include <unistd.h>
 
 void	handler(int signum) {
 	static_cast<void>(signum);
 	cout << DEL_LINE CYAN "exit" END_STYLE << endl;
+	env()->return_val = 0;
 	env()->ctrl_c = true;
 }
 
