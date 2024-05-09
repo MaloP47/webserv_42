@@ -6,7 +6,7 @@
 /*   By: maburnet <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/08 17:29:38 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/05/07 16:03:24 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/05/09 18:03:21 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -283,6 +283,12 @@ bool	HttpResponse::expandUri(string &uri, bool &isDir) {
 		uri = this->_root + uri;
 	} else
 		uri = this->getServer()->getRoot() + this->getRequest()->getUri();
+	for (vector<string>::iterator it = this->_cgiExt.begin(); it != this->_cgiExt.end(); it++) {
+		if (*it != "" && uri.find(*it + "/") != string::npos) {
+			this->_pathInfo = uri.substr(uri.find(*it + "/") + it->size() + 1);
+			uri = uri.substr(0, uri.find(*it + "/") + it->size());
+		}
+	}
 	if (stat(uri.c_str(), &s) == 0) {
 		if (s.st_mode & S_IFDIR) {
 			isDir = true;
@@ -296,6 +302,8 @@ bool	HttpResponse::expandUri(string &uri, bool &isDir) {
 	}
 	if (isDir) {
 		for (vector<string>::iterator it = this->_indexes.begin(); it != this->_indexes.end(); it++) {
+			if (*it == "")
+				continue;
 			if (access((uri + *it).c_str(), F_OK) != -1) {
 				if (access((uri + *it).c_str(), R_OK) == -1) {
 					this->error(403);
@@ -429,7 +437,6 @@ void	HttpResponse::sendResponse() {
 			string tmp = ext;
 			ext = ext.substr(0, ext.find_first_of("/"));
 			this->_mime = Mime::ext(ext);
-			this->_pathInfo = tmp.substr(tmp.find_first_of("/") + 1);
 		}
 		for (vector<string>::iterator it = this->_cgiExt.begin(); it != this->_cgiExt.end(); it++) {
 			i++;
@@ -469,12 +476,15 @@ void	HttpResponse::sendResponse() {
 		this->error(500);
 		return ;
 	}
-	this->_statusCode = 200;
+//	if (this->getRequest()->getMethod() == POST && this->_contentLength != 0)
+//		this->_statusCode = 201;
+//	else
+		this->_statusCode = 200;
 	this->createHeader();
 	this->sendHeader();
 	this->sendContent(file);
-	if (this->_cgiTmpFile != "")
-		remove(this->_cgiTmpFile.c_str());
+//	if (this->_cgiTmpFile != "")
+//		remove(this->_cgiTmpFile.c_str());
 }
 
 void	HttpResponse::errorCGI(string str, int file_fd)
@@ -503,7 +513,8 @@ char	**HttpResponse::createEnv(string uri) {
 	port << this->getServer()->getPort();
 	this->_client->addEnv("SERVER_PORT", port.str());
 	this->_client->addEnv("REQUEST_METHOD", stringMethod(this->getRequest()->getMethod()));
-	this->_client->addEnv("PATH_INFO", this->_pathInfo);
+	this->_client->addEnv("PATH_INFO", "/" + this->_pathInfo);
+	cout << "/" + this->_pathInfo << endl;
 	this->_client->addEnv("PATH_TRANSLATED", uri);
 	string scriptName = this->getRequest()->getUri();
 	scriptName = scriptName.substr(0, scriptName.find_last_of(".") + this->_cgiExt[this->_cgiIndex].length());
@@ -514,8 +525,6 @@ char	**HttpResponse::createEnv(string uri) {
 	this->_client->addEnv("REMOTE_ADDR", host.str());
 	this->_client->addEnv("CONTENT_TYPE", this->getRequest()->getContentType());
 	this->_client->addEnv("CONTENT_LENGTH", this->getRequest()->getContentLength());
-	if (this->getRequest()->getContentLength() != "0")
-		this->_client->addEnv("CONTENT_LENGTH", "100000000");
 	this->_client->addEnv("HTTP_ACCEPT", this->getRequest()->getAcceptedMime());
 	this->_client->addEnv("HTTP_USER_AGENT", this->getRequest()->getUserAgent());
 	this->_client->addEnv("HTTP_COOKIE", this->getRequest()->getCookie());
@@ -523,7 +532,8 @@ char	**HttpResponse::createEnv(string uri) {
 	cenv = new char*[env.size() + 1];
 	i = 0;
 	for (mapStrStr::iterator it = env.begin(); it != env.end(); it++) {
-		string	var = it->first + "=" + it->second;
+		string var;
+		var = it->first + "=" + it->second;
 		cenv[i] = new char[var.size() + 1];
 		strcpy(cenv[i], var.c_str());
 		i++;
@@ -538,28 +548,24 @@ bool	HttpResponse::executeCGI(string uri)
 	int			pid;
 	ifstream	file;
 	string		fileName = "/tmp/" + rdmString(64);
-	int			pipe_fd[2];
 	string		content;
+	FILE		*content_tmp = tmpfile();
+	int			content_fd = fileno(content_tmp);
 
-	cout << "CGI HERE" << endl;
+	write(content_fd, this->getRequest()->getContent().c_str(), this->getRequest()->getContent().size());
+	lseek(content_fd, 0, SEEK_SET);
+	int std_in = dup(STDIN_FILENO);
 	file_fd = open(fileName.c_str(), O_RDWR | O_CREAT | O_TRUNC, 0666);
 	this->_cgiTmpFile = fileName;
 	if (file_fd == -1) {
 		errorCGI(" Open ", file_fd);
 		return (false);
 	}
-	if (pipe(pipe_fd) < 0) {
-		errorCGI(" Pipe ", file_fd);
-		return (false);
-	}	
 	pid = fork();
 	if (pid == -1) {
 		errorCGI(" Fork ", file_fd);
 		return (false);
 	} else if (pid == 0) {
-		close(pipe_fd[1]);
-		dup2(pipe_fd[0], 0);
-		close(pipe_fd[1]);
 		char **env = createEnv(uri);
 		string script = uri.substr(0, uri.find_last_of(".") + this->_cgiExt[this->_cgiIndex].length());
 		char **av;
@@ -569,31 +575,25 @@ bool	HttpResponse::executeCGI(string uri)
 		av[1] = new char[script.size() + 1];
 		strcpy(av[1], script.c_str());
 		av[2] = NULL;
-		if (dup2(file_fd, STDOUT_FILENO) == -1)
-		{
+		dup2(content_fd, STDIN_FILENO);
+		if (dup2(file_fd, STDOUT_FILENO) == -1) {
 			errorCGI(" Dup2 ", file_fd);
 			return (false);
 		}
-		if (execve(this->_cgiBin[this->_cgiIndex].c_str(), av, env))
-		{
+		if (execve(this->_cgiBin[this->_cgiIndex].c_str(), av, env)) {
 			errorCGI(" Execve ", file_fd);
 			exit(-1);
 		}
 		exit (0);
-	} else {
-		close(pipe_fd[0]);
-		content = this->_client->getRequest()->getContent();
-//		if (write(pipe_fd[1], content.c_str(), content.size()) < 0) {
-		if (write(pipe_fd[1], content.c_str(), 100000000) < 0) {
-			errorCGI(" Write ", file_fd);
-			close(pipe_fd[1]);
-			return (false);
-		}
-		close(pipe_fd[1]);
-		close(file_fd);
-		waitpid(0, NULL, 0);
-		this->parseCGI();
 	}
+	content = this->_client->getRequest()->getContent();
+	close(file_fd);
+	waitpid(0, NULL, 0);
+	dup2(std_in, STDIN_FILENO);
+	fclose(content_tmp);
+	close(content_fd);
+	close(std_in);
+	this->parseCGI();
 	return (true);
 }
 

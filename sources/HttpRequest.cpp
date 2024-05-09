@@ -6,13 +6,14 @@
 /*   By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/08 11:01:52 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/05/07 14:57:49 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/05/09 15:51:48 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "HttpRequest.hpp"
 #include "webserv.h"
 #include <sstream>
+#include <string>
 #include <vector>
 
 HttpRequest::HttpRequest() {}
@@ -114,46 +115,32 @@ string	HttpRequest::getRawRequest() const {
 	return (this->_rawRequest);
 }
 
-
-/*
-
-vector<string> split_trim(string str, string needle) {
-	vector<string>	split;
-	string			subs;
-	size_t			end;
-
-	end = str.find(needle);
-	while (end != string::npos) {
-		subs = str.substr(0, end);
-		ltrim(subs);
-		rtrim(subs);
-		split.push_back(subs);
-		str.erase(str.begin(), str.begin() + end + needle.length());
-		end = str.find(needle);
-	}
-	ltrim(str);
-	rtrim(str);
-	split.push_back(str);
-	return (split);
-}
-
-*/
-
-
 void	HttpRequest::getChunkedContent(string chunckedContent) {
-//	vector<string>	parts;
-//	size_t			end;
-//	string			subs;
+	vector<string>	parts;
+	size_t			end;
+	string			subs;
+	string			content;
+	long			current_size = -1;
 
-	(void) chunckedContent;
-//	end = str.find("\r\n");
-//	parts = chunckedContent
+
+	end = chunckedContent.find("\r\n");
+	current_size = strtol(chunckedContent.substr(0, end).c_str(), NULL, 16);
+	while (current_size != 0) {
+		chunckedContent.erase(0, end + 2);
+		content += chunckedContent.substr(0, current_size);
+		chunckedContent.erase(0, current_size + 2);
+		end = chunckedContent.find("\r\n");
+		current_size = strtol(chunckedContent.substr(0, end).c_str(), NULL, 16);
+	}
+	this->_content = content;
+	this->_contentLength = content.length();
 }
 
 void	HttpRequest::parse() {
 	vector<string>	line;
 	bool			chunked = false;
 
+	this->_keepAliveConnection = false;
 	this->_goodRequest = true;
 	if (this->_headerLength != 0) {
 		line = split_trim(this->_rawRequest.substr(0, this->_headerLength), "\r\n");
@@ -188,9 +175,8 @@ void	HttpRequest::parse() {
 		this->_textPost = this->_rawRequest;
 		this->_textPost.erase(0, this->_headerLength);
 	}
-	if (chunked) {
-		cout << this->_rawRequest.substr(this->_rawRequest.find("\r\n\r\n") + 4);
-	}
+	if (chunked)
+		this->getChunkedContent(this->_rawRequest.substr(this->_rawRequest.find("\r\n\r\n") + 4));
 }
 
 void	HttpRequest::decodeUrlEncoded() {
