@@ -171,7 +171,7 @@ void	HttpResponse::sendContent(ifstream &file) {
 	if (this->_cgiTmpFile != "" && this->_contentType != "") {
 		file.read(data, this->_contentType.size() + 4);
 	}
-	if (this->_contentLength > 0 && !this->getClientError()) {
+	if (!this->getClientError()) {
 		while (sended != this->_contentLength && !this->getClientError()) {
 			if (!file.read(data, min(this->_contentLength - sended,
 							static_cast<size_t>(2048)))) {
@@ -539,6 +539,7 @@ bool	HttpResponse::executeCGI(string uri)
 	int			pipe_fd[2];
 	string		content;
 
+	cout << "CGI HERE" << endl;
 	file_fd = open(fileName.c_str(), O_RDWR | O_CREAT | O_TRUNC, 0666);
 	this->_cgiTmpFile = fileName;
 	if (file_fd == -1) {

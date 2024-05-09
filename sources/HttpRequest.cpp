@@ -65,9 +65,13 @@ bool	HttpRequest::isFullRequest() {
 			}
 		}
 		return (false);
-	} else
+	} else if (!findLower(this->_rawRequest, "transfer-encoding: chunked")) {
 		return (this->_rawRequest.find("\r\n\r\n",
 				this->_rawRequest.length() - 4) != string::npos);	
+	} else {
+		return (this->_rawRequest.find("0\r\n\r\n",
+				this->_rawRequest.length() - 5) != string::npos);	
+	}
 }
 
 bool	HttpRequest::appendRequest(const char *data, int bytes) {

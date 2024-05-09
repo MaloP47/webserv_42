@@ -67,7 +67,7 @@ typedef struct s_env {
 }	t_env;
 
 # define MAX_EVENTS 1024
-# define BUFFER_SIZE 8096
+# define BUFFER_SIZE 655360
 
 # define CLIENT_TIMEOUT 10
 # define EPOLL_TIMEOUT 5000
