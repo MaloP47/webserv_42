@@ -69,6 +69,7 @@ class HttpRequest {
 		void	parseConnection(string line);
 		void	parseRequestLine(string line);
 		void	parseAcceptedMimes(string line);
+		void	getChunkedContent(string chunckedContent);
 		void	parseContentLength();
 		void	parseContentType(string line);
 		void	decodeFormData();

@@ -114,14 +114,55 @@ string	HttpRequest::getRawRequest() const {
 	return (this->_rawRequest);
 }
 
+
+/*
+
+vector<string> split_trim(string str, string needle) {
+	vector<string>	split;
+	string			subs;
+	size_t			end;
+
+	end = str.find(needle);
+	while (end != string::npos) {
+		subs = str.substr(0, end);
+		ltrim(subs);
+		rtrim(subs);
+		split.push_back(subs);
+		str.erase(str.begin(), str.begin() + end + needle.length());
+		end = str.find(needle);
+	}
+	ltrim(str);
+	rtrim(str);
+	split.push_back(str);
+	return (split);
+}
+
+*/
+
+
+void	HttpRequest::getChunkedContent(string chunckedContent) {
+//	vector<string>	parts;
+//	size_t			end;
+//	string			subs;
+
+	(void) chunckedContent;
+//	end = str.find("\r\n");
+//	parts = chunckedContent
+}
+
 void	HttpRequest::parse() {
 	vector<string>	line;
+	bool			chunked = false;
 
 	this->_goodRequest = true;
-	if (this->_headerLength != 0)
+	if (this->_headerLength != 0) {
 		line = split_trim(this->_rawRequest.substr(0, this->_headerLength), "\r\n");
-	else
+	} else if (findLower(this->_rawRequest, "transfer-encoding: chunked")) {
+		chunked = true;
+		line = split_trim(this->_rawRequest.substr(0, this->_rawRequest.find("\r\n\r\n") + 4), "\r\n");
+	} else {
 		line = split_trim(this->_rawRequest, "\r\n");
+	}
 	if (line.size() < 1)
 		return ;
 	this->parseRequestLine(line[0]);	
@@ -146,6 +187,9 @@ void	HttpRequest::parse() {
 	else if (this->_contentType == "text/plain") {
 		this->_textPost = this->_rawRequest;
 		this->_textPost.erase(0, this->_headerLength);
+	}
+	if (chunked) {
+		cout << this->_rawRequest.substr(this->_rawRequest.find("\r\n\r\n") + 4);
 	}
 }
 
