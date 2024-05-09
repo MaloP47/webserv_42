@@ -512,11 +512,13 @@ char	**HttpResponse::createEnv(string uri) {
 	this->_client->addEnv("REMOTE_HOST", this->getServer()->getName());
 	host << this->getServer()->getHost();
 	this->_client->addEnv("REMOTE_ADDR", host.str());
-	this->_client->addEnv("CONTENT_TYPE", this->_client->getRequest()->getContentType());
-	this->_client->addEnv("CONTENT_LENGTH", this->_client->getRequest()->getContentLength());
-	this->_client->addEnv("HTTP_ACCEPT", this->_client->getRequest()->getAcceptedMime());
-	this->_client->addEnv("HTTP_USER_AGENT", this->_client->getRequest()->getUserAgent());
-	this->_client->addEnv("HTTP_COOKIE", this->_client->getRequest()->getCookie());
+	this->_client->addEnv("CONTENT_TYPE", this->getRequest()->getContentType());
+	this->_client->addEnv("CONTENT_LENGTH", this->getRequest()->getContentLength());
+	if (this->getRequest()->getContentLength() != "0")
+		this->_client->addEnv("CONTENT_LENGTH", "100000000");
+	this->_client->addEnv("HTTP_ACCEPT", this->getRequest()->getAcceptedMime());
+	this->_client->addEnv("HTTP_USER_AGENT", this->getRequest()->getUserAgent());
+	this->_client->addEnv("HTTP_COOKIE", this->getRequest()->getCookie());
 	env = this->_client->getEnv();
 	cenv = new char*[env.size() + 1];
 	i = 0;
@@ -581,7 +583,8 @@ bool	HttpResponse::executeCGI(string uri)
 	} else {
 		close(pipe_fd[0]);
 		content = this->_client->getRequest()->getContent();
-		if (write(pipe_fd[1], content.c_str(), content.size()) < 0) {
+//		if (write(pipe_fd[1], content.c_str(), content.size()) < 0) {
+		if (write(pipe_fd[1], content.c_str(), 100000000) < 0) {
 			errorCGI(" Write ", file_fd);
 			close(pipe_fd[1]);
 			return (false);
