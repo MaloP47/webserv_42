@@ -99,7 +99,7 @@ void	HttpResponse::setKeepAliveConnectionHeader() {
 void	HttpResponse::setContentLengthHeader() {
 	stringstream	str;
 
-	if (this->_statusCode == 200)
+	if (this->_statusCode == 200 || this->_statusCode == 201)
 		str << this->_contentLength;
 	else
 		str << StatusCode::page(this->_statusCode).length();
