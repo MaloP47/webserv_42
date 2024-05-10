@@ -25,7 +25,10 @@
 HttpResponse::HttpResponse(): _client(NULL) {}
 
 HttpResponse::HttpResponse(Client *client):
-	_client(client), _statusCode(0), _contentLength(0), _cgiIndex(-1) {
+	_client(client),
+	_statusCode(0),
+	_contentLength(0),
+	_cgiIndex(-1) {
 }
 
 HttpResponse::HttpResponse(const HttpResponse &cpy) {
@@ -70,10 +73,10 @@ void	HttpResponse::setServerHeader() {
 }
 
 void	HttpResponse::setDateHeader() {
-	char				date[128];
-	time_t				rawtime;
-	struct tm			*info;
-	size_t				length;
+	char		date[128];
+	time_t		rawtime;
+	struct tm	*info;
+	size_t		length;
 
 	time(&rawtime);
 	info = gmtime(&rawtime);
@@ -504,6 +507,7 @@ char	**HttpResponse::createEnv(string uri) {
 	int				i;
 	stringstream	port;
 	stringstream	host;
+	string			scriptName = this->getRequest()->getUri();
 
 	this->_client->addEnv("REDIRECT_STATUS", "200");
 	this->_client->addEnv("SERVER_SOFTWARE", "Webserv/1.0");
@@ -515,7 +519,6 @@ char	**HttpResponse::createEnv(string uri) {
 	this->_client->addEnv("REQUEST_METHOD", stringMethod(this->getRequest()->getMethod()));
 	this->_client->addEnv("PATH_INFO", "/");
 	this->_client->addEnv("PATH_TRANSLATED", uri);
-	string scriptName = this->getRequest()->getUri();
 	scriptName = scriptName.substr(0, scriptName.find_last_of(".") + this->_cgiExt[this->_cgiIndex].length());
 	this->_client->addEnv("SCRIPT_NAME", "");
 	this->_client->addEnv("QUERY_STRING", this->getRequest()->getQuery());

@@ -21,28 +21,26 @@ class	Config {
 
 	public:
 
-		Config( string const & path ) ;
-		~Config( void ) ;
+		Config(string const & path);
+		~Config(void);
 
-		int						getNbServer( void ) const ;
-		string const &			getRawConfig( void ) const ;
-		vector<string> const & 	getServerBlocks( void ) const ;
+		int						getNbServer(void) const;
+		string const &			getRawConfig(void) const;
+		vector<string> const & 	getServerBlocks(void) const;
 
 	private:
 
-		int					_nbServer ;
-		string				_rawConfig ;
-		vector<string>		_serverBlocks ;
+		int						_nbServer;
+		string					_rawConfig;
+		vector<string>			_serverBlocks;
 
-		bool	isDirectory( string const & path ) ;
-		bool	isConf( string const & path ) ;
-		void	cleanRawConfig( ifstream & config ) ;
-		void	parseRawConfig( void ) ;
+		bool	isConf( string const & path );
+		bool	isDirectory( string const & path );
+		void	parseRawConfig( void );
+		void	cleanRawConfig( ifstream & config );
 
-		Config( void ) ;
-		Config( Config const & cpy ) ;
-		Config &	operator=( Config const & rhs ) ;
+		Config(void);
+		Config(Config const & cpy);
+		Config	&operator=(Config const & rhs);
 			
-} ;
-
-/* *** CONFIG.HPP *** */
+};

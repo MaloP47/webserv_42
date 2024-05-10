@@ -49,11 +49,12 @@ class HttpResponse {
 
 		int				getClientFd() const;
 		int				sendData(const void *data, int len);
+		char			**createEnv(string uri);
 		bool			keepAlive() const;
 		bool			getClientError() const;
+		bool			executeCGI(string uri);
 		bool			expandUri(string &uri, bool &isDir);
 		bool			methodeAllowed(enum HttpMethod methode);
-		bool			executeCGI(string uri);
 		void			setInfos();
 		void			sendHeader();
 		void			sendChunkEnd();
@@ -76,12 +77,10 @@ class HttpResponse {
 		void			setKeepAliveConnectionHeader();
 		void			sendDirectoryPage(string path);
 		void			errorCGI(string str, int tmpfd);
-		char			**createEnv(string uri);
 		void			parseCGI();
-//		void			executeCGI(char **env);
-
 		HttpRequest		*getRequest() const;
 		vector<string>	getIndexes() const;
+
 	public:
 		HttpResponse();
 		HttpResponse(Client *client);

@@ -22,44 +22,44 @@ class	ConfigServer {
 
 	public:
 
-		ConfigServer( string const & serverBlock, int indexOfServerBlock ) ;
-		~ConfigServer( void ) ;
-		ConfigServer( ConfigServer const & cpy ) ;
-		ConfigServer &	operator=( ConfigServer const & rhs ) ;
+		ConfigServer(string const & serverBlock, int indexOfServerBlock);
+		~ConfigServer(void);
+		ConfigServer(ConfigServer const & cpy);
+		ConfigServer &	operator=(ConfigServer const & rhs);
 
-		void	setPort( int port ) ;
-		void	setRoot( string const & root ) ;
-		void	setHost( string const & host ) ;
-		void	setMaxBodySize( int maxBodySize ) ;
-		void	setAllowedMethod( vector<enum HttpMethod> const & allowedMethod ) ;
-		void	setDirectoryListing( bool directoryListing ) ;
-		void	setName( string const & name ) ;
-		void	setIndex( string const & index ) ;
-		void	setErrorPages( map<int,string> const & err ) ;
-		void	setReturnURI( map<int,string> const & uri ) ;
-		void	setUploadPath( string const & path ) ;
-		void	setLocation( vector<string> loc ) ;
-		void	setLocationBlock( vector<Location> const & locationBlock ) ;
-		void	setBinPath( vector<string> const & binPath ) ;
-		void	setCgiExtension( vector<string> const & cgiExtension ) ;
+		void	setPort(int port);
+		void	setRoot(string const & root);
+		void	setHost(string const & host);
+		void	setName(string const & name);
+		void	setMaxBodySize(int maxBodySize);
+		void	setDirectoryListing(bool directoryListing);
+		void	setAllowedMethod(vector<enum HttpMethod> const & allowedMethod);
+		void	setIndex(string const & index);
+		void	setErrorPages(map<int,string> const & err);
+		void	setReturnURI(map<int,string> const & uri);
+		void	setUploadPath(string const & path);
+		void	setLocation(vector<string> loc);
+		void	setLocationBlock(vector<Location> const & locationBlock);
+		void	setBinPath(vector<string> const & binPath);
+		void	setCgiExtension(vector<string> const & cgiExtension);
 
-		int								getServerIndex( void ) const ;
-		string const &					getServerBlock( void ) const ;
-		int								getPort( void ) const ;
-		string const &					getRoot( void ) const ;
-		string const &					getHost( void ) const ;
-		int								getMaxBodySize( void ) const ;
-		vector<enum HttpMethod> const &	getAllowedMethod( void ) const ;
-		bool							getDirectoryListing( void ) const ;
-		string const &					getName( void ) const ;
-		string const &					getIndex( void ) const ;
-		map<int,string> const &			getErrorPages( void ) const ;
-		map<int,string> const &			getReturnURI( void ) const ;
-		string const &					getUploadPath( void ) const ;
-		vector<string> const &			getLocation( void ) const ;
-		vector<Location> const &		getLocationBlock( void ) const ;
-		vector<string> const &			getBinPath( void ) const ;
-		vector<string> const &			getCgiExtension( void ) const ;
+		int								getPort(void) const;
+		int								getMaxBodySize(void) const;
+		int								getServerIndex(void) const;
+		bool							getDirectoryListing(void) const;
+		string const &					getRoot(void) const;
+		string const &					getHost(void) const;
+		string const &					getName(void) const;
+		string const &					getIndex(void) const;
+		string const &					getUploadPath(void) const;
+		string const &					getServerBlock(void) const;
+		vector<string> const &			getBinPath(void) const;
+		vector<string> const &			getLocation(void) const;
+		vector<string> const &			getCgiExtension(void) const;
+		map<int,string> const &			getReturnURI(void) const;
+		map<int,string> const &			getErrorPages(void) const;
+		vector<Location> const &		getLocationBlock(void) const;
+		vector<enum HttpMethod> const &	getAllowedMethod(void) const;
 
 	private:
 
@@ -79,34 +79,31 @@ class	ConfigServer {
 		string					_name ;
 
 		/* OPTIONAL */
-		string				_index ;
-		map<int,string>		_errorPage ;
-		map<int,string>		_returnURI ;
-		string				_uploadPath ;
-		vector<Location>	_locationBlock ;
+		string					_index ;
+		map<int,string>			_errorPage ;
+		map<int,string>			_returnURI ;
+		string					_uploadPath ;
+		vector<Location>		_locationBlock ;
 
 		/* CGI */
-		vector<string>		_binPath ;
-		vector<string>		_cgiExtension ;
+		vector<string>			_binPath ;
+		vector<string>			_cgiExtension ;
 
-		void		extractLocation( string & block ) ;
-		string		extractStringVariable( string & block, string const & var ) ;
-		void		checkPort( string & block ) ;
-		void		checkMBS( string & block ) ;
-		void		checkAutoIndex( string & block ) ;
-		void		checkName( string & block, int index ) ;
-		void		checkMethod( string & block ) ;
-		void		extractMap( string & block, string const & var, map<int,string> & Map ) ;
-		void		initLocation( long long servMBS ) ;
-		void		checkCGIBin( string & block ) ;
-		void		checkCGIExtension( string & block ) ;
+		void		checkMBS(string & block);
+		void		checkPort(string & block);
+		void		checkCGIBin(string & block);
+		void		checkMethod(string & block);
+		void		checkAutoIndex(string & block);
+		void		initLocation(long long servMBS);
+		void		extractLocation(string & block);
+		void		checkCGIExtension(string & block);
+		void		checkName(string & block, int index);
+		void		extractMap(string & block, string const & var, map<int,string> & Map);
+		string		extractStringVariable(string & block, string const & var);
 
 		ConfigServer( void ) ;
-
 } ;
 
 ostream &	operator<<( ostream & o, ConfigServer const & rhs ) ;
-
 /* *** CONFIGSERVER.HPP *** */
-
 #endif

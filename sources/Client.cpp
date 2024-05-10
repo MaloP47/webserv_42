@@ -14,10 +14,18 @@
 #include <vector>
 #include "Client.hpp"
 
-Client::Client(): _servers(vector<Server *>(0)), _request(NULL), _response(NULL), _error(false) {}
+Client::Client():
+	_servers(vector<Server *>(0)),
+	_request(NULL),
+	_response(NULL),
+	_error(false) {}
 
 Client::Client(vector<Server *> servers, int fd):
-	_servers(servers), _request(NULL), _response(NULL), _fd(fd), _error(false) {
+	_servers(servers),
+	_request(NULL),
+	_response(NULL),
+	_fd(fd),
+	_error(false) {
 	this->_creationDate = time(0);
 }
 
@@ -49,29 +57,6 @@ bool	Client::appendRequest(const char *data, int bytes) {
 	return (this->_request->appendRequest(data, bytes));
 }
 
-Server	*Client::getServer(int index) const {
-	return (this->_servers[index]);
-}
-
-vector<Server *>	Client::getServers() const {
-	return (this->_servers);
-}
-
-HttpRequest	*Client::getRequest() const {
-	return (this->_request);
-}
-
-HttpResponse	*Client::getResponse() const {
-	return (this->_response);
-}
-
-string	Client::getRawRequest() const {
-	if (this->_request)
-		return (this->_request->getRawRequest());
-	else
-		return (NULL);
-}
-
 void	Client::sendResponse() {
 	this->_response = new HttpResponse(this);
 	this->_response->sendResponse();
@@ -91,10 +76,6 @@ void	Client::deleteResponse() {
 	if (this->_response)
 		delete this->_response;
 	this->_response = NULL;
-}
-
-int	Client::getFd() const {
-	return (this->_fd);
 }
 
 bool	Client::olderThan(int sec) const {
@@ -117,6 +98,33 @@ void	Client::addEnv(string name, string value) {
 
 mapStrStr	Client::getEnv() const {
 	return (this->_env);
+}
+
+int	Client::getFd() const {
+	return (this->_fd);
+}
+
+Server	*Client::getServer(int index) const {
+	return (this->_servers[index]);
+}
+
+vector<Server *>	Client::getServers() const {
+	return (this->_servers);
+}
+
+HttpRequest	*Client::getRequest() const {
+	return (this->_request);
+}
+
+HttpResponse	*Client::getResponse() const {
+	return (this->_response);
+}
+
+string	Client::getRawRequest() const {
+	if (this->_request)
+		return (this->_request->getRawRequest());
+	else
+		return (NULL);
 }
 
 ostream	&operator<<(ostream &o, const Client &client) {

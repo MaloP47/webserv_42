@@ -14,39 +14,39 @@
 # define WEBSERV_H
 
 # include "style.h"
-# include <iostream>
-# include <sys/types.h>
-# include <sys/wait.h>
-# include <sys/socket.h>
-# include <sys/stat.h>
+# include <set>
+# include <map>
+# include <ctime>
+# include <cctype>
+# include <cstdio>
+# include <vector>
+# include <limits>
 # include <errno.h>
 # include <stdio.h>
 # include <fcntl.h>
-# include <arpa/inet.h>
-# include <sys/epoll.h>
-# include <vector>
-# include <algorithm>
 # include <cstring>
-# include <unistd.h>
-# include <map>
 # include <cstddef>
-# include <cstdio>
-# include <limits>
 # include <fstream>
 # include <sstream>
-# include <cctype>
-# include <ctime>
 # include <cstdlib>
 # include <csignal>
+# include <unistd.h>
+# include <iostream>
 # include <dirent.h>
 # include <exception>
-# include <set>
+# include <algorithm>
+# include <sys/wait.h>
+# include <sys/stat.h>
+# include <sys/types.h>
+# include <arpa/inet.h>
+# include <sys/epoll.h>
+# include <sys/socket.h>
+
 using namespace std;
 
 # include "Mime.hpp"
 # include "StatusCode.hpp"
 # include "DirectoryListing.hpp"
-
 
 enum HttpMethod {
 	GET,
@@ -55,7 +55,6 @@ enum HttpMethod {
 	OTHER
 };
 
-// # include "Location.hpp"
 # include "Webserv.hpp"
 # include "Config.hpp"
 # include "ConfigServer.hpp"

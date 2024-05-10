@@ -17,34 +17,23 @@
 Server::Server()
 	:_webserv(NULL), _fd(-1), _port(8080), _host("127.0.0.1"), _name("default") {}
 
-Server::Server(Webserv *webserv, int port, string host, string name) :
-	_webserv(webserv), _fd(-1), _port(port), _host(host), _name(name) {
-	// TEMP : set manually for testing purpose
-	this->_directoryListing = true;
-	this->_root = "/home/gbrunet/Desktop/webserv_42/www";
-	this->_indexes.push_back("index.html");
-	this->_allowedMethod.push_back(GET);
-	this->_allowedMethod.push_back(POST);
-	this->init();
-}
-
-Server::Server( Webserv *webserv, vector<ConfigServer> const & conf, int i ) :
-	_webserv( webserv ),
-	_fd( -1 ),
-	_port( conf[i].getPort() ),
-	_host( conf[i].getHost() ),
-	_name( conf[i].getName() ),
-	_directoryListing( conf[i].getDirectoryListing() ),
-	_root( conf[i].getRoot() ),
-	_index( conf[i].getIndex() ),
-	_maxBodySize( conf[i].getMaxBodySize() ),
-	_allowedMethod( conf[i].getAllowedMethod() ),
-	_locationBlock( conf[i].getLocationBlock() ),
-	_errorPages( conf[i].getErrorPages() ),
-	_returnURI( conf[i].getReturnURI() ),
-	_uploadPath( conf[i].getUploadPath() ),
-	_binPath( conf[i].getBinPath() ),
-	_cgiExtension( conf[i].getCgiExtension() )
+Server::Server(Webserv *webserv, vector<ConfigServer> const & conf, int i):
+	_webserv(webserv),
+	_fd(-1),
+	_port(conf[i].getPort()),
+	_host(conf[i].getHost()),
+	_name(conf[i].getName()),
+	_directoryListing(conf[i].getDirectoryListing()),
+	_root(conf[i].getRoot()),
+	_index(conf[i].getIndex()),
+	_maxBodySize(conf[i].getMaxBodySize()),
+	_allowedMethod(conf[i].getAllowedMethod()),
+	_locationBlock(conf[i].getLocationBlock()),
+	_errorPages(conf[i].getErrorPages()),
+	_returnURI(conf[i].getReturnURI()),
+	_uploadPath(conf[i].getUploadPath()),
+	_binPath(conf[i].getBinPath()),
+	_cgiExtension(conf[i].getCgiExtension())
 	{
 		vector<string> indexes = split_trim(this->_index, ",");
 		for (strVecIt it = indexes.begin(); it != indexes.end(); it++) {
