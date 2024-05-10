@@ -6,7 +6,7 @@
 /*   By: maburnet <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/08 17:29:38 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/05/09 18:03:21 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/05/10 16:15:16 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,7 +99,7 @@ void	HttpResponse::setKeepAliveConnectionHeader() {
 void	HttpResponse::setContentLengthHeader() {
 	stringstream	str;
 
-	if (this->_statusCode == 200 || this->_statusCode == 201)
+	if (this->_statusCode == 200 || this->_statusCode == 201 || this->_cgiIndex != -1)
 		str << this->_contentLength;
 	else
 		str << StatusCode::page(this->_statusCode).length();
@@ -196,9 +196,6 @@ void	HttpResponse::sendContent(ifstream &file) {
 
 void	HttpResponse::checkSend(int bytes) {
 	if (bytes <= 0) {
-		cerr << timeStamp() << CYAN << " Send " << THIN ITALIC;
-		perror("");
-		cerr << END_STYLE;
 		this->setClientError();
 	}
 }
