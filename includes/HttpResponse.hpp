@@ -6,7 +6,7 @@
 /*   By: maburnet <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/08 17:27:41 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/05/06 18:31:06 by maburnet         ###   ########.fr       */
+/*   Updated: 2024/05/07 15:57:23 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,10 @@ class HttpResponse {
 		size_t					_contentLength;
 		string					_mime;
 		string					_header;
+		int						_cgiIndex;
+		string					_pathInfo;
+		string					_cgiTmpFile;
+		string					_contentType;
 
 		vector<string>			_indexes;
 		string					_locPath;
@@ -39,6 +43,8 @@ class HttpResponse {
 		map<int,string>			_errorPage;
 		map<int,string>			_returnURI;
 		string					_uploadPath;
+		vector<string>			_cgiBin;
+		vector<string>			_cgiExt;
 		bool					_isLocation;
 
 		int				getClientFd() const;
@@ -47,6 +53,7 @@ class HttpResponse {
 		bool			getClientError() const;
 		bool			expandUri(string &uri, bool &isDir);
 		bool			methodeAllowed(enum HttpMethod methode);
+		bool			executeCGI(string uri);
 		void			setInfos();
 		void			sendHeader();
 		void			sendChunkEnd();
@@ -69,8 +76,9 @@ class HttpResponse {
 		void			setKeepAliveConnectionHeader();
 		void			sendDirectoryPage(string path);
 		void			errorCGI(string str, int tmpfd);
-		void			checkCGI();
-		void			executeCGI(string command);
+		char			**createEnv(string uri);
+		void			parseCGI();
+//		void			executeCGI(char **env);
 
 		HttpRequest		*getRequest() const;
 		vector<string>	getIndexes() const;

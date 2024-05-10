@@ -6,17 +6,26 @@
 /*   By: maburnet <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/08 17:29:38 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/05/06 19:05:13 by maburnet         ###   ########.fr       */
+/*   Updated: 2024/05/09 18:03:21 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "Client.hpp"
+#include "style.h"
 #include "webserv.h"
+#include <cstddef>
+#include <cstdio>
+#include <cstring>
+#include <ostream>
+#include <sstream>
+#include <string>
+#include <unistd.h>
 #include "HttpResponse.hpp"
 
 HttpResponse::HttpResponse(): _client(NULL) {}
 
 HttpResponse::HttpResponse(Client *client):
-	_client(client), _statusCode(0), _contentLength(0) {
+	_client(client), _statusCode(0), _contentLength(0), _cgiIndex(-1) {
 }
 
 HttpResponse::HttpResponse(const HttpResponse &cpy) {
@@ -29,6 +38,25 @@ HttpResponse &HttpResponse::operator=(const HttpResponse &rhs) {
 	this->_client = rhs._client;
 	this->_statusCode = rhs._statusCode;
 	this->_contentLength = rhs._contentLength;
+	this->_statusLine = rhs._statusLine;
+	this->_mime = rhs._mime;
+	this->_header = rhs._header;
+	this->_cgiIndex = rhs._cgiIndex;
+	this->_pathInfo = rhs._pathInfo;
+	this->_indexes = rhs._indexes;
+	this->_locPath = rhs._locPath;
+	this->_root = rhs._root;
+	this->_maxBodySize = rhs._maxBodySize;
+	this->_allowedMethod = rhs._allowedMethod;
+	this->_directoryListing = rhs._directoryListing;
+	this->_errorPage = rhs._errorPage;
+	this->_returnURI = rhs._returnURI;
+	this->_uploadPath = rhs._uploadPath;
+	this->_cgiBin = rhs._cgiBin;
+	this->_cgiExt = rhs._cgiExt;
+	this->_isLocation = rhs._isLocation;
+	this->_cgiTmpFile = rhs._cgiTmpFile;
+	this->_contentType = rhs._contentType;
 	return (*this);
 }
 
@@ -55,14 +83,16 @@ void	HttpResponse::setDateHeader() {
 }
 
 void	HttpResponse::setContentTypeHeader() {
-	this->_header += "Content-type: " + this->_mime + "\r\n";
+	if (this->_cgiTmpFile != "" && this->_contentType != "") {
+		this->_header += this->_contentType + "\r\n";
+	} else
+		this->_header += "Content-type: " + this->_mime + "\r\n";
 }
 
 void	HttpResponse::setKeepAliveConnectionHeader() {
 	this->_header += "Transfer-Encoding: chunked\r\n";
 	this->_header += "Connection: keep-alive\r\n";
 }
-
 void	HttpResponse::setContentLengthHeader() {
 	stringstream	str;
 
@@ -134,14 +164,17 @@ int	HttpResponse::sendData(const void *data, int len) {
 }
 
 void	HttpResponse::sendContent(ifstream &file) {
-	char	data[1024];
+	char	data[2048];
 	size_t	sended = 0;
 	int		bytes;
 
-	if (this->_contentLength > 0 && !this->getClientError()) {
+	if (this->_cgiTmpFile != "" && this->_contentType != "") {
+		file.read(data, this->_contentType.size() + 4);
+	}
+	if (!this->getClientError()) {
 		while (sended != this->_contentLength && !this->getClientError()) {
 			if (!file.read(data, min(this->_contentLength - sended,
-							static_cast<size_t>(1024)))) {
+							static_cast<size_t>(2048)))) {
 				cerr << timeStamp() << CYAN << " Read " << THIN ITALIC;
 				perror("");
 				cerr << END_STYLE;
@@ -165,7 +198,6 @@ void	HttpResponse::checkSend(int bytes) {
 		perror("");
 		cerr << END_STYLE;
 		this->setClientError();
-		ret(ERR_SEND);
 	}
 }
 
@@ -245,12 +277,19 @@ vector<string>	HttpResponse::getIndexes() const {
 bool	HttpResponse::expandUri(string &uri, bool &isDir) {
 	struct stat		s;
 
+	isDir = false;
 	if (this->_isLocation) {
 		uri = this->getRequest()->getUri();
 		uri.erase(0, this->_locPath.length());
 		uri = this->_root + uri;
 	} else
 		uri = this->getServer()->getRoot() + this->getRequest()->getUri();
+	for (vector<string>::iterator it = this->_cgiExt.begin(); it != this->_cgiExt.end(); it++) {
+		if (*it != "" && uri.find(*it + "/") != string::npos) {
+			this->_pathInfo = uri.substr(uri.find(*it + "/") + it->size() + 1);
+			uri = uri.substr(0, uri.find(*it + "/") + it->size());
+		}
+	}
 	if (stat(uri.c_str(), &s) == 0) {
 		if (s.st_mode & S_IFDIR) {
 			isDir = true;
@@ -261,12 +300,11 @@ bool	HttpResponse::expandUri(string &uri, bool &isDir) {
 		}
 		else
 			isDir = false;
-	} else {
-		this->error(404);
-		return (false);
 	}
 	if (isDir) {
 		for (vector<string>::iterator it = this->_indexes.begin(); it != this->_indexes.end(); it++) {
+			if (*it == "")
+				continue;
 			if (access((uri + *it).c_str(), F_OK) != -1) {
 				if (access((uri + *it).c_str(), R_OK) == -1) {
 					this->error(403);
@@ -311,11 +349,17 @@ void	HttpResponse::setInfos() {
 			this->_errorPage = it->getErrorPages();
 			this->_returnURI = it->getReturnURI();
 			this->_uploadPath = it->getUploadPath();
+			this->_cgiBin = it->getCGIBin();
+			this->_cgiExt = it->getCGIExtension();
 			this->_isLocation = true;
 			index = split_trim(it->getIndex(), ",");
-			for (strVecIt it = this->_indexes.begin(); it != this->_indexes.end(); it++) {
-				if (*it != "")
-					this->_indexes.push_back(*it);
+			if (index.size() == 1) {
+				this->_indexes.push_back(it->getIndex());
+			} else {
+				for (strVecIt iti = this->_indexes.begin(); iti != this->_indexes.end(); iti++) {
+					if (*iti != "")
+						this->_indexes.push_back(*iti);
+				}
 			}
 			return ;
 		}
@@ -327,6 +371,8 @@ void	HttpResponse::setInfos() {
 	this->_errorPage = this->getServer()->getErrorPages();
 	this->_returnURI = this->getServer()->getReturnURI();
 	this->_uploadPath = this->getServer()->getUploadPath();
+	this->_cgiBin = this->getServer()->getBinPath();
+	this->_cgiExt = this->getServer()->getCgiExtension();
 	this->_isLocation = false;
 	this->_indexes = this->getServer()->getIndexes();
 }
@@ -340,9 +386,10 @@ bool	HttpResponse::methodeAllowed(enum HttpMethod methode) {
 
 void	HttpResponse::sendResponse() {
 	ifstream		file;
-	string			ext;
 	string			uri;
+	string			ext;
 	bool			isDir;
+	int				i = -1;
 
 	if (this->getRequest()->tooLarge()) {
 		this->error(413);
@@ -373,9 +420,6 @@ void	HttpResponse::sendResponse() {
 		tryDeleteFile(uri);
 		return ;
 	}
-	ext = ext.substr(ext.find_last_of(".") + 1);
-	if (ext.find("/") == string::npos)
-		this->_mime = Mime::ext(ext);
 	if (isDir) {
 		if (this->_directoryListing)
 			this->directoryListing(uri);
@@ -387,6 +431,37 @@ void	HttpResponse::sendResponse() {
 			if (access(uri.c_str(), R_OK) == -1)
 				this->error(403);
 		}
+		ext = uri.substr(uri.find_last_of(".") + 1);
+		if (ext.find("/") == string::npos)
+			this->_mime = Mime::ext(ext);
+		else {
+			string tmp = ext;
+			ext = ext.substr(0, ext.find_first_of("/"));
+			this->_mime = Mime::ext(ext);
+		}
+		for (vector<string>::iterator it = this->_cgiExt.begin(); it != this->_cgiExt.end(); it++) {
+			i++;
+			if(("." + ext) == *it) {
+				this->_cgiIndex = i;
+				break;
+			}
+		}
+		if (this->_cgiIndex >= 0) {
+			if (access(uri.c_str(), F_OK == -1)) {
+				this->error(404);
+				return ;
+			}
+			if (access(uri.c_str(), R_OK == -1)) {
+				this->error(403);
+				return ;
+			}
+			if (this->executeCGI(uri)) {
+				uri = this->_cgiTmpFile;
+			} else {
+				this->error(500);
+				return ;
+			}
+		}
 		file.open(uri.c_str(), ios::binary);
 	}
 	if (!file.is_open()) {
@@ -395,125 +470,167 @@ void	HttpResponse::sendResponse() {
 	}
 	file.seekg(0, ios::end);
 	this->_contentLength = file.tellg();
+	if (this->_cgiTmpFile != "" && this->_contentType != "")
+		this->_contentLength -= (this->_contentType.size() + 4);
 	file.seekg(0, ios::beg);
 	if (file.fail()) {
 		this->error(500);
 		return ;
 	}
-	this->_statusCode = 200;
+//	if (this->getRequest()->getMethod() == POST && this->_contentLength != 0)
+//		this->_statusCode = 201;
+//	else
+		this->_statusCode = 200;
 	this->createHeader();
 	this->sendHeader();
 	//
 	this->checkCGI();
 	this->sendContent(file);
+//	if (this->_cgiTmpFile != "")
+//		remove(this->_cgiTmpFile.c_str());
 }
 
-
-void	HttpResponse::errorCGI(string str, int tmpfd)
+void	HttpResponse::errorCGI(string str, int file_fd)
 {
-	cerr << "Error with " << str << " in executeCGI()" << endl;
-    close(tmpfd);
+	cerr << timeStamp() << CYAN << str << THIN ITALIC;
+	perror("");
+	cerr << END_STYLE;
+	this->setClientError();
+	ret(ERR_READ);
+    close(file_fd);
 	return ;
 }
 
-void	HttpResponse::checkCGI()
-{
-	vector<string> cgi = this->getServer()->getCgiExtension();
-	vector<string>::iterator it = cgi.begin();
-	string uri = this->getRequest()->getUri();
-	string root = this->getServer()->getRoot();
+char	**HttpResponse::createEnv(string uri) {
+	mapStrStr		env;
+	char			**cenv;
+	int				i;
+	stringstream	port;
+	stringstream	host;
 
-
-	cout << "root: " << root << endl;
-	cout << "uri: " << uri << endl;
-	for (; it != cgi.end(); it++)
-	{
-		cout << "cgi: " << *it << endl;
-		if (uri.find(*it, 0) != string::npos)
-		{
-			cout << "cgi location found: " << *it << endl;
-			break ;
-		}
-
+	this->_client->addEnv("REDIRECT_STATUS", "200");
+	this->_client->addEnv("SERVER_SOFTWARE", "Webserv/1.0");
+	this->_client->addEnv("SERVER_NAME", this->getServer()->getName());
+	this->_client->addEnv("GATEWAY_INTERFACE", "CGI/1.1");
+	this->_client->addEnv("SERVER_PROTOCOL", "HTTP/1.1");
+	port << this->getServer()->getPort();
+	this->_client->addEnv("SERVER_PORT", port.str());
+	this->_client->addEnv("REQUEST_METHOD", stringMethod(this->getRequest()->getMethod()));
+	this->_client->addEnv("PATH_INFO", "/" + this->_pathInfo);
+	cout << "/" + this->_pathInfo << endl;
+	this->_client->addEnv("PATH_TRANSLATED", uri);
+	string scriptName = this->getRequest()->getUri();
+	scriptName = scriptName.substr(0, scriptName.find_last_of(".") + this->_cgiExt[this->_cgiIndex].length());
+	this->_client->addEnv("SCRIPT_NAME", scriptName);
+	this->_client->addEnv("QUERY_STRING", this->getRequest()->getQuery());
+	this->_client->addEnv("REMOTE_HOST", this->getServer()->getName());
+	host << this->getServer()->getHost();
+	this->_client->addEnv("REMOTE_ADDR", host.str());
+	this->_client->addEnv("CONTENT_TYPE", this->getRequest()->getContentType());
+	this->_client->addEnv("CONTENT_LENGTH", this->getRequest()->getContentLength());
+	this->_client->addEnv("HTTP_ACCEPT", this->getRequest()->getAcceptedMime());
+	this->_client->addEnv("HTTP_USER_AGENT", this->getRequest()->getUserAgent());
+	this->_client->addEnv("HTTP_COOKIE", this->getRequest()->getCookie());
+	env = this->_client->getEnv();
+	cenv = new char*[env.size() + 1];
+	i = 0;
+	for (mapStrStr::iterator it = env.begin(); it != env.end(); it++) {
+		string var;
+		var = it->first + "=" + it->second;
+		cenv[i] = new char[var.size() + 1];
+		strcpy(cenv[i], var.c_str());
+		i++;
 	}
-	if (it == cgi.end())
-	{
-		this->setClientError();
-		// not supported cgi
+	cenv[i] = NULL;
+	return (cenv);
+}
+
+bool	HttpResponse::executeCGI(string uri)
+{
+	int			file_fd;
+	int			pid;
+	ifstream	file;
+	string		fileName = "/tmp/" + rdmString(64);
+	string		content;
+	FILE		*content_tmp = tmpfile();
+	int			content_fd = fileno(content_tmp);
+
+	write(content_fd, this->getRequest()->getContent().c_str(), this->getRequest()->getContent().size());
+	lseek(content_fd, 0, SEEK_SET);
+	int std_in = dup(STDIN_FILENO);
+	file_fd = open(fileName.c_str(), O_RDWR | O_CREAT | O_TRUNC, 0666);
+	this->_cgiTmpFile = fileName;
+	if (file_fd == -1) {
+		errorCGI(" Open ", file_fd);
+		return (false);
+	}
+	pid = fork();
+	if (pid == -1) {
+		errorCGI(" Fork ", file_fd);
+		return (false);
+	} else if (pid == 0) {
+		char **env = createEnv(uri);
+		string script = uri.substr(0, uri.find_last_of(".") + this->_cgiExt[this->_cgiIndex].length());
+		char **av;
+		av = new char*[3];
+		av[0] = new char[this->_cgiBin[this->_cgiIndex].size() + 1];
+		strcpy(av[0], this->_cgiBin[this->_cgiIndex].c_str());
+		av[1] = new char[script.size() + 1];
+		strcpy(av[1], script.c_str());
+		av[2] = NULL;
+		dup2(content_fd, STDIN_FILENO);
+		if (dup2(file_fd, STDOUT_FILENO) == -1) {
+			errorCGI(" Dup2 ", file_fd);
+			return (false);
+		}
+		if (execve(this->_cgiBin[this->_cgiIndex].c_str(), av, env)) {
+			errorCGI(" Execve ", file_fd);
+			exit(-1);
+		}
+		exit (0);
+	}
+	content = this->_client->getRequest()->getContent();
+	close(file_fd);
+	waitpid(0, NULL, 0);
+	dup2(std_in, STDIN_FILENO);
+	fclose(content_tmp);
+	close(content_fd);
+	close(std_in);
+	this->parseCGI();
+	return (true);
+}
+
+void	HttpResponse::parseCGI() {
+	ifstream	file;
+	int			size;
+	int			read = 0;
+	char		data[2049];
+	string		content;
+	
+	file.open(this->_cgiTmpFile.c_str(), ios::binary);
+	if (!file.is_open()) {
+		this->error(500);
 		return ;
 	}
-	this->executeCGI(root + uri.substr(1, uri.size()));
-	return ;
-}
-
-//get the path to the thing to execute
-void	HttpResponse::executeCGI(string command)
-{
-    int tmpfd;
-	int pid;
-	ifstream file;
-	char const * filePath = "/tmp/.tmpfile"; // ?
-
-
-	tmpfd = open(filePath, O_RDWR | O_CREAT | O_TRUNC, 0666);
-    if (tmpfd == -1)
-    {
-        errorCGI("open()", tmpfd);
-		this->setClientError();
-        return ;
+	file.seekg(0, ios::end);
+	size = file.tellg();
+	file.seekg(0, ios::beg);
+	if (file.fail()) {
+		this->error(500);
+		return ;
 	}
-    pid = fork();
-    if (pid == -1)
-    {
-        errorCGI("fork()", tmpfd);
-		this->setClientError();
-        return ;
-    }
-    else if (pid == 0)
-    {
-        //Child process
-		char *env = NULL;
-		char *tmp[2]; //temporary to compile
-		strcpy(tmp[0], command.c_str());
-		tmp[1] = NULL;
-		char dir[4096]; //
-		getcwd(dir, sizeof(dir)); //
-		cerr << "tmp[0]: " << tmp[0] << endl;
-       	cerr << "dir: " << dir << endl; //
-		if (dup2(tmpfd, STDOUT_FILENO) == -1)
-        {
-            errorCGI("dup2()", tmpfd);
-			this->setClientError();
-            return ;
-        }
-		close(tmpfd);
-		if (execve(tmp[0], tmp, &env) == -1) //add thing to execute
-        {
-            errorCGI("execve()", tmpfd);
-			this->setClientError();
-            exit(-1);
-        }
-    }
-    else
-    {
-        waitpid(0, NULL, 0);
-		close(tmpfd);
-
-        file.open(filePath);
-		if (!file.is_open())
-		{
-
-			errorCGI(".open()", tmpfd);
-			this->setClientError();
-			return ;
+	if (size > 0 && !this->getClientError()) {
+		file.read(data, min(size - read, 2048));
+		data[file.gcount()] = 0;
+		content = string(data);
+		int i = -1;
+		while (content[++i] != 0)
+		if (findLower(content, "content-type:")) {
+			content = content.substr(0, content.find("\r\n\r\n"));
+			this->_contentType = content;
 		}
-		char buffer[4096]; // 
-		file.read(buffer, sizeof(buffer)); //
-		cerr << "buffer: " << buffer << endl; //
-		this->sendContent(file); // to check
-        cout << "CGI executed!" << endl;
-    }
-	return ;
+	}
+	file.close();
 }
 
 Server	*HttpResponse::getServer() const {
@@ -556,7 +673,7 @@ ostream &operator<<(ostream &o, const HttpResponse &response) {
 	if (response.getServer()->getLogLevel() == 0)
 		return (o);
 	o << timeStamp() << GREEN BOLD << " Response" END_STYLE " → " CYAN << response.getStatusCode();
-	o << YELLOW " " << response.getMime() << END_STYLE << endl;
+	o << END_STYLE<< endl;
 	if (response.getServer()->getLogLevel() == 2){
 		o << THIN ITALIC << response.getHeader() << END_STYLE << endl;
 	}

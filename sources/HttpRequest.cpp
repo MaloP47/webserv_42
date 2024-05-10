@@ -6,12 +6,15 @@
 /*   By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/08 11:01:52 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/05/06 12:05:13 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/05/09 15:51:48 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "HttpRequest.hpp"
 #include "webserv.h"
+#include <sstream>
+#include <string>
+#include <vector>
 
 HttpRequest::HttpRequest() {}
 
@@ -42,8 +45,10 @@ HttpRequest	&HttpRequest::operator=(const HttpRequest &rhs) {
 	this->_acceptedMimes = rhs._acceptedMimes;
 	this->_rawBytes = rhs._rawBytes;
 	this->_contentLength = rhs._contentLength;
+	this->_content = rhs._content;
 	this->_serverIndex = rhs._serverIndex;
 	this->_host = rhs._host;
+	this->_query = rhs._query;
 	return (*this);
 }
 
@@ -61,9 +66,17 @@ bool	HttpRequest::isFullRequest() {
 			}
 		}
 		return (false);
-	} else
+	} else if (!findLower(this->_rawRequest, "transfer-encoding: chunked")) {
 		return (this->_rawRequest.find("\r\n\r\n",
-				this->_rawRequest.length() - 4) != string::npos);	
+				this->_rawRequest.length() - 4) != string::npos);
+	} else {
+		if (this->_rawRequest.find("0\r\n\r\n",
+				this->_rawRequest.length() - 5) != string::npos) {
+			this->_contentLength = this->_rawRequest.size() - this->_rawRequest.find("\r\n\r\n") + 4;
+ 			return (true);
+		}
+		return (false);
+	}
 }
 
 bool	HttpRequest::appendRequest(const char *data, int bytes) {
@@ -102,14 +115,41 @@ string	HttpRequest::getRawRequest() const {
 	return (this->_rawRequest);
 }
 
+void	HttpRequest::getChunkedContent(string chunckedContent) {
+	vector<string>	parts;
+	size_t			end;
+	string			subs;
+	string			content;
+	long			current_size = -1;
+
+
+	end = chunckedContent.find("\r\n");
+	current_size = strtol(chunckedContent.substr(0, end).c_str(), NULL, 16);
+	while (current_size != 0) {
+		chunckedContent.erase(0, end + 2);
+		content += chunckedContent.substr(0, current_size);
+		chunckedContent.erase(0, current_size + 2);
+		end = chunckedContent.find("\r\n");
+		current_size = strtol(chunckedContent.substr(0, end).c_str(), NULL, 16);
+	}
+	this->_content = content;
+	this->_contentLength = content.length();
+}
+
 void	HttpRequest::parse() {
 	vector<string>	line;
+	bool			chunked = false;
 
+	this->_keepAliveConnection = false;
 	this->_goodRequest = true;
-	if (this->_headerLength != 0)
+	if (this->_headerLength != 0) {
 		line = split_trim(this->_rawRequest.substr(0, this->_headerLength), "\r\n");
-	else
+	} else if (findLower(this->_rawRequest, "transfer-encoding: chunked")) {
+		chunked = true;
+		line = split_trim(this->_rawRequest.substr(0, this->_rawRequest.find("\r\n\r\n") + 4), "\r\n");
+	} else {
 		line = split_trim(this->_rawRequest, "\r\n");
+	}
 	if (line.size() < 1)
 		return ;
 	this->parseRequestLine(line[0]);	
@@ -118,10 +158,14 @@ void	HttpRequest::parse() {
 			this->parseAcceptedMimes(*it);
 		else if (findLower(*it, "connection:"))
 			this->parseConnection(*it);
+		else if (findLower(*it, "user-agent:"))
+			this->parseUserAgent(*it);
 		else if (findLower(*it, "content-type:"))
 			this->parseContentType(*it);
 		else if (findLower(*it, "host:"))
 			this->parseHost(*it);
+		else if (findLower(*it, "cookie:"))
+			this->parseCookie(*it);
 	}
 	if (this->_contentType == "multipart/form-data")
 		this->decodeFormData();
@@ -131,6 +175,8 @@ void	HttpRequest::parse() {
 		this->_textPost = this->_rawRequest;
 		this->_textPost.erase(0, this->_headerLength);
 	}
+	if (chunked)
+		this->getChunkedContent(this->_rawRequest.substr(this->_rawRequest.find("\r\n\r\n") + 4));
 }
 
 void	HttpRequest::decodeUrlEncoded() {
@@ -140,6 +186,7 @@ void	HttpRequest::decodeUrlEncoded() {
 
 	content = this->_rawRequest;
 	content.erase(0, this->_headerLength);
+	this->_content = content;
 	vars = split_trim(content, "&");
 	for (strVecIt it = vars.begin(); it != vars.end(); it++) {
 		tempEnv = split_trim(*it, "=");
@@ -182,6 +229,20 @@ void	HttpRequest::decodeFormData() {
 			for (uploadIt it = this->_uploadedFiles.begin(); it != this->_uploadedFiles.end(); it++)
 				it->createFile();
 	}
+}
+
+void	HttpRequest::parseCookie(string line) {
+	vector<string>	split;
+
+	line.erase(0, 7);
+	this->_cookie = line;
+}
+
+void	HttpRequest::parseUserAgent(string line) {
+	vector<string>	split;
+
+	line.erase(0, 12);
+	this->_userAgent = line;
 }
 
 void	HttpRequest::parseContentType(string line) {
@@ -273,6 +334,7 @@ void	HttpRequest::getUriAndEnv(string str) {
 
 	split = split_trim(str, "?");
 	if (split.size() == 2) {
+		this->_query = split[1];
 		vars = split_trim(split[1], "&");
 		for (strVecIt it = vars.begin(); it != vars.end(); it++) {
 			tempEnv = split_trim(*it, "=");
@@ -323,22 +385,50 @@ enum HttpMethod	HttpRequest::getMethod() const {
 	return (this->_method);
 }
 
+string	HttpRequest::getContent() const {
+	return (this->_content);
+}
+
 string	HttpRequest::getUri() const {
 	return (this->_uri);
 }
 
-bool	HttpRequest::keepAlive() const {
-	return (this->_keepAliveConnection);
+string	HttpRequest::getQuery() const {
+	return (this->_query);
 }
 
-static string	stringMethod(enum HttpMethod method) {
-	if (method == GET)
-		return ("GET");
-	else if (method == POST)
-		return ("POST");
-	else if (method == DELETE)
-		return ("DELETE");
-	return ("OTHER");
+string	HttpRequest::getContentType() const {
+	return (this->_contentType);
+}
+
+string	HttpRequest::getCookie() const {
+	return (this->_cookie);
+}
+
+string	HttpRequest::getUserAgent() const {
+	return (this->_userAgent);
+}
+
+string	HttpRequest::getAcceptedMime() const {
+	stringstream	mimes;
+
+	for (vector<string>::const_iterator it = this->_acceptedMimes.begin(); it != this->_acceptedMimes.end(); it++) {
+		mimes << *it;
+		if ((it + 1) != this->_acceptedMimes.end())
+			mimes << ", ";
+	}
+	return (mimes.str());
+}
+
+string	HttpRequest::getContentLength() const {
+	stringstream len;
+
+	len << this->_contentLength;
+	return (len.str());
+}
+
+bool	HttpRequest::keepAlive() const {
+	return (this->_keepAliveConnection);
 }
 
 ostream &operator<<(ostream &o, const HttpRequest &request) {

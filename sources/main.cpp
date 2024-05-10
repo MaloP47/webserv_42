@@ -6,18 +6,19 @@
 /*   By: maburnet <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/23 15:20:01 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/05/06 19:01:25 by maburnet         ###   ########.fr       */
+/*   Updated: 2024/05/07 15:41:17 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "webserv.h"
 #include "Webserv.hpp"
 #include "ConfigServer.hpp"
-#include "Location.hpp"
+#include <unistd.h>
 
 void	handler(int signum) {
 	static_cast<void>(signum);
 	cout << DEL_LINE CYAN "exit" END_STYLE << endl;
+	env()->return_val = 0;
 	env()->ctrl_c = true;
 }
 
@@ -45,6 +46,7 @@ int exec_webserv(string input) {
 }
 
 int	main( int ac, char **av) {
+	srand(time(NULL) * getpid() * getpid());
 	signal(SIGPIPE, SIG_IGN);
 	if ( ac == 2 ) {
 		exec_webserv(av[1]);
@@ -55,5 +57,5 @@ int	main( int ac, char **av) {
 	else {
 		cout << EXAMPLE ;
 	}
-	return 0;
+	return (env()->return_val);
 }
