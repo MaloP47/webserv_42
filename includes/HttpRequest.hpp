@@ -18,14 +18,6 @@
 # include "Client.hpp"
 # include "Upload.hpp"
 
-// enum HttpMethod {
-// 	GET,
-// 	POST,
-// 	DELETE,
-// 	OTHER
-// };
-
-
 class Server;
 class Client;
 class Upload;
@@ -61,6 +53,9 @@ class HttpRequest {
 
 		bool	isFullRequest();
 		void	parse();
+		void	decodeFormData();
+		void	decodeUrlEncoded();
+		void	parseContentLength();
 		void	setMethod(string str);
 		void	parseHost(string line);
 		void	parseCookie(string str);
@@ -68,12 +63,9 @@ class HttpRequest {
 		void	parseUserAgent(string line);
 		void	parseConnection(string line);
 		void	parseRequestLine(string line);
+		void	parseContentType(string line);
 		void	parseAcceptedMimes(string line);
 		void	getChunkedContent(string chunckedContent);
-		void	parseContentLength();
-		void	parseContentType(string line);
-		void	decodeFormData();
-		void	decodeUrlEncoded();
 
 	public:
 		HttpRequest();
@@ -94,8 +86,8 @@ class HttpRequest {
 		string			getCookie() const;
 		string			getContent() const;
 		string			getUserAgent() const;
-		string			getContentType() const;
 		string			getRawRequest() const;
+		string			getContentType() const;
 		string			getContentLength() const;
 		string			getAcceptedMime() const;
 		Server			*getServer() const;

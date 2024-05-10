@@ -14,39 +14,39 @@
 # define WEBSERV_H
 
 # include "style.h"
-# include <iostream>
-# include <sys/types.h>
-# include <sys/wait.h>
-# include <sys/socket.h>
-# include <sys/stat.h>
+# include <set>
+# include <map>
+# include <ctime>
+# include <cctype>
+# include <cstdio>
+# include <vector>
+# include <limits>
 # include <errno.h>
 # include <stdio.h>
 # include <fcntl.h>
-# include <arpa/inet.h>
-# include <sys/epoll.h>
-# include <vector>
-# include <algorithm>
 # include <cstring>
-# include <unistd.h>
-# include <map>
 # include <cstddef>
-# include <cstdio>
-# include <limits>
 # include <fstream>
 # include <sstream>
-# include <cctype>
-# include <ctime>
 # include <cstdlib>
 # include <csignal>
+# include <unistd.h>
+# include <iostream>
 # include <dirent.h>
 # include <exception>
-# include <set>
+# include <algorithm>
+# include <sys/wait.h>
+# include <sys/stat.h>
+# include <sys/types.h>
+# include <arpa/inet.h>
+# include <sys/epoll.h>
+# include <sys/socket.h>
+
 using namespace std;
 
 # include "Mime.hpp"
 # include "StatusCode.hpp"
 # include "DirectoryListing.hpp"
-
 
 enum HttpMethod {
 	GET,
@@ -55,7 +55,6 @@ enum HttpMethod {
 	OTHER
 };
 
-// # include "Location.hpp"
 # include "Webserv.hpp"
 # include "Config.hpp"
 # include "ConfigServer.hpp"
@@ -67,9 +66,9 @@ typedef struct s_env {
 }	t_env;
 
 # define MAX_EVENTS 1024
-# define BUFFER_SIZE 655360
+# define BUFFER_SIZE 4096
 
-# define CLIENT_TIMEOUT 10
+# define CLIENT_TIMEOUT 20
 # define EPOLL_TIMEOUT 5000
 
 # define SUCCESS 0
@@ -91,8 +90,13 @@ typedef struct s_env {
 # define MAXCLIENTBS 1024
 
 int				ret(int return_val);
+bool			isFile(const string & path);
+bool			isAllDigits(string const & str);
+bool			startsWithDot(const string & str);
 bool			findLower(string str, string needle);
 bool			childPath(string parent, string child);
+bool			allStartWithDot(const vector<string> & strings);
+bool			areAllPathsBinaries(const vector<string> & paths);
 void			ltrim(string &str);
 void			rtrim(string &str);
 t_env			*env();
@@ -106,10 +110,5 @@ string			strFromCharVec(size_t len, vector<char> &vec);
 size_t			findInCharVec(string str, vector<char> &vec);
 vector<string>	split_trim(string str, string needle);
 vector<string>	split_trim_conf(string str, string needle);
-bool			isFile( const string & path );
-bool			areAllPathsBinaries( const vector<string> & paths );
-bool			isAllDigits( string const & str ) ;
-bool			startsWithDot( const string & str );
-bool			allStartWithDot( const vector<string> & strings ) ;
 
 #endif

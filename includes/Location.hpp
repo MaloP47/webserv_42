@@ -19,37 +19,36 @@ class	Location {
 
 	public:
 
-		Location( string const & locBloc, int index, long long servMbs ) ;
-		~Location( void ) ;
-		Location( Location const & cpy ) ;
-		Location &	operator=( Location const & rhs ) ;
+		Location(string const & locBloc, int index, long long servMbs);
+		~Location(void);
+		Location(Location const & cpy);
+		Location &	operator=(Location const & rhs);
 
-		void	setLocPath( string const & lp ) ;
-		void	setLocIndex( int index ) ;
-		void	setRoot( string const & root ) ;
-		void	setMaxBodySize( int maxBodySize ) ;
-		void	setAllowedMethod( vector<enum HttpMethod> const & allowedMethod ) ;
-		void	setDirectoryListing( bool directoryListing ) ;
-		void	setIndex( string const & index ) ;
-		void	setErrorPages( map<int,string> const & err ) ;
-		void	setReturnURI( map<int,string> const & uri ) ;
-		void	setUploadPath( string const & path ) ;
-		void	setCGIBin( vector<string> const & binPath ) ;
-		void	setCGIExtension( vector<string> const & cgiExtension ) ;
+		void	setLocIndex(int index);
+		void	setRoot(string const & root);
+		void	setLocPath(string const & lp);
+		void	setIndex(string const & index);
+		void	setMaxBodySize(int maxBodySize);
+		void	setUploadPath(string const & path);
+		void	setReturnURI(map<int,string> const & uri);
+		void	setCGIBin(vector<string> const & binPath);
+		void	setDirectoryListing(bool directoryListing);
+		void	setErrorPages(map<int,string> const & err);
+		void	setCGIExtension(vector<string> const & cgiExtension);
+		void	setAllowedMethod(vector<enum HttpMethod> const & allowedMethod);
 
-		string const &					getLocPath( void ) const ;
-		int								getLocIndex( void ) const ;
-
-		string const &					getRoot( void ) const ;
-		int								getMaxBodySize( void ) const ;
-		vector<enum HttpMethod> const &	getAllowedMethod( void ) const ;
-		bool							getDirectoryListing( void ) const ;
-		string const &					getIndex( void ) const ;
-		map<int,string> const &			getErrorPages( void ) const ;
-		map<int,string> const &			getReturnURI( void ) const ;
-		string const &					getUploadPath( void ) const ;
-		vector<string> const &			getCGIBin( void ) const ;
-		vector<string> const &			getCGIExtension( void ) const ;
+		int								getLocIndex(void) const;
+		int								getMaxBodySize(void) const;
+		bool							getDirectoryListing(void) const;
+		string const &					getRoot(void) const;
+		string const &					getIndex(void) const;
+		string const &					getLocPath(void) const;
+		string const &					getUploadPath(void) const;
+		map<int,string> const &			getReturnURI(void) const;
+		map<int,string> const &			getErrorPages(void) const;
+		vector<string> const &			getCGIBin(void) const;
+		vector<string> const &			getCGIExtension(void) const;
+		vector<enum HttpMethod> const &	getAllowedMethod(void) const;
 
 	private:
 
@@ -69,21 +68,19 @@ class	Location {
 		vector<string>			_binPath ;
 		vector<string>			_cgiExtension ;
 
-		void	extractLocPath( string & locBloc ) ;
-		string	extractStringVariable( string & tmp, string const & var ) ;
-		void	checkMBS( string & loc, long long servMBS ) ;
-		void	checkAutoIndex( string & loc ) ;
-		void	checkMethod( string & loc ) ;
-		void	extractMap( string & loc, string const & key, map<int,string> & map ) ;
-		void	checkCGIBin( string & block ) ;
-		void	checkCGIExtension( string & block ) ;
+		void	checkMethod(string & loc);
+		void	checkCGIBin(string & block);
+		void	checkAutoIndex(string & loc);
+		void	extractLocPath(string & locBloc);
+		void	checkCGIExtension(string & block);
+		void	checkMBS(string & loc, long long servMBS);
+		void	extractMap(string & loc, string const & key, map<int,string> & map);
+		string	extractStringVariable(string & tmp, string const & var);
 
-		Location( void ) ;
+		Location(void);
 			
 } ;
 
 ostream &	operator<<( ostream & o, Location const & rhs ) ;
-
 /* *** LOCATION.HPP *** */
-
 #endif

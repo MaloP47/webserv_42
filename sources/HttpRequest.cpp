@@ -174,6 +174,8 @@ void	HttpRequest::parse() {
 	else if (this->_contentType == "text/plain") {
 		this->_textPost = this->_rawRequest;
 		this->_textPost.erase(0, this->_headerLength);
+		this->_content = this->_textPost;
+		this->_contentLength = this->_content.size();
 	}
 	if (chunked)
 		this->getChunkedContent(this->_rawRequest.substr(this->_rawRequest.find("\r\n\r\n") + 4));

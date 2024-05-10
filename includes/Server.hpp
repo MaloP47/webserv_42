@@ -53,8 +53,7 @@ class Server {
 
 	public:
 		Server();
-		Server(Webserv *webserv, int port, string host, string name);
-		Server( Webserv *webserv, vector<ConfigServer> const & conf, int i ) ;
+		Server(Webserv *webserv, vector<ConfigServer> const & conf, int i);
 		Server(const Server &cpy);
 		~Server();
 
@@ -65,19 +64,19 @@ class Server {
 		int							getLogLevel() const;
 		int							getMaxBodySize() const;
 		bool						getDirectoryListing() const;
+		bool						methodeAllowed(enum HttpMethod methode);
 		void						setFd(int fd);
 		string						getName() const;
 		string						getHost() const;
 		string						getRoot() const;
+		string const &				getUploadPath(void) const ;
 		vector<string>				getIndexes() const;
+		vector<string> const &		getBinPath(void) const ;
+		vector<string> const &		getCgiExtension(void) const ;
+		map<int,string> const &		getReturnURI(void) const ;
+		map<int,string> const &		getErrorPages(void) const ;
 		vector<Location> const &	getLocation() const;
-		map<int,string> const &		getErrorPages( void ) const ;
-		map<int,string> const &		getReturnURI( void ) const ;
-		string const &				getUploadPath( void ) const ;
-		bool						methodeAllowed(enum HttpMethod methode);
 		vector<enum HttpMethod>		getAllowedMethod() const;
-		vector<string> const &		getBinPath( void ) const ;
-		vector<string> const &		getCgiExtension( void ) const ;
 
 };
 

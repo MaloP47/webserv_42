@@ -13,6 +13,8 @@
 #ifndef STATUSCODE_HPP
 # define STATUSCODE_HPP
 
+#include "webserv.h"
+
 class StatusCode {
 	private:
 		StatusCode();
