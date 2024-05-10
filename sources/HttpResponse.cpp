@@ -109,7 +109,7 @@ void	HttpResponse::createHeader() {
 	this->setServerHeader();
 	this->setDateHeader();
 	this->setContentTypeHeader();
-	if (this->keepAlive())
+	if (this->keepAlive() && this->_cgiIndex == -1)
 		this->setKeepAliveConnectionHeader();
 	else
 		this->setContentLengthHeader();
@@ -150,7 +150,7 @@ int	HttpResponse::sendData(const void *data, int len) {
 	const char	*ptr = static_cast<const char *>(data);
 	int			bytes;
 
-	if (this->keepAlive() && !this->getClientError())
+	if (this->keepAlive() && !this->getClientError() && this->_cgiIndex == -1)
 		this->sendChunkSize(len);
 	while (len > 0 && !this->getClientError()) {
 		bytes = send(this->getClientFd(), ptr, len, 0);
@@ -158,19 +158,19 @@ int	HttpResponse::sendData(const void *data, int len) {
 		ptr += bytes;
 		len -= bytes;
 	}
-	if (this->keepAlive() && !this->getClientError())
+	if (this->keepAlive() && !this->getClientError() && this->_cgiIndex == -1){
 		this->sendChunkEnd();
+	}
 	return (0);
 }
 
 void	HttpResponse::sendContent(ifstream &file) {
-	char	data[2048];
+	char	data[2049];
 	size_t	sended = 0;
 	int		bytes;
 
-	if (this->_cgiTmpFile != "" && this->_contentType != "") {
+	if (this->_cgiTmpFile != "" && this->_contentType != "")
 		file.read(data, this->_contentType.size() + 4);
-	}
 	if (!this->getClientError()) {
 		while (sended != this->_contentLength && !this->getClientError()) {
 			if (!file.read(data, min(this->_contentLength - sended,
@@ -186,7 +186,7 @@ void	HttpResponse::sendContent(ifstream &file) {
 			this->sendData(data, bytes);
 			sended += bytes;
 		}
-		if (this->keepAlive())
+		if (this->keepAlive() && this->_cgiIndex == -1)
 			this->sendFinalChunk();
 	}
 }
@@ -476,15 +476,15 @@ void	HttpResponse::sendResponse() {
 		this->error(500);
 		return ;
 	}
-//	if (this->getRequest()->getMethod() == POST && this->_contentLength != 0)
-//		this->_statusCode = 201;
-//	else
+	if (this->getRequest()->getMethod() == POST && this->_contentLength != 0)
+		this->_statusCode = 201;
+	else
 		this->_statusCode = 200;
 	this->createHeader();
 	this->sendHeader();
 	this->sendContent(file);
-//	if (this->_cgiTmpFile != "")
-//		remove(this->_cgiTmpFile.c_str());
+	if (this->_cgiTmpFile != "")
+		remove(this->_cgiTmpFile.c_str());
 }
 
 void	HttpResponse::errorCGI(string str, int file_fd)
@@ -513,12 +513,11 @@ char	**HttpResponse::createEnv(string uri) {
 	port << this->getServer()->getPort();
 	this->_client->addEnv("SERVER_PORT", port.str());
 	this->_client->addEnv("REQUEST_METHOD", stringMethod(this->getRequest()->getMethod()));
-	this->_client->addEnv("PATH_INFO", "/" + this->_pathInfo);
-	cout << "/" + this->_pathInfo << endl;
+	this->_client->addEnv("PATH_INFO", "/");
 	this->_client->addEnv("PATH_TRANSLATED", uri);
 	string scriptName = this->getRequest()->getUri();
 	scriptName = scriptName.substr(0, scriptName.find_last_of(".") + this->_cgiExt[this->_cgiIndex].length());
-	this->_client->addEnv("SCRIPT_NAME", scriptName);
+	this->_client->addEnv("SCRIPT_NAME", "");
 	this->_client->addEnv("QUERY_STRING", this->getRequest()->getQuery());
 	this->_client->addEnv("REMOTE_HOST", this->getServer()->getName());
 	host << this->getServer()->getHost();
@@ -548,7 +547,6 @@ bool	HttpResponse::executeCGI(string uri)
 	int			pid;
 	ifstream	file;
 	string		fileName = "/tmp/" + rdmString(64);
-	string		content;
 	FILE		*content_tmp = tmpfile();
 	int			content_fd = fileno(content_tmp);
 
@@ -575,7 +573,10 @@ bool	HttpResponse::executeCGI(string uri)
 		av[1] = new char[script.size() + 1];
 		strcpy(av[1], script.c_str());
 		av[2] = NULL;
-		dup2(content_fd, STDIN_FILENO);
+		if (dup2(content_fd, STDIN_FILENO) == -1) {
+			errorCGI(" Dup2 ", file_fd);
+			return (false);
+		}
 		if (dup2(file_fd, STDOUT_FILENO) == -1) {
 			errorCGI(" Dup2 ", file_fd);
 			return (false);
@@ -586,7 +587,6 @@ bool	HttpResponse::executeCGI(string uri)
 		}
 		exit (0);
 	}
-	content = this->_client->getRequest()->getContent();
 	close(file_fd);
 	waitpid(0, NULL, 0);
 	dup2(std_in, STDIN_FILENO);
@@ -620,8 +620,6 @@ void	HttpResponse::parseCGI() {
 		file.read(data, min(size - read, 2048));
 		data[file.gcount()] = 0;
 		content = string(data);
-		int i = -1;
-		while (content[++i] != 0)
 		if (findLower(content, "content-type:")) {
 			content = content.substr(0, content.find("\r\n\r\n"));
 			this->_contentType = content;

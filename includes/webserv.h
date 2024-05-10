@@ -67,9 +67,9 @@ typedef struct s_env {
 }	t_env;
 
 # define MAX_EVENTS 1024
-# define BUFFER_SIZE 655360
+# define BUFFER_SIZE 4096
 
-# define CLIENT_TIMEOUT 10
+# define CLIENT_TIMEOUT 20
 # define EPOLL_TIMEOUT 5000
 
 # define SUCCESS 0
@@ -91,8 +91,13 @@ typedef struct s_env {
 # define MAXCLIENTBS 1024
 
 int				ret(int return_val);
+bool			isFile(const string & path);
+bool			isAllDigits(string const & str);
+bool			startsWithDot(const string & str);
 bool			findLower(string str, string needle);
 bool			childPath(string parent, string child);
+bool			allStartWithDot(const vector<string> & strings);
+bool			areAllPathsBinaries(const vector<string> & paths);
 void			ltrim(string &str);
 void			rtrim(string &str);
 t_env			*env();
@@ -106,10 +111,5 @@ string			strFromCharVec(size_t len, vector<char> &vec);
 size_t			findInCharVec(string str, vector<char> &vec);
 vector<string>	split_trim(string str, string needle);
 vector<string>	split_trim_conf(string str, string needle);
-bool			isFile( const string & path );
-bool			areAllPathsBinaries( const vector<string> & paths );
-bool			isAllDigits( string const & str ) ;
-bool			startsWithDot( const string & str );
-bool			allStartWithDot( const vector<string> & strings ) ;
 
 #endif
