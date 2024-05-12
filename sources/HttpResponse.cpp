@@ -227,9 +227,8 @@ void	HttpResponse::error(int num) {
 	this->_mime = Mime::ext("html");
 	this->createHeader();
 	this->sendHeader();
-	map<int, string> errorPages = this->getServer()->getErrorPages();
-	if (errorPages[num] != "") {
-		string uri = this->getServer()->getRoot() + errorPages[num];
+	if (this->_errorPage[num] != "") {
+		string uri = this->_root + this->_errorPage[num];
 		ifstream file;
 		file.open(uri.c_str(), ios::binary);
 		if (file.is_open()) {
