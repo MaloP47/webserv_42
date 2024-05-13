@@ -4,7 +4,7 @@ printf "Content-type: text/html; charset=UTF-8\r\n\r\n<html><head><title>Same po
 printf "static.fr<div class=\"rounded-2 p-2\" style=\"background-color:#cecece\"><code>"
 printf "$> curl --resolve static.fr:8086:127.0.0.1 http://static.fr:8086<br />"
 printf "</code></div>"
-printf "upload.fr<div class=\"rounded-2 p-2\" style=\"background-color:#cecece\"><code>"
+printf "<br />upload.fr<div class=\"rounded-2 p-2\" style=\"background-color:#cecece\"><code>"
 printf "$> curl --resolve upload.fr:8086:127.0.0.1 http://upload.fr:8086<br />"
 printf "</code></div>"
 printf "</div></div></body></html>"
