@@ -51,30 +51,28 @@ all : $(NAME)
 
 $(OBJ_DIR)%.o : $(SRC_DIR)%.cpp
 	$(eval COMPTEUR=$(shell echo $$(($(COMPTEUR)+1))))
-	@printf "\e[?25l"
-	@mkdir -p $(@D)
+	mkdir -p $(@D)
 	@if test $(COMPTEUR) -eq 1;then \
 		printf "$(_YELLOW)Compiling $(NAME) binary files...$(_END)\n\n";fi
-	@printf "\033[A\33[2K\r$(_CYAN)Binary $(COMPTEUR): $@$(_END)\n"
+	@printf "$(_CYAN)Binary $(COMPTEUR): $@$(_END)\n"
 	@$(CC) -c $(CFLAGS) $< -o $@
 
 $(NAME) : $(OBJ_FILES)
-	@$(CC) $(OBJ_FILES) -o $(NAME)
+	$(CC) $(OBJ_FILES) -o $(NAME)
 	@echo "$(_GREEN)$(NAME) created.$(_END)"
-	@printf "\e[?25h"
 
 clean :
 	@echo "$(_YELLOW)$(NAME): Clean...$(_END)"
-	@$(RM) -rf $(OBJ_DIR)
+	$(RM) -rf $(OBJ_DIR)
 	@echo "$(_GREEN)$(NAME): Binaries deleted.$(_END)"
 
 fclean :
 	@echo "$(_YELLOW)$(NAME): Full clean...$(_END)"
-	@$(RM) -rf $(OBJ_DIR)
+	$(RM) -rf $(OBJ_DIR)
 	@echo "$(_GREEN)$(NAME): Binaries deleted.$(_END)"
-	@$(RM) $(NAME)
+	$(RM) $(NAME)
 	@echo "$(_GREEN)$(NAME) deleted.$(_END)"
 
 re :
-	@make fclean --no-print-directory
-	@make all --no-print-directory
+	make fclean --no-print-directory
+	make all --no-print-directory
