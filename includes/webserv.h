@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   webserv.h                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: maburnet <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/05 15:15:28 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/05/07 16:02:31 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/05/13 11:09:27 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,7 +68,7 @@ typedef struct s_env {
 # define MAX_EVENTS 1024
 # define BUFFER_SIZE 4096
 
-# define CLIENT_TIMEOUT 20
+# define CLIENT_TIMEOUT 5
 # define EPOLL_TIMEOUT 5000
 
 # define SUCCESS 0

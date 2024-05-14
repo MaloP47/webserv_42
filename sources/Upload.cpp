@@ -49,11 +49,12 @@ void	Upload::createFile() {
 	}
 	fullName << name << "_" << i << ext;
 	fileExist.open(fullName.str().c_str());
-	if (fileExist.good()) {
+	while (fileExist.good()) {
 		fileExist.close();
 		fullName.str("");
 		i++;
 		fullName << name << "_" << i << ext;
+		fileExist.open(fullName.str().c_str());
 	}
 	fileExist.close();
 	file.open(fullName.str().c_str(), ios::out | ios::binary);

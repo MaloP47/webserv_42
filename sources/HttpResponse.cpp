@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: maburnet <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/08 17:29:38 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/05/10 16:15:16 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/05/13 11:25:43 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -327,6 +327,12 @@ void	HttpResponse::tryDeleteFile(string uri) {
 	if (!childPath(getFullPath(root), getFullPath(uri)))
 		this->error(403);
 	else {
+		if (access(uri.c_str(), F_OK) != -1) {
+			if (access(uri.c_str(), R_OK) == -1) {
+				this->error(403);
+				return ;
+			}
+		}
 		if (remove(uri.c_str()) == 0)
 			this->error(200);
 		else
@@ -391,14 +397,17 @@ void	HttpResponse::sendResponse() {
 
 	if (this->getRequest()->tooLarge()) {
 		this->error(413);
+		this->setClientError();
 		return ;
 	}
 	this->setInfos();
 	if (this->_returnURI.size() > 0) {
 		int		err = this->_returnURI.begin()->first;
 		string	uri = this->_returnURI.begin()->second;
-		if (err == 301)
+		if (err == 301) {
 			this->movedPermanently(uri);
+			return ;
+		}
 		else {
 			this->error(this->_returnURI.begin()->first);
 			return ;
@@ -426,8 +435,10 @@ void	HttpResponse::sendResponse() {
 		return ;
 	} else {
 		if (access(uri.c_str(), F_OK) != -1) {
-			if (access(uri.c_str(), R_OK) == -1)
+			if (access(uri.c_str(), R_OK) == -1) {
 				this->error(403);
+				return ;
+			}
 		}
 		ext = uri.substr(uri.find_last_of(".") + 1);
 		if (ext.find("/") == string::npos)
@@ -549,7 +560,7 @@ bool	HttpResponse::executeCGI(string uri)
 	FILE		*content_tmp = tmpfile();
 	int			content_fd = fileno(content_tmp);
 
-	write(content_fd, this->getRequest()->getContent().c_str(), this->getRequest()->getContent().size());
+	fputs(this->getRequest()->getContent().c_str(), content_tmp);
 	lseek(content_fd, 0, SEEK_SET);
 	int std_in = dup(STDIN_FILENO);
 	file_fd = open(fileName.c_str(), O_RDWR | O_CREAT | O_TRUNC, 0666);
@@ -587,6 +598,7 @@ bool	HttpResponse::executeCGI(string uri)
 		exit (0);
 	}
 	close(file_fd);
+	//
 	waitpid(0, NULL, 0);
 	dup2(std_in, STDIN_FILENO);
 	fclose(content_tmp);

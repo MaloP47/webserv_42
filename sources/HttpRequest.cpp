@@ -6,7 +6,7 @@
 /*   By: gbrunet <gbrunet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/08 11:01:52 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/05/09 15:51:48 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/05/14 10:45:08 by gbrunet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,6 +67,10 @@ bool	HttpRequest::isFullRequest() {
 		}
 		return (false);
 	} else if (!findLower(this->_rawRequest, "transfer-encoding: chunked")) {
+		pos = this->_rawRequest.find("\r\n\r\n");
+		if (pos != string::npos && pos + 4 < this->_rawRequest.length()) {
+			this->_headerLength = this->_rawRequest.find("\r\n\r\n") + 4;
+		}
 		return (this->_rawRequest.find("\r\n\r\n",
 				this->_rawRequest.length() - 4) != string::npos);
 	} else {
@@ -87,10 +91,10 @@ bool	HttpRequest::appendRequest(const char *data, int bytes) {
 	}
 	this->_requestLength += bytes;
 	if (this->_headerLength != 0) {
-		if (this->_contentLength > static_cast<size_t>(this->getServer()->getMaxBodySize()) * 1024) {
+		if (this->_contentLength > static_cast<size_t>(this->getServer()->getMaxBodySize()) * 1000) {
 			this->_tooLarge = true;
 		}
-		if (static_cast<size_t>(this->getServer()->getMaxBodySize() * 1024) < this->_requestLength - this->_headerLength) {
+		if (static_cast<size_t>(this->getServer()->getMaxBodySize() * 1000) < this->_requestLength - this->_headerLength) {
 			this->_tooLarge = true;
 			vector<string> line = split_trim(this->_rawRequest.substr(0, this->_headerLength), "\r\n");
 			if (line.size() < 1)
