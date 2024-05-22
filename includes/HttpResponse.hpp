@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpResponse.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: maburnet <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/08 17:27:41 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/05/07 15:57:23 by gbrunet          ###   ########.fr       */
+/*   Updated: 2024/05/22 14:10:48 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,3 +99,4 @@ class HttpResponse {
 ostream &operator<<(ostream &o, const HttpResponse &response);
 
 #endif
+

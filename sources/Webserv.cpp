@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Webserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: maburnet <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: mpeulet <mpeulet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/05 15:49:31 by gbrunet           #+#    #+#             */
-/*   Updated: 2024/05/06 18:37:10 by maburnet         ###   ########.fr       */
+/*   Updated: 2024/05/22 14:11:08 by mpeulet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -290,3 +290,4 @@ void	Webserv::processCommand() {
 int	Webserv::getLogLevel() const {
 	return (this->_logLevel);
 }
+
